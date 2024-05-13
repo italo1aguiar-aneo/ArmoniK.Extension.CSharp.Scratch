@@ -1,0 +1,52 @@
+name: Code Formatting
+
+on:
+  pull_request:
+  workflow_dispatch:
+  
+jobs:
+  format-csharp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+    - name: Checkout
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      with:
+        ref: ${{ github.ref }}
+
+    - name: Install ReSharper
+      run: |
+        dotnet tool install -g JetBrains.ReSharper.GlobalTools --version 2022.2.2
+
+    - name: Restore
+      run: |
+        dotnet restore ArmoniK.CSharp.Extension.Scratch.sln
+    - name: Reformat
+      run: |
+        jb cleanupcode ArmoniK.CSharp.Extension.Scratch.sln
+
+    - name: Check Diff
+      id: check-diff
+      run: |
+        DIFF="$(git diff --name-only)"
+
+        if [ -z "$DIFF" ]; then
+          echo "OK: Format is clean"
+        else
+          echo "Error: Format was not clean"
+          echo "List of files:"
+          echo "$DIFF"
+          git diff
+          exit 1
+        fi
+
+    - name: Generate patch
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      run: |
+        git diff > patch-csharp.diff
+
+    - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4
+      if: ${{ failure() && steps.check-diff.conclusion == 'failure' }}
+      with:
+        name: patch-csharp
+        path: ./patch-csharp.diff
