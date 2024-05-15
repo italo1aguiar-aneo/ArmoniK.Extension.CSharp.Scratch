@@ -27,95 +27,104 @@ using System.CommandLine;
 using System.Text;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client;
+using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Services;
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace UsageExample
 {
     internal class Program
     {
-        /// <summary>
-        ///   Method for sending task and retrieving their results from ArmoniK
-        /// </summary>
-        /// <param name="endpoint">The endpoint url of ArmoniK's control plane</param>
-        /// <param name="partition">Partition Id of the matching worker</param>
-        /// <returns>
-        ///   Task representing the asynchronous execution of the method
-        /// </returns>
-        /// <exception cref="Exception">Issues with results from tasks</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Unknown response type from control plane</exception>
-        internal static async Task Run(string endpoint,
-                                       string partition)
+        private static IConfiguration _configuration;
+        private static ILogger<Program> logger_;
+
+        private static async Task Main(string[] args)
         {
-            // Default task options that will be used by each task if not overwritten when submitting tasks
-            var taskOptions = new TaskOptions
-            {
-                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                MaxRetries = 2,
-                Priority = 1,
-                PartitionId = partition,
-                Options =
-                          {
-                            new MapField<string, string>
+            Console.WriteLine("Hello Armonik New Extension !");
+
+
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
+                    LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+            var factory = new LoggerFactory(new[]
+                {
+                    new SerilogLoggerProvider(Log.Logger),
+                },
+                new LoggerFilterOptions().AddFilter("Grpc",
+                    LogLevel.Error));
+            logger_ = factory.CreateLogger<Program>();
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json",
+                    true,
+                    false)
+                .AddEnvironmentVariables();
+            _configuration = builder.Build();
+
+            var client = new ArmoniKClient(new Properties(_configuration, null, "http://172.22.89.16"), factory);
+
+            var session = await client.SessionService.CreateSession(new List<string>(["subtasking"]));
+
+            Console.WriteLine($"sessionId: {session.Id}");
+
+            var payload = await client.BlobService.CreateBlobAsync(new BlobInfo("Payload"), session);
+
+            Console.WriteLine($"payloadId: {payload.BlobId}");
+
+            var result = await client.BlobService.CreateBlobAsync(new BlobInfo("Result"), session);
+
+            Console.WriteLine($"resultId: {result.BlobId}");
+
+            var task = await client.TasksService.SubmitTasksAsync(
+                new List<TaskNode>([ new TaskNode()
+                {
+                    Payload = payload,
+                    ExpectedOutputs = new[] { result },
+                    TaskOptions = new TaskOptions
+                        {
+                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                            MaxRetries  = 2,
+                            Priority    = 1,
+                            PartitionId = "subtasking",
+                            Options =
                             {
-                              {
-                                "UseCase", "Launch"
-                              },
+                                new MapField<string, string>
+                                {
+                                    {
+                                        "UseCase", "Launch"
+                                    },
+                                },
                             },
-                          },
-            };
+                        },
+                }]), session);
 
-            var sessionManager = new SessionManager(endpoint, new List<string>() { partition }, taskOptions);
+            Console.WriteLine($"taskId: {task.Single()}");
 
-            sessionManager.StartSession();
+            await client.EventsService.WaitForBlobsAsync(new List<BlobInfo>([result]),session);
 
-            var taskSubmissionResponse = sessionManager.SendTask(partition, UnsafeByteOperations.UnsafeWrap(Encoding.ASCII.GetBytes("Hello")));
+            var download = await client.BlobService.DownloadBlob(result,
+                session,
+                CancellationToken.None);
+            var stringArray = Encoding.ASCII.GetString(download.Content.Span)
+                .Split(new[]
+                    {
+                        '\n',
+                    },
+                    StringSplitOptions.RemoveEmptyEntries);
 
-            await sessionManager.WaitForResultsAsync(taskSubmissionResponse.ExpectedOutputsDictionary.Values);
-
-            // Download result
-            var resultByteArray = await sessionManager.DownloadResult(taskSubmissionResponse.ExpectedOutputsDictionary.Values.FirstOrDefault());
-
-            var stringArray = Encoding.ASCII.GetString(resultByteArray)
-                                      .Split(new[]
-                                             {
-                                         '\n',
-                                             },
-                                             StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var result in stringArray)
+            foreach (var retorno in stringArray)
             {
-                Console.WriteLine($"{result}");
+                Console.WriteLine($"{retorno}");
             }
-        }
-
-        public static async Task<int> Main(string[] args)
-        {
-            // Define the options for the application with their description and default value
-            var endpoint = new Option<string>("--endpoint",
-                                              description: "Endpoint for the connection to ArmoniK control plane.",
-                                              getDefaultValue: () => "http://172.22.89.16:5001");
-            var partition = new Option<string>("--partition",
-                                               description: "Name of the partition to which submit tasks.",
-                                               getDefaultValue: () => "subtasking");
-            // Describe the application and its purpose
-            var rootCommand = new RootCommand("SubTasking demo for ArmoniK.\n" + $" It sends a task to ArmoniK in the given partition <{partition.Name}>. " +
-                                              "The task creates some subtasks and, for the result with an array of subtasks Ids will be returned. " +
-                                              "Then, the client retrieves and prints the result of the task parsing the result.\n" +
-                                              $"ArmoniK endpoint location is provided through <{endpoint.Name}>");
-
-            // Add the options to the parser
-            rootCommand.AddOption(endpoint);
-            rootCommand.AddOption(partition);
-
-            // Configure the handler to call the function that will do the work
-            rootCommand.SetHandler(Run,
-                                   endpoint,
-                                   partition);
-
-            // Parse the command line parameters and call the function that represents the application
-            return await rootCommand.InvokeAsync(args);
         }
     }
 }

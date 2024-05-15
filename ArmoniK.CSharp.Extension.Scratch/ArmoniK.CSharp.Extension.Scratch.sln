@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Extension.CSharp.Client", "ArmoniK.Extension.CSharp.Client\ArmoniK.Extension.CSharp.Client.csproj", "{1C56D033-AFD0-4478-BB9D-7B5D35740003}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.Client", "ArmoniK.Extension.CSharp.Client\ArmoniK.Extension.CSharp.Client.csproj", "{1C56D033-AFD0-4478-BB9D-7B5D35740003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsageExample", "UsageExample\UsageExample.csproj", "{8ADFD01C-3287-41C8-BF04-95F15CDA8BA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UsageExample", "UsageExample\UsageExample.csproj", "{8ADFD01C-3287-41C8-BF04-95F15CDA8BA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
