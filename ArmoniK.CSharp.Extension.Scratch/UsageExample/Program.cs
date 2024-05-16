@@ -63,11 +63,11 @@ namespace UsageExample
                 new LoggerFilterOptions().AddFilter("Grpc",
                     LogLevel.Error));
             logger_ = factory.CreateLogger<Program>();
-            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json",
-                    true,
-                    false)
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false)
                 .AddEnvironmentVariables();
+
             _configuration = builder.Build();
 
             var taskOptions = new TaskOptions
@@ -87,7 +87,7 @@ namespace UsageExample
                 },
             };
 
-            var props = new Properties(_configuration, options: taskOptions, ["subtasking"],"http://172.22.89.16");
+            var props = new Properties(_configuration, options: taskOptions, ["subtasking"]);
 
             var client = new ArmoniKClient(props, factory);
 
