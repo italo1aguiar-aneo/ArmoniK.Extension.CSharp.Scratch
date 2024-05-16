@@ -33,7 +33,7 @@ public class ArmoniKClient
         _logger = loggerFactory.CreateLogger<ArmoniKClient>();
     }
 
-    public async void LaunchServices()
+    public async Task LaunchServices()
     {
         ChannelBase channel = await ChannelPool.GetAsync();
         _blobService = BlobServiceFactory.CreateBlobService(channel, _loggerFactory);

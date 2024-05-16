@@ -94,6 +94,8 @@ internal class Program
 
         var client = new ArmoniKClient(props, factory);
 
+        await client.LaunchServices();
+
         var sessionService = await client.GetSessionService();
 
         var blobService = await client.GetBlobService();
@@ -106,7 +108,11 @@ internal class Program
 
         Console.WriteLine($"sessionId: {session.Id}");
 
-        var payload = await blobService.CreateBlobAsync(new BlobInfo("Payload"), session);
+        var payloadBlob = new Blob("Payload");
+
+        payloadBlob.AddContent(Encoding.ASCII.GetBytes("Hello"));
+
+        var payload = await blobService.CreateBlobAsync(payloadBlob, session);
 
         Console.WriteLine($"payloadId: {payload.BlobId}");
 

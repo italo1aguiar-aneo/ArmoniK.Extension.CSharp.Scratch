@@ -47,32 +47,21 @@ public class BlobService : IBlobService
     public async Task<BlobInfo> CreateBlobAsync(Blob blob, Session session,
         CancellationToken cancellationToken = default)
     {
-        var blobMetadataCreationResponse = await _blobClient.CreateResultsMetaDataAsync(
-            new CreateResultsMetaDataRequest
+        var blobCreationResponse = await _blobClient.CreateResultsAsync(
+            new CreateResultsRequest
             {
                 SessionId = session.Id,
                 Results =
                 {
-                    new CreateResultsMetaDataRequest.Types.ResultCreate
+                    new CreateResultsRequest.Types.ResultCreate
                     {
-                        Name = blob.Name
+                        Name = blob.Name,
+                        Data = ByteString.CopyFrom(blob.Content.Span)
                     }
                 }
             }, cancellationToken: cancellationToken);
 
-        using var uploadStream = _blobClient.UploadResultData();
-
-        await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
-        {
-            DataChunk = ByteString.CopyFrom(blob.Content.Span),
-            Id = new UploadResultDataRequest.Types.ResultIdentifier
-            {
-                ResultId = blobMetadataCreationResponse.Results.Single().ResultId,
-                SessionId = session.Id
-            }
-        });
-
-        return new BlobInfo(blob.Name, blobMetadataCreationResponse.Results.Single().ResultId);
+        return new BlobInfo(blob.Name, blobCreationResponse.Results.Single().ResultId);
     }
 
     public async Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<BlobInfo> blobsInfos, Session session,
@@ -99,41 +88,24 @@ public class BlobService : IBlobService
     public async Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<Blob> blobs, Session session,
         CancellationToken cancellationToken = default)
     {
-        var resultsCreate = new ConcurrentBag<CreateResultsMetaDataRequest.Types.ResultCreate>();
+        var resultsCreate = new ConcurrentBag<CreateResultsRequest.Types.ResultCreate>();
         Parallel.ForEach(blobs, blob =>
         {
-            var taskCreation = new CreateResultsMetaDataRequest.Types.ResultCreate
+            var taskCreation = new CreateResultsRequest.Types.ResultCreate
             {
-                Name = blob.Name
+                Name = blob.Name,
+                Data = ByteString.CopyFrom(blob.Content.Span),
             };
             resultsCreate.Add(taskCreation);
         });
         var blobsCreationResponse =
-            await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+            await _blobClient.CreateResultsAsync(new CreateResultsRequest
             {
                 SessionId = session.Id,
                 Results = { resultsCreate.ToList() }
             }, cancellationToken: cancellationToken);
 
-        foreach (var blob in blobsCreationResponse.Results)
-            blobs.Single(b => b.Name == blob.Name).SetBlobId(blob.ResultId);
-
-        using var uploadStream = _blobClient.UploadResultData();
-
-        var blobCreationTasks = blobs.Select(blob => Task.Run(async () =>
-        {
-            await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
-            {
-                DataChunk = ByteString.CopyFrom(blob.Content.Span),
-                Id = new UploadResultDataRequest.Types.ResultIdentifier
-                {
-                    ResultId = blob.BlobId,
-                    SessionId = session.Id
-                }
-            });
-        }, cancellationToken));
-        await Task.WhenAll(blobCreationTasks);
-        return new List<BlobInfo>(blobs.Select(x => new BlobInfo(x.Name, x.BlobId)));
+        return blobsCreationResponse.Results.Select(x => new BlobInfo(x.Name, x.ResultId)).ToList();
     }
 
     public async Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session,
