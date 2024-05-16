@@ -70,7 +70,26 @@ namespace UsageExample
                 .AddEnvironmentVariables();
             _configuration = builder.Build();
 
-            var client = new ArmoniKClient(new Properties(_configuration, null, "http://172.22.89.16"), factory);
+            var taskOptions = new TaskOptions
+            {
+                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                MaxRetries = 2,
+                Priority = 1,
+                PartitionId = "subtasking",
+                Options =
+                {
+                    new MapField<string, string>
+                    {
+                        {
+                            "UseCase", "Launch"
+                        },
+                    },
+                },
+            };
+
+            var props = new Properties(_configuration, options: taskOptions, "http://172.22.89.16");
+
+            var client = new ArmoniKClient(props, factory);
 
             var session = await client.SessionService.CreateSession(new List<string>(["subtasking"]));
 
@@ -89,22 +108,7 @@ namespace UsageExample
                 {
                     Payload = payload,
                     ExpectedOutputs = new[] { result },
-                    TaskOptions = new TaskOptions
-                        {
-                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                            MaxRetries  = 2,
-                            Priority    = 1,
-                            PartitionId = "subtasking",
-                            Options =
-                            {
-                                new MapField<string, string>
-                                {
-                                    {
-                                        "UseCase", "Launch"
-                                    },
-                                },
-                            },
-                        },
+                    TaskOptions = taskOptions,
                 }]), session);
 
             Console.WriteLine($"taskId: {task.Single()}");
@@ -121,9 +125,9 @@ namespace UsageExample
                     },
                     StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var retorno in stringArray)
+            foreach (var returnString in stringArray)
             {
-                Console.WriteLine($"{retorno}");
+                Console.WriteLine($"{returnString}");
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Text;
 using ArmoniK.Utils;
 using Grpc.Core;
 using ArmoniK.Api.gRPC.V1;
+using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
 namespace ArmoniK.Extension.CSharp.Client.Common
@@ -67,15 +68,19 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         {
             TaskOptions taskOptions = new()
             {
-                MaxDuration = new Duration
-                {
-                    Seconds = 40,
-                },
+                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
                 MaxRetries = 2,
                 Priority = 1,
-                ApplicationName = "ArmoniK.DevelopmentKit.Worker",
-                ApplicationVersion = "1.X.X",
-                ApplicationNamespace = "ArmoniK.DevelopmentKit.Worker",
+                PartitionId = "subtasking",
+                Options =
+                {
+                    new MapField<string, string>
+                    {
+                        {
+                            "UseCase", "Launch"
+                        },
+                    },
+                },
             };
 
             return taskOptions;
