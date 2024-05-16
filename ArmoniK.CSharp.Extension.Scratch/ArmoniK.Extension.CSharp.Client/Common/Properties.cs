@@ -57,6 +57,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         /// </summary>
         /// <param name="options">The taskOptions to set to a session</param>
         /// <param name="connectionAddress">The control plane address to connect</param>
+        /// <param name="partitionIds"></param>
         /// <param name="connectionPort">The optional port to connect to the control plane</param>
         /// <param name="protocol">the protocol https or http</param>
         /// <param name="clientCertPem">The client certificate fil in a pem format</param>
@@ -68,6 +69,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         // ReSharper disable once UnusedMember.Global
         public Properties(TaskOptions options,
             string connectionAddress,
+            IEnumerable<string> partitionIds,
             int connectionPort = 0,
             string protocol = null,
             string clientCertPem = null,
@@ -77,7 +79,8 @@ namespace ArmoniK.Extension.CSharp.Client.Common
             bool? sslValidation = null)
             : this(new ConfigurationBuilder().AddEnvironmentVariables()
                     .Build(),
-                options,
+                options, 
+                partitionIds,
                 connectionAddress,
                 connectionPort,
                 protocol,
@@ -94,6 +97,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         /// </summary>
         /// <param name="configuration">The configuration to read information from AppSettings file</param>
         /// <param name="options">The taskOptions to set to a session</param>
+        /// <param name="partitionIds"></param>
         /// <param name="connectionAddress">The control plane address to connect</param>
         /// <param name="connectionPort">The optional port to connect to the control plane</param>
         /// <param name="protocol">the protocol https or http</param>
@@ -108,6 +112,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         /// <exception cref="ArgumentException"></exception>
         public Properties(IConfiguration configuration,
             TaskOptions options,
+            IEnumerable<string> partitionIds,
             string connectionAddress = null,
             int connectionPort = 0,
             string protocol = null,
@@ -122,6 +127,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         {
             TaskOptions = options;
             Configuration = configuration;
+            PartitionIds = partitionIds;
 
             var sectionGrpc = configuration.GetSection(SectionGrpc);
 
@@ -327,6 +333,14 @@ namespace ArmoniK.Extension.CSharp.Client.Common
         // ReSharper disable once MemberCanBePrivate.Global
         // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
         public TaskOptions TaskOptions { get; set; }
+
+        /// <summary>
+        ///   The TaskOptions to pass to the session or the submission session
+        /// </summary>
+        // TODO: mark as [PublicApi] for setter ?
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
+        public IEnumerable<string> PartitionIds { get; set; }
 
         /// <summary>
         ///   The target name of the endpoint when ssl validation is disabled. Automatic if not set.

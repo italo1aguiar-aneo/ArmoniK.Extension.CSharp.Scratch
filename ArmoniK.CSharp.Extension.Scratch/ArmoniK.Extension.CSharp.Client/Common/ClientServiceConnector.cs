@@ -59,31 +59,5 @@ namespace ArmoniK.Extension.CSharp.Client.Common
             return new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options,
                 loggerFactory?.CreateLogger(typeof(ClientServiceConnector))));
         }
-
-        /// <summary>
-        ///   Supply a default TaskOptions
-        /// </summary>
-        /// <returns>A default TaskOptions object</returns>
-        public static TaskOptions InitializeDefaultTaskOptions()
-        {
-            TaskOptions taskOptions = new()
-            {
-                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                MaxRetries = 2,
-                Priority = 1,
-                PartitionId = "subtasking",
-                Options =
-                {
-                    new MapField<string, string>
-                    {
-                        {
-                            "UseCase", "Launch"
-                        },
-                    },
-                },
-            };
-
-            return taskOptions;
-        }
     }
 }

@@ -8,60 +8,34 @@ using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Extension.CSharp.Client.Common;
-using ArmoniK.Extension.CSharp.Client.Common.Abstracts;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Google.Protobuf;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static ArmoniK.Api.gRPC.V1.Results.Results;
 
 namespace ArmoniK.Extension.CSharp.Client.Services
 {
-    public class BlobService : BaseArmoniKClientService<BlobService>, IBlobService
+    public class BlobService : IBlobService
     {
-        public BlobService(Properties properties, ILoggerFactory loggerFactory, TaskOptions taskOptions = null) : base(
-            properties, loggerFactory, taskOptions ?? ClientServiceConnector.InitializeDefaultTaskOptions())
+        public BlobService(ChannelBase channel, ILoggerFactory loggerFactory)
         {
+            _blobClient = new ResultsClient(channel);
         }
 
-        private Results.ResultsClient _blobClient;
-        private readonly object _lock = new();
-
-        // Property to access the BlobClient
-        private async Task<Results.ResultsClient> GetBlobClientAsync()
-        {
-            if (_blobClient == null)
-            {
-                await InitializeBlobClientAsync();
-            }
-
-            return _blobClient;
-        }
-
-        // Method to initialize the BlobClient
-        private async Task InitializeBlobClientAsync()
-        {
-            if (_blobClient == null)
-            {
-                var client = new Results.ResultsClient(await ChannelPool.GetAsync());
-                lock (_lock)
-                {
-                    _blobClient ??= client;
-                }
-            }
-        }
+        private readonly Results.ResultsClient _blobClient;
 
         public async Task<BlobInfo> CreateBlobAsync(BlobInfo blobInfo, Session session,
             CancellationToken cancellationToken = default)
         {
-            var blobClient = await GetBlobClientAsync();
             var taskCreation = new CreateResultsMetaDataRequest.Types.ResultCreate
             {
                 Name = blobInfo.Name
             };
             var blobsCreationResponse =
-                await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
                 {
                     SessionId = session.Id,
                     Results = { taskCreation }
@@ -73,8 +47,7 @@ namespace ArmoniK.Extension.CSharp.Client.Services
         public async Task<BlobInfo> CreateBlobAsync(Blob blob, Session session,
             CancellationToken cancellationToken = default)
         {
-            var blobClient = await GetBlobClientAsync();
-            var blobMetadataCreationResponse = await blobClient.CreateResultsMetaDataAsync(
+            var blobMetadataCreationResponse = await _blobClient.CreateResultsMetaDataAsync(
                 new CreateResultsMetaDataRequest
                 {
                     SessionId = session.Id,
@@ -87,7 +60,7 @@ namespace ArmoniK.Extension.CSharp.Client.Services
                     }
                 }, cancellationToken: cancellationToken);
 
-            using var uploadStream = blobClient.UploadResultData();
+            using var uploadStream = _blobClient.UploadResultData();
 
             await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
             {
@@ -114,9 +87,8 @@ namespace ArmoniK.Extension.CSharp.Client.Services
                 };
                 resultsCreate.Add(taskCreation);
             });
-            var blobClient = await GetBlobClientAsync();
             var blobsCreationResponse =
-                await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
                 {
                     SessionId = session.Id,
                     Results = { resultsCreate.ToList() }
@@ -136,9 +108,8 @@ namespace ArmoniK.Extension.CSharp.Client.Services
                 };
                 resultsCreate.Add(taskCreation);
             });
-            var blobClient = await GetBlobClientAsync();
             var blobsCreationResponse =
-                await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
                 {
                     SessionId = session.Id,
                     Results = { resultsCreate.ToList() }
@@ -149,7 +120,7 @@ namespace ArmoniK.Extension.CSharp.Client.Services
                 blobs.Single(b => b.Name == blob.Name).SetBlobId(blob.ResultId);
             }
 
-            using var uploadStream = blobClient.UploadResultData();
+            using var uploadStream = _blobClient.UploadResultData();
 
             var blobCreationTasks = blobs.Select(blob => Task.Run(async () =>
             {
@@ -173,8 +144,7 @@ namespace ArmoniK.Extension.CSharp.Client.Services
             try
             {
                 var blob = new Blob(blobInfo.Name, blobInfo.BlobId);
-                var blobClient = await GetBlobClientAsync();
-                var data = await blobClient.DownloadResultData(session.Id, blobInfo.BlobId, cancellationToken);
+                var data = await _blobClient.DownloadResultData(session.Id, blobInfo.BlobId, cancellationToken);
                 blob.AddContent(data);
                 return blob;
             }

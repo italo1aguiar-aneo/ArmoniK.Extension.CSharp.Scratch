@@ -87,23 +87,31 @@ namespace UsageExample
                 },
             };
 
-            var props = new Properties(_configuration, options: taskOptions, "http://172.22.89.16");
+            var props = new Properties(_configuration, options: taskOptions, ["subtasking"],"http://172.22.89.16");
 
             var client = new ArmoniKClient(props, factory);
 
-            var session = await client.SessionService.CreateSession(new List<string>(["subtasking"]));
+            var sessionService = await client.GetSessionService();
+
+            var blobService = await client.GetBlobService();
+
+            var tasksService = await client.GetTasksService();
+
+            var eventsService = await client.GetEventsService();
+
+            var session = await sessionService.CreateSession(new List<string>(["subtasking"]));
 
             Console.WriteLine($"sessionId: {session.Id}");
 
-            var payload = await client.BlobService.CreateBlobAsync(new BlobInfo("Payload"), session);
+            var payload = await blobService.CreateBlobAsync(new BlobInfo("Payload"), session);
 
             Console.WriteLine($"payloadId: {payload.BlobId}");
 
-            var result = await client.BlobService.CreateBlobAsync(new BlobInfo("Result"), session);
+            var result = await blobService.CreateBlobAsync(new BlobInfo("Result"), session);
 
             Console.WriteLine($"resultId: {result.BlobId}");
 
-            var task = await client.TasksService.SubmitTasksAsync(
+            var task = await tasksService.SubmitTasksAsync(
                 new List<TaskNode>([ new TaskNode()
                 {
                     Payload = payload,
@@ -113,9 +121,9 @@ namespace UsageExample
 
             Console.WriteLine($"taskId: {task.Single()}");
 
-            await client.EventsService.WaitForBlobsAsync(new List<BlobInfo>([result]),session);
+            await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]),session);
 
-            var download = await client.BlobService.DownloadBlob(result,
+            var download = await blobService.DownloadBlob(result,
                 session,
                 CancellationToken.None);
             var stringArray = Encoding.ASCII.GetString(download.Content.Span)

@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services
 {
-    public interface IEventService
+    public interface IEventsService
     {
         Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session, CancellationToken cancellationToken = default);
     }

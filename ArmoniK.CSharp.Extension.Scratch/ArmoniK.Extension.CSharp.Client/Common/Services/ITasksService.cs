@@ -8,7 +8,7 @@ using Google.Protobuf;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services
 {
-    public interface ITaskService
+    public interface ITasksService
     {
         Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session);
     }

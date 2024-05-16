@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ArmoniK.Extension.CSharp.Client.Services;
+using Grpc.Core;
 
 namespace ArmoniK.Extension.CSharp.Client.Factory
 {
     public class BlobServiceFactory
     {
-        public static IBlobService CreateBlobService(Properties props,
-            ILoggerFactory loggerFactory = null)
-            => new BlobService(props,
-                loggerFactory);
+        public static IBlobService CreateBlobService(ChannelBase channel, ILoggerFactory loggerFactory = null)
+            => new BlobService(channel, loggerFactory);
     }
 }

@@ -1,56 +1,29 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common;
-using ArmoniK.Extension.CSharp.Client.Common.Abstracts;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
+using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using static ArmoniK.Api.gRPC.V1.Sessions.Sessions;
 using static ArmoniK.Api.gRPC.V1.Tasks.Tasks;
 
 namespace ArmoniK.Extension.CSharp.Client.Services
 {
-    public class TasksService : BaseArmoniKClientService<TasksService>, ITaskService
+    public class TasksService : ITasksService
     {
-
-        public TasksService(Properties properties, ILoggerFactory loggerFactory, TaskOptions taskOptions = null) : base(
-            properties, loggerFactory, taskOptions ?? ClientServiceConnector.InitializeDefaultTaskOptions())
+        public TasksService(ChannelBase channel, ILoggerFactory loggerFactory)
         {
+            _tasksClient = new TasksClient(channel);
+            _logger = loggerFactory.CreateLogger<TasksService>();
+
         }
 
-        private Tasks.TasksClient _tasksClient;
-        private readonly object _lock = new();
-
-        // Property to access the TasksClient
-        private async Task<Tasks.TasksClient> GetTasksClientAsync()
-        {
-            if (_tasksClient == null)
-            {
-                await InitializeTasksClientAsync();
-            }
-
-            return _tasksClient;
-        }
-
-        // Method to initialize the TasksClient
-        private async Task InitializeTasksClientAsync()
-        {
-            if (_tasksClient == null)
-            {
-                var client = new Tasks.TasksClient(await ChannelPool.GetAsync());
-                lock (_lock)
-                {
-                    _tasksClient ??= client;
-                }
-            }
-        }
+        private readonly TasksClient _tasksClient;
+        private readonly ILogger<TasksService> _logger;
 
         public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session)
         {
@@ -62,8 +35,8 @@ namespace ArmoniK.Extension.CSharp.Client.Services
                 {
                     PayloadId = taskNode.Payload.BlobId,
                     ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
-                    DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? new List<string>() },
-                    TaskOptions = taskNode.TaskOptions ?? TaskOptions,
+                    DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? [] },
+                    TaskOptions = taskNode.TaskOptions,
                 };
                 taskCreations.Add(taskCreation);
             });
@@ -71,11 +44,11 @@ namespace ArmoniK.Extension.CSharp.Client.Services
             var submitTasksRequest = new SubmitTasksRequest
             {
                 SessionId = session.Id,
-                TaskCreations = { taskCreations.ToList() },
-                TaskOptions = taskNodes.Single().TaskOptions
+                TaskCreations = { taskCreations.ToList() }
             };
-            var tasksClient = await GetTasksClientAsync();
-            var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
+
+            var taskSubmissionResponse = await _tasksClient.SubmitTasksAsync(submitTasksRequest);
+
             return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
         }
     }
