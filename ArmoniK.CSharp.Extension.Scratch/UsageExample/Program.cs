@@ -99,7 +99,7 @@ namespace UsageExample
 
             var eventsService = await client.GetEventsService();
 
-            var session = await sessionService.CreateSession(new List<string>(["subtasking"]));
+            var session = await sessionService.CreateSession();
 
             Console.WriteLine($"sessionId: {session.Id}");
 

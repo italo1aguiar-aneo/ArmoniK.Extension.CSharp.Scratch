@@ -22,7 +22,7 @@ namespace ArmoniK.Extension.CSharp.Client.Services
         private readonly Properties _properties;
         private readonly Sessions.SessionsClient _sessionClient;
         private readonly ILogger<SessionService> _logger;
-        public async Task<Session> CreateSession(IEnumerable<string> partitionIds)
+        public async Task<Session> CreateSession()
         {
             var createSessionReply = await _sessionClient.CreateSessionAsync(new CreateSessionRequest
             {

@@ -8,6 +8,6 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services
 {
     public interface ISessionService
     {
-        Task<Session> CreateSession(IEnumerable<string> partitionIds);
+        Task<Session> CreateSession();
     }
 }
