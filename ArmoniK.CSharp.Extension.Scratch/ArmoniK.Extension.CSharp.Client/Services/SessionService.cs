@@ -8,35 +8,35 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
 
-namespace ArmoniK.Extension.CSharp.Client.Services
+namespace ArmoniK.Extension.CSharp.Client.Services;
+
+public class SessionService : ISessionService
 {
-    public class SessionService : ISessionService
+    public SessionService(ChannelBase channel, Properties properties, ILoggerFactory loggerFactory)
     {
-        public SessionService(ChannelBase channel, Properties properties, ILoggerFactory loggerFactory)
-        {
-            _properties = properties;
-            _sessionClient = new Sessions.SessionsClient(channel);
-            _logger = loggerFactory.CreateLogger<SessionService>();
-        }
+        _properties = properties;
+        _sessionClient = new Sessions.SessionsClient(channel);
+        _logger = loggerFactory.CreateLogger<SessionService>();
+    }
 
-        private readonly Properties _properties;
-        private readonly Sessions.SessionsClient _sessionClient;
-        private readonly ILogger<SessionService> _logger;
-        public async Task<Session> CreateSession()
-        {
-            var createSessionReply = await _sessionClient.CreateSessionAsync(new CreateSessionRequest
-            {
-                DefaultTaskOption = _properties.TaskOptions,
-                PartitionIds =
-                {
-                    _properties.PartitionIds
-                }
-            });
+    private readonly Properties _properties;
+    private readonly Sessions.SessionsClient _sessionClient;
+    private readonly ILogger<SessionService> _logger;
 
-            return new Session()
+    public async Task<Session> CreateSession()
+    {
+        var createSessionReply = await _sessionClient.CreateSessionAsync(new CreateSessionRequest
+        {
+            DefaultTaskOption = _properties.TaskOptions,
+            PartitionIds =
             {
-                Id = createSessionReply.SessionId,
-            };
-        }
+                _properties.PartitionIds
+            }
+        });
+
+        return new Session()
+        {
+            Id = createSessionReply.SessionId
+        };
     }
 }

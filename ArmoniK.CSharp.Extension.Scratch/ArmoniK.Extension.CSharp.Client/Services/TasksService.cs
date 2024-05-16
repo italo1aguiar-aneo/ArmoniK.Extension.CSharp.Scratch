@@ -11,45 +11,43 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static ArmoniK.Api.gRPC.V1.Tasks.Tasks;
 
-namespace ArmoniK.Extension.CSharp.Client.Services
+namespace ArmoniK.Extension.CSharp.Client.Services;
+
+public class TasksService : ITasksService
 {
-    public class TasksService : ITasksService
+    public TasksService(ChannelBase channel, ILoggerFactory loggerFactory)
     {
-        public TasksService(ChannelBase channel, ILoggerFactory loggerFactory)
+        _tasksClient = new TasksClient(channel);
+        _logger = loggerFactory.CreateLogger<TasksService>();
+    }
+
+    private readonly TasksClient _tasksClient;
+    private readonly ILogger<TasksService> _logger;
+
+    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session)
+    {
+        var taskCreations = new ConcurrentBag<SubmitTasksRequest.Types.TaskCreation>();
+
+        Parallel.ForEach(taskNodes, taskNode =>
         {
-            _tasksClient = new TasksClient(channel);
-            _logger = loggerFactory.CreateLogger<TasksService>();
-
-        }
-
-        private readonly TasksClient _tasksClient;
-        private readonly ILogger<TasksService> _logger;
-
-        public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session)
-        {
-            var taskCreations = new ConcurrentBag<SubmitTasksRequest.Types.TaskCreation>();
-
-            Parallel.ForEach(taskNodes, taskNode =>
+            var taskCreation = new SubmitTasksRequest.Types.TaskCreation
             {
-                var taskCreation = new SubmitTasksRequest.Types.TaskCreation
-                {
-                    PayloadId = taskNode.Payload.BlobId,
-                    ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
-                    DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? [] },
-                    TaskOptions = taskNode.TaskOptions,
-                };
-                taskCreations.Add(taskCreation);
-            });
-
-            var submitTasksRequest = new SubmitTasksRequest
-            {
-                SessionId = session.Id,
-                TaskCreations = { taskCreations.ToList() }
+                PayloadId = taskNode.Payload.BlobId,
+                ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
+                DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? [] },
+                TaskOptions = taskNode.TaskOptions
             };
+            taskCreations.Add(taskCreation);
+        });
 
-            var taskSubmissionResponse = await _tasksClient.SubmitTasksAsync(submitTasksRequest);
+        var submitTasksRequest = new SubmitTasksRequest
+        {
+            SessionId = session.Id,
+            TaskCreations = { taskCreations.ToList() }
+        };
 
-            return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
-        }
+        var taskSubmissionResponse = await _tasksClient.SubmitTasksAsync(submitTasksRequest);
+
+        return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
     }
 }

@@ -7,11 +7,13 @@ using ArmoniK.Extension.CSharp.Client.Services;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Extension.CSharp.Client.Factory
+namespace ArmoniK.Extension.CSharp.Client.Factory;
+
+public class SessionServiceFactory
 {
-    public class SessionServiceFactory
+    public static ISessionService CreateSessionService(ChannelBase channel, Properties properties,
+        ILoggerFactory loggerFactory = null)
     {
-        public static ISessionService CreateSessionService(ChannelBase channel, Properties properties, ILoggerFactory loggerFactory = null)
-            => new SessionService(channel, properties, loggerFactory);
+        return new SessionService(channel, properties, loggerFactory);
     }
 }

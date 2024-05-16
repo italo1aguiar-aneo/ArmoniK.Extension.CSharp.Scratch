@@ -6,10 +6,9 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using Google.Protobuf;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Services
+namespace ArmoniK.Extension.CSharp.Client.Common.Services;
+
+public interface ITasksService
 {
-    public interface ITasksService
-    {
-        Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session);
-    }
+    Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session);
 }

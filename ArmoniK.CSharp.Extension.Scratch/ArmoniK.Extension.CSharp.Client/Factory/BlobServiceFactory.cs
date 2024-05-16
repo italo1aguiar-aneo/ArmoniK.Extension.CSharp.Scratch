@@ -7,11 +7,12 @@ using System.Text;
 using ArmoniK.Extension.CSharp.Client.Services;
 using Grpc.Core;
 
-namespace ArmoniK.Extension.CSharp.Client.Factory
+namespace ArmoniK.Extension.CSharp.Client.Factory;
+
+public class BlobServiceFactory
 {
-    public class BlobServiceFactory
+    public static IBlobService CreateBlobService(ChannelBase channel, ILoggerFactory loggerFactory = null)
     {
-        public static IBlobService CreateBlobService(ChannelBase channel, ILoggerFactory loggerFactory = null)
-            => new BlobService(channel, loggerFactory);
+        return new BlobService(channel, loggerFactory);
     }
 }

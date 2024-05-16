@@ -8,11 +8,12 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace ArmoniK.Extension.CSharp.Client.Factory
+namespace ArmoniK.Extension.CSharp.Client.Factory;
+
+public class TasksServiceFactory
 {
-    public class TasksServiceFactory
+    public static ITasksService CreateTaskService(ChannelBase channel, ILoggerFactory loggerFactory = null)
     {
-        public static ITasksService CreateTaskService(ChannelBase channel,ILoggerFactory loggerFactory = null)
-            => new TasksService(channel, loggerFactory);
+        return new TasksService(channel, loggerFactory);
     }
 }

@@ -7,11 +7,12 @@ using ArmoniK.Extension.CSharp.Client.Services;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Extension.CSharp.Client.Factory
+namespace ArmoniK.Extension.CSharp.Client.Factory;
+
+public class EventsServiceFactory
 {
-    public class EventsServiceFactory
+    public static IEventsService CreateEventsService(ChannelBase channel, ILoggerFactory loggerFactory = null)
     {
-        public static IEventsService CreateEventsService(ChannelBase channel, ILoggerFactory loggerFactory = null)
-            => new EventsService(channel, loggerFactory);
+        return new EventsService(channel, loggerFactory);
     }
 }

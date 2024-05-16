@@ -39,103 +39,104 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 
-namespace UsageExample
+namespace UsageExample;
+
+internal class Program
 {
-    internal class Program
+    private static IConfiguration _configuration;
+    private static ILogger<Program> logger_;
+
+    private static async Task Main(string[] args)
     {
-        private static IConfiguration _configuration;
-        private static ILogger<Program> logger_;
-
-        private static async Task Main(string[] args)
-        {
-            Console.WriteLine("Hello Armonik New Extension !");
+        Console.WriteLine("Hello Armonik New Extension !");
 
 
-            Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
-                    LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
-            var factory = new LoggerFactory(new[]
-                {
-                    new SerilogLoggerProvider(Log.Logger),
-                },
-                new LoggerFilterOptions().AddFilter("Grpc",
-                    LogLevel.Error));
-            logger_ = factory.CreateLogger<Program>();
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddEnvironmentVariables();
+        Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
+                LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
 
-            _configuration = builder.Build();
-
-            var taskOptions = new TaskOptions
+        var factory = new LoggerFactory(new[]
             {
-                MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                MaxRetries = 2,
-                Priority = 1,
-                PartitionId = "subtasking",
-                Options =
+                new SerilogLoggerProvider(Log.Logger)
+            },
+            new LoggerFilterOptions().AddFilter("Grpc",
+                LogLevel.Error));
+
+        logger_ = factory.CreateLogger<Program>();
+
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", false)
+            .AddEnvironmentVariables();
+
+        _configuration = builder.Build();
+
+        var taskOptions = new TaskOptions
+        {
+            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+            MaxRetries = 2,
+            Priority = 1,
+            PartitionId = "subtasking",
+            Options =
+            {
+                new MapField<string, string>
                 {
-                    new MapField<string, string>
                     {
-                        {
-                            "UseCase", "Launch"
-                        },
-                    },
-                },
-            };
+                        "UseCase", "Launch"
+                    }
+                }
+            }
+        };
 
-            var props = new Properties(_configuration, options: taskOptions, ["subtasking"]);
+        var props = new Properties(_configuration, taskOptions, ["subtasking"]);
 
-            var client = new ArmoniKClient(props, factory);
+        var client = new ArmoniKClient(props, factory);
 
-            var sessionService = await client.GetSessionService();
+        var sessionService = await client.GetSessionService();
 
-            var blobService = await client.GetBlobService();
+        var blobService = await client.GetBlobService();
 
-            var tasksService = await client.GetTasksService();
+        var tasksService = await client.GetTasksService();
 
-            var eventsService = await client.GetEventsService();
+        var eventsService = await client.GetEventsService();
 
-            var session = await sessionService.CreateSession();
+        var session = await sessionService.CreateSession();
 
-            Console.WriteLine($"sessionId: {session.Id}");
+        Console.WriteLine($"sessionId: {session.Id}");
 
-            var payload = await blobService.CreateBlobAsync(new BlobInfo("Payload"), session);
+        var payload = await blobService.CreateBlobAsync(new BlobInfo("Payload"), session);
 
-            Console.WriteLine($"payloadId: {payload.BlobId}");
+        Console.WriteLine($"payloadId: {payload.BlobId}");
 
-            var result = await blobService.CreateBlobAsync(new BlobInfo("Result"), session);
+        var result = await blobService.CreateBlobAsync(new BlobInfo("Result"), session);
 
-            Console.WriteLine($"resultId: {result.BlobId}");
+        Console.WriteLine($"resultId: {result.BlobId}");
 
-            var task = await tasksService.SubmitTasksAsync(
-                new List<TaskNode>([ new TaskNode()
+        var task = await tasksService.SubmitTasksAsync(
+            new List<TaskNode>([
+                new TaskNode()
                 {
                     Payload = payload,
-                    ExpectedOutputs = new[] { result },
-                }]), session);
+                    ExpectedOutputs = new[] { result }
+                }
+            ]), session);
 
-            Console.WriteLine($"taskId: {task.Single()}");
+        Console.WriteLine($"taskId: {task.Single()}");
 
-            await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]),session);
+        await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]), session);
 
-            var download = await blobService.DownloadBlob(result,
-                session,
-                CancellationToken.None);
-            var stringArray = Encoding.ASCII.GetString(download.Content.Span)
-                .Split(new[]
-                    {
-                        '\n',
-                    },
-                    StringSplitOptions.RemoveEmptyEntries);
+        var download = await blobService.DownloadBlob(result,
+            session,
+            CancellationToken.None);
+        var stringArray = Encoding.ASCII.GetString(download.Content.Span)
+            .Split(new[]
+                {
+                    '\n'
+                },
+                StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var returnString in stringArray)
-            {
-                Console.WriteLine($"{returnString}");
-            }
-        }
+        foreach (var returnString in stringArray) Console.WriteLine($"{returnString}");
     }
 }

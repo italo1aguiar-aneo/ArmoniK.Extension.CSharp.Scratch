@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Services
+namespace ArmoniK.Extension.CSharp.Client.Common.Services;
+
+public interface IEventsService
 {
-    public interface IEventsService
-    {
-        Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session, CancellationToken cancellationToken = default);
-    }
+    Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session,
+        CancellationToken cancellationToken = default);
 }
