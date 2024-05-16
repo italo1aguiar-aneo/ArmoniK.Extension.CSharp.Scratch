@@ -116,7 +116,6 @@ namespace UsageExample
                 {
                     Payload = payload,
                     ExpectedOutputs = new[] { result },
-                    TaskOptions = taskOptions,
                 }]), session);
 
             Console.WriteLine($"taskId: {task.Single()}");
