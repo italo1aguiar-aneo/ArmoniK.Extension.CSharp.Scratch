@@ -33,15 +33,6 @@ public class ArmoniKClient
         _logger = loggerFactory.CreateLogger<ArmoniKClient>();
     }
 
-    public async Task LaunchServices()
-    {
-        ChannelBase channel = await ChannelPool.GetAsync();
-        _blobService = BlobServiceFactory.CreateBlobService(channel, _loggerFactory);
-        _sessionService = SessionServiceFactory.CreateSessionService(channel, _properties, _loggerFactory);
-        _tasksService = TasksServiceFactory.CreateTaskService(channel, _loggerFactory);
-        _eventsService = EventsServiceFactory.CreateEventsService(channel, _loggerFactory);
-    }
-
     public ObjectPool<ChannelBase> ChannelPool
         => _channelPool ??= ClientServiceConnector.ControlPlaneConnectionPool(_properties,
             _loggerFactory);
@@ -50,7 +41,7 @@ public class ArmoniKClient
     {
         if (_blobService is not null) return _blobService;
         ChannelBase channel = await ChannelPool.GetAsync();
-        _blobService = BlobServiceFactory.CreateBlobService(channel, _loggerFactory);
+        _blobService = BlobServiceFactory.CreateBlobService(ChannelPool, _loggerFactory);
         return _blobService;
     }
 
@@ -58,7 +49,7 @@ public class ArmoniKClient
     {
         if (_sessionService is not null) return _sessionService;
         ChannelBase channel = await ChannelPool.GetAsync();
-        _sessionService = SessionServiceFactory.CreateSessionService(channel, _properties, _loggerFactory);
+        _sessionService = SessionServiceFactory.CreateSessionService(ChannelPool, _properties, _loggerFactory);
         return _sessionService;
     }
 
@@ -66,7 +57,7 @@ public class ArmoniKClient
     {
         if (_tasksService is not null) return _tasksService;
         ChannelBase channel = await ChannelPool.GetAsync();
-        _tasksService = TasksServiceFactory.CreateTaskService(channel, _loggerFactory);
+        _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool, _loggerFactory);
         return _tasksService;
     }
 
@@ -74,7 +65,7 @@ public class ArmoniKClient
     {
         if (_eventsService is not null) return _eventsService;
         ChannelBase channel = await ChannelPool.GetAsync();
-        _eventsService = EventsServiceFactory.CreateEventsService(channel, _loggerFactory);
+        _eventsService = EventsServiceFactory.CreateEventsService(ChannelPool, _loggerFactory);
         return _eventsService;
     }
 }

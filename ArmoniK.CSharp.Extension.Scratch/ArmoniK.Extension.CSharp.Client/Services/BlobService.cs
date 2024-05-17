@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
@@ -15,27 +16,35 @@ using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static ArmoniK.Api.gRPC.V1.Results.Results;
+using Channel = Grpc.Core.Channel;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
 public class BlobService : IBlobService
 {
-    public BlobService(ChannelBase channel, ILoggerFactory loggerFactory)
+    public BlobService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
     {
-        _blobClient = new ResultsClient(channel);
+        _channelPool = channel;
     }
 
-    private readonly ResultsClient _blobClient;
+    private readonly ObjectPool<ChannelBase> _channelPool;
 
-    public async Task<BlobInfo> CreateBlobAsync(BlobInfo blobInfo, Session session,
+    public Task<BlobInfo> CreateBlobAsync(Session session, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<BlobInfo> CreateBlobAsync(string name, Session session,
         CancellationToken cancellationToken = default)
     {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient =  new ResultsClient(channel);
         var taskCreation = new CreateResultsMetaDataRequest.Types.ResultCreate
         {
-            Name = blobInfo.Name
+            Name = name
         };
         var blobsCreationResponse =
-            await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+            await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
             {
                 SessionId = session.Id,
                 Results = { taskCreation }
@@ -44,10 +53,12 @@ public class BlobService : IBlobService
             blobsCreationResponse.Results.Single().ResultId);
     }
 
-    public async Task<BlobInfo> CreateBlobAsync(Blob blob, Session session,
+    public async Task<BlobInfo> CreateBlobAsync(string name, ReadOnlyMemory<byte> content, Session session,
         CancellationToken cancellationToken = default)
     {
-        var blobCreationResponse = await _blobClient.CreateResultsAsync(
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient = new ResultsClient(channel);
+        var blobCreationResponse = await blobClient.CreateResultsAsync(
             new CreateResultsRequest
             {
                 SessionId = session.Id,
@@ -55,51 +66,65 @@ public class BlobService : IBlobService
                 {
                     new CreateResultsRequest.Types.ResultCreate
                     {
-                        Name = blob.Name,
-                        Data = ByteString.CopyFrom(blob.Content.Span)
+                        Name = name,
+                        Data = ByteString.CopyFrom(content.Span)
                     }
                 }
             }, cancellationToken: cancellationToken);
 
-        return new BlobInfo(blob.Name, blobCreationResponse.Results.Single().ResultId);
+        return new BlobInfo(name, blobCreationResponse.Results.Single().ResultId);
     }
 
-    public async Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<BlobInfo> blobsInfos, Session session,
+    public async Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, Session session,
         CancellationToken cancellationToken = default)
     {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient = new ResultsClient(channel);
+        
         var resultsCreate = new ConcurrentBag<CreateResultsMetaDataRequest.Types.ResultCreate>();
-        Parallel.ForEach(blobsInfos, blobInfo =>
+        
+        Parallel.ForEach(names, blobName =>
         {
             var taskCreation = new CreateResultsMetaDataRequest.Types.ResultCreate
             {
-                Name = blobInfo.Name
+                Name = blobName
             };
             resultsCreate.Add(taskCreation);
         });
+
         var blobsCreationResponse =
-            await _blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+            await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
             {
                 SessionId = session.Id,
                 Results = { resultsCreate.ToList() }
             }, cancellationToken: cancellationToken);
+
         return new List<BlobInfo>(blobsCreationResponse.Results.Select(b => new BlobInfo(b.Name, b.ResultId)));
     }
 
-    public async Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<Blob> blobs, Session session,
+    public Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string quantity, Session session, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session,
         CancellationToken cancellationToken = default)
     {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient = new ResultsClient(channel);
+
         var resultsCreate = new ConcurrentBag<CreateResultsRequest.Types.ResultCreate>();
-        Parallel.ForEach(blobs, blob =>
+        Parallel.ForEach(blobKeyValuePairs, blob =>
         {
             var taskCreation = new CreateResultsRequest.Types.ResultCreate
             {
-                Name = blob.Name,
-                Data = ByteString.CopyFrom(blob.Content.Span),
+                Name = blob.Key,
+                Data = ByteString.CopyFrom(blob.Value.Span),
             };
             resultsCreate.Add(taskCreation);
         });
         var blobsCreationResponse =
-            await _blobClient.CreateResultsAsync(new CreateResultsRequest
+            await blobClient.CreateResultsAsync(new CreateResultsRequest
             {
                 SessionId = session.Id,
                 Results = { resultsCreate.ToList() }
@@ -108,20 +133,32 @@ public class BlobService : IBlobService
         return blobsCreationResponse.Results.Select(x => new BlobInfo(x.Name, x.ResultId)).ToList();
     }
 
+    public Task<Blob> DownloadBlob(string name, Session session, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session,
         CancellationToken cancellationToken = default)
     {
         try
         {
+            await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+            var blobClient = new ResultsClient(channel);
             var blob = new Blob(blobInfo.Name, blobInfo.BlobId);
-            var data = await _blobClient.DownloadResultData(session.Id, blobInfo.BlobId, cancellationToken);
+            var data = await blobClient.DownloadResultData(session.Id, blobInfo.BlobId, cancellationToken);
             blob.AddContent(data);
             return blob;
-        }
+        } // see if we keep this and how to handle, should we throw ? 
         catch (Exception e)
         {
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    public Task<Blob> UpdateBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

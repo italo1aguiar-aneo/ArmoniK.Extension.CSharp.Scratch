@@ -9,14 +9,17 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IBlobService
 {
-    Task<BlobInfo> CreateBlobAsync(Blob blob, Session session, CancellationToken cancellationToken = default);
-    Task<BlobInfo> CreateBlobAsync(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobAsync(Session session, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobAsync(string name, Session session, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobAsync(string name, ReadOnlyMemory<byte> content, Session session, CancellationToken cancellationToken = default);
 
-    Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<BlobInfo> blobsInfos, Session session,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, Session session,
         CancellationToken cancellationToken = default);
-
-    Task<ICollection<BlobInfo>> CreateBlobsAsync(ICollection<Blob> blobs, Session session,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string quantity, Session session,
         CancellationToken cancellationToken = default);
-
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session,
+        CancellationToken cancellationToken = default);
+    Task<Blob> DownloadBlob(string name, Session session, CancellationToken cancellationToken = default);
     Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
+    Task<Blob> UpdateBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
 }

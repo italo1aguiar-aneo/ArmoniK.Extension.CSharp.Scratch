@@ -4,13 +4,8 @@ using System.Text;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
-public class BlobInfo : IBlobInfo
+public class BlobInfo
 {
-    public BlobInfo(string name)
-    {
-        Name = name;
-    }
-
     public BlobInfo(string name, string blobId)
     {
         Name = name;

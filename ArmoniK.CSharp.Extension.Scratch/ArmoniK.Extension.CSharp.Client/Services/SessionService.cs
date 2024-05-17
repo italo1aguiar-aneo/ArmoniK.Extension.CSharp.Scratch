@@ -4,6 +4,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
+using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
@@ -12,20 +13,22 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 public class SessionService : ISessionService
 {
-    public SessionService(ChannelBase channel, Properties properties, ILoggerFactory loggerFactory)
+    public SessionService(ObjectPool<ChannelBase> channel, Properties properties, ILoggerFactory loggerFactory)
     {
         _properties = properties;
-        _sessionClient = new Sessions.SessionsClient(channel);
         _logger = loggerFactory.CreateLogger<SessionService>();
+        _channel = channel;
     }
 
     private readonly Properties _properties;
-    private readonly Sessions.SessionsClient _sessionClient;
+    private readonly ObjectPool<ChannelBase> _channel;
     private readonly ILogger<SessionService> _logger;
 
     public async Task<Session> CreateSession()
     {
-        var createSessionReply = await _sessionClient.CreateSessionAsync(new CreateSessionRequest
+        await using var channel = await _channel.GetAsync();
+        var sessionClient = new Sessions.SessionsClient(channel);
+        var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
         {
             DefaultTaskOption = _properties.TaskOptions,
             PartitionIds =

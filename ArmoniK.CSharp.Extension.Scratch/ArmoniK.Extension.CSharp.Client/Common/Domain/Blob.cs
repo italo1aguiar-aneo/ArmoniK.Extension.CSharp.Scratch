@@ -4,22 +4,11 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
-public class Blob : IBlobInfo
+public class Blob : BlobInfo
 {
-    public Blob(string blobName)
+    public Blob(string blobName, string blobId) : base(blobName, blobId)
     {
-        Name = blobName;
     }
-
-    public Blob(string blobName, string blobId)
-    {
-        Name = blobName;
-        BlobId = blobId;
-    }
-
-    public string Name { get; }
-
-    public string BlobId { get; private set; }
 
     public ReadOnlyMemory<byte> Content { get; private set; }
 
@@ -27,13 +16,5 @@ public class Blob : IBlobInfo
     {
         //add validations
         Content = content;
-    }
-
-    public void SetBlobId(string blobId)
-    {
-        if (BlobId == null)
-            BlobId = blobId;
-        else
-            throw new InvalidOperationException("BlobId is already set and cannot be changed.");
     }
 }
