@@ -26,10 +26,14 @@ public class EventsService : IEventsService
         _logger = loggerFactory.CreateLogger<EventsService>();
     }
 
-    public Task WaitForBlobsAsync(ICollection<string> blobIds, Session session,
+    public async Task WaitForBlobsAsync(ICollection<string> blobIds, Session session,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
+        var eventsClient = new Events.EventsClient(channel);
+        await eventsClient.WaitForResultsAsync(session.Id,
+            blobIds,
+            cancellationToken);
     }
 
     public async Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session,
