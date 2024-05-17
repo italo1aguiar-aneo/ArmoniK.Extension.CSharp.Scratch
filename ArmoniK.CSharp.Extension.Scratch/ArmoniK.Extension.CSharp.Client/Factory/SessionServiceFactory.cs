@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using ArmoniK.Extension.CSharp.Client.Common;
+﻿using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Services;
 using ArmoniK.Utils;

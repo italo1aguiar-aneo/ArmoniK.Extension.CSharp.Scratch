@@ -23,14 +23,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-using System.CommandLine;
 using System.Text;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
-using ArmoniK.Extension.CSharp.Client.Services;
-using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Configuration;
@@ -116,7 +113,7 @@ internal class Program
 
         var task = await tasksService.SubmitTasksAsync(
             new List<TaskNode>([
-                new TaskNode()
+                new TaskNode
                 {
                     Payload = payload,
                     ExpectedOutputs = new[] { result }

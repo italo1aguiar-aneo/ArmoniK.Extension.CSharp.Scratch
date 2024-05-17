@@ -1,30 +1,23 @@
-﻿using ArmoniK.Api.gRPC.V1;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using ArmoniK.Utils;
-using Grpc.Core;
+﻿using System.Threading.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
-using ArmoniK.Extension.CSharp.Client.Services;
-using JetBrains.Annotations;
+using ArmoniK.Utils;
+using Grpc.Core;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client;
 
 public class ArmoniKClient
 {
-    private IBlobService _blobService;
-    private ITasksService _tasksService;
-    private ISessionService _sessionService;
-    private IEventsService _eventsService;
-    private ObjectPool<ChannelBase> _channelPool;
-    private readonly Properties _properties;
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
+    private readonly Properties _properties;
+    private IBlobService _blobService;
+    private ObjectPool<ChannelBase> _channelPool;
+    private IEventsService _eventsService;
+    private ISessionService _sessionService;
+    private ITasksService _tasksService;
 
     public ArmoniKClient(Properties properties, ILoggerFactory loggerFactory)
     {
@@ -57,7 +50,7 @@ public class ArmoniKClient
     {
         if (_tasksService is not null) return _tasksService;
         ChannelBase channel = await ChannelPool.GetAsync();
-        _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool, _loggerFactory);
+        _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool, await GetBlobService(), _loggerFactory);
         return _tasksService;
     }
 

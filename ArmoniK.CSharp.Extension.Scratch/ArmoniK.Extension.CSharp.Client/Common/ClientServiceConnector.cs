@@ -1,25 +1,20 @@
-﻿using ArmoniK.Api.Client.Options;
+﻿using System;
+using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using ArmoniK.Utils;
 using Grpc.Core;
-using ArmoniK.Api.gRPC.V1;
-using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Common;
 
 /// <summary>
-///   ClientServiceConnector is the class to connection to the control plane with different
-///   like address,port, insecure connection, TLS, and mTLS
+///     ClientServiceConnector is the class to connection to the control plane with different
+///     like address,port, insecure connection, TLS, and mTLS
 /// </summary>
 public class ClientServiceConnector
 {
     /// <summary>
-    ///   Create a connection pool to the control plane with mTLS authentication
+    ///     Create a connection pool to the control plane with mTLS authentication
     /// </summary>
     /// <param name="properties">Configuration Properties</param>
     /// <param name="loggerFactory">Optional logger factory</param>

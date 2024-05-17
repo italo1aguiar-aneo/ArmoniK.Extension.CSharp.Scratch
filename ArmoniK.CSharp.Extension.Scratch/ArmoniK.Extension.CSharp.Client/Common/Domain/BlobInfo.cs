@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+﻿namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
 public class BlobInfo
 {

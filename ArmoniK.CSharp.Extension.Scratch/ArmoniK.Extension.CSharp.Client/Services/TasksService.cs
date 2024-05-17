@@ -7,10 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
-using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -20,16 +18,19 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 public class TasksService : ITasksService
 {
-    public TasksService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
-    {
-        _channelPool = channel;
-        _logger = loggerFactory.CreateLogger<TasksService>();
-    }
-
+    private readonly IBlobService _blobService;
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<TasksService> _logger;
 
-    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session, CancellationToken cancellationToken = default)
+    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, ILoggerFactory loggerFactory)
+    {
+        _channelPool = channel;
+        _logger = loggerFactory.CreateLogger<TasksService>();
+        _blobService = blobService;
+    }
+
+    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session,
+        CancellationToken cancellationToken = default)
     {
         // À voir si ça doit etre fait ici
 
@@ -43,22 +44,16 @@ public class TasksService : ITasksService
 
         if (newBlobs.Any())
         {
-            var blobClient = BlobServiceFactory.CreateBlobService(_channelPool); //see for loggerfactory problem // maybe he should receive blob service as parameter
             var blobNames = newBlobs.SelectMany(x => x.DataDependenciesContent.Select(y => y.Key));
             var blobKeyValues = newBlobs.SelectMany(x => x.DataDependenciesContent);
-            var createdBlobs = await blobClient.CreateBlobsAsync(blobNames, blobKeyValues, session, cancellationToken);
+            var createdBlobs =
+                await _blobService.CreateBlobsAsync(blobNames, blobKeyValues, session, cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
             foreach (var taskNode in taskNodes)
-            {
-                foreach (var dependency in taskNode.DataDependenciesContent)
-                {
-                    if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
-                    {
-                        taskNode.DataDependencies.Add(createdBlob);
-                    }
-                }
-            }
+            foreach (var dependency in taskNode.DataDependenciesContent)
+                if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
+                    taskNode.DataDependencies.Add(createdBlob);
         }
 
         // until here
@@ -71,7 +66,7 @@ public class TasksService : ITasksService
             {
                 PayloadId = taskNode.Payload.BlobId,
                 ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
-                DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId)  ?? [] },
+                DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? [] },
                 TaskOptions = taskNode.TaskOptions
             };
             taskCreations.Add(taskCreation);
