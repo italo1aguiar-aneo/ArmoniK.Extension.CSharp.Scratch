@@ -18,12 +18,12 @@ public interface IBlobService
     Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, Session session,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string quantity, Session session,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(int quantity, Session session,
         CancellationToken cancellationToken = default);
 
     Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names,
         IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session,
         CancellationToken cancellationToken = default);
     Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
-    Task<Blob> UploadBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
+    Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session, CancellationToken cancellationToken = default);
 }

@@ -69,22 +69,38 @@ public class TasksService : ITasksService
 
     private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes, Session session, CancellationToken cancellationToken)
     {
-        var newBlobs = taskNodes
+        var nodesWithNewBlobs = taskNodes
             .Where(x => !Equals(x.DataDependenciesContent, ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty))
             .ToList();
+        
 
-        if (newBlobs.Any())
+        if (nodesWithNewBlobs.Any())
         {
-            var blobNames = newBlobs.SelectMany(x => x.DataDependenciesContent.Select(y => y.Key));
-            var blobKeyValues = newBlobs.SelectMany(x => x.DataDependenciesContent);
+            var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobNames, blobKeyValues, session, cancellationToken);
+                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x=>x.Key), blobKeyValues, session, cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
             foreach (var taskNode in taskNodes)
             foreach (var dependency in taskNode.DataDependenciesContent)
                 if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
                     taskNode.DataDependencies.Add(createdBlob);
+        }
+
+        var nodeWithNewPayloads = taskNodes
+            .Where(x => !Equals(x.Payload, null))
+            .ToList();
+
+        if (nodeWithNewPayloads.Any())
+        {
+            var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
+            var createdBlobs =
+                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session, cancellationToken);
+            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
+
+            foreach (var taskNode in taskNodes)
+                if (createdBlobDictionary.TryGetValue(taskNode.PayloadContent.Key, out var createdBlob))
+                    taskNode.Payload = createdBlob;
         }
     }
 }

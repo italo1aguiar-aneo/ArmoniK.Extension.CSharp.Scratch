@@ -14,6 +14,9 @@ public class TaskNode
     public IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> DataDependenciesContent { get; set; } =
         ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
-    public BlobInfo Payload { get; set; }
+    public BlobInfo Payload { get; set; } = null;
+    // echange avec jerome et flo pour voir si on garde ça ou pas
+    public KeyValuePair<string, ReadOnlyMemory<byte>> PayloadContent { get; set; } =
+        new(string.Empty, ReadOnlyMemory<byte>.Empty);
     [CanBeNull] public TaskOptions TaskOptions { get; set; }
 }
