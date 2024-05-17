@@ -34,29 +34,13 @@ public class TasksService : ITasksService
     {
         // À voir si ça doit etre fait ici
 
+        await CreateNewBlobs(taskNodes, session, cancellationToken);
+
+        // until here
+
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
         var tasksClient = new TasksClient(channel);
-
-        var newBlobs = taskNodes
-            .Where(x => !Equals(x.DataDependenciesContent, ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty))
-            .ToList();
-
-        if (newBlobs.Any())
-        {
-            var blobNames = newBlobs.SelectMany(x => x.DataDependenciesContent.Select(y => y.Key));
-            var blobKeyValues = newBlobs.SelectMany(x => x.DataDependenciesContent);
-            var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobNames, blobKeyValues, session, cancellationToken);
-            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
-
-            foreach (var taskNode in taskNodes)
-            foreach (var dependency in taskNode.DataDependenciesContent)
-                if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
-                    taskNode.DataDependencies.Add(createdBlob);
-        }
-
-        // until here
 
         var taskCreations = new ConcurrentBag<SubmitTasksRequest.Types.TaskCreation>();
 
@@ -81,5 +65,26 @@ public class TasksService : ITasksService
         var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
 
         return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
+    }
+
+    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes, Session session, CancellationToken cancellationToken)
+    {
+        var newBlobs = taskNodes
+            .Where(x => !Equals(x.DataDependenciesContent, ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty))
+            .ToList();
+
+        if (newBlobs.Any())
+        {
+            var blobNames = newBlobs.SelectMany(x => x.DataDependenciesContent.Select(y => y.Key));
+            var blobKeyValues = newBlobs.SelectMany(x => x.DataDependenciesContent);
+            var createdBlobs =
+                await _blobService.CreateBlobsAsync(blobNames, blobKeyValues, session, cancellationToken);
+            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
+
+            foreach (var taskNode in taskNodes)
+            foreach (var dependency in taskNode.DataDependenciesContent)
+                if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
+                    taskNode.DataDependencies.Add(createdBlob);
+        }
     }
 }
