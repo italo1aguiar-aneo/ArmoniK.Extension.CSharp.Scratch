@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
@@ -22,6 +21,7 @@ public class BlobService : IBlobService
 {
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<BlobService> _logger;
+
     public BlobService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
     {
         _channelPool = channel;
@@ -34,7 +34,7 @@ public class BlobService : IBlobService
         var blobClient = new ResultsClient(channel);
         var taskCreation = new CreateResultsMetaDataRequest.Types.ResultCreate
         {
-            Name = Guid.NewGuid().ToString(),
+            Name = Guid.NewGuid().ToString()
         };
         var blobsCreationResponse =
             await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
@@ -93,7 +93,8 @@ public class BlobService : IBlobService
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
 
-        var resultsCreate = Enumerable.Range(0,quantity).Select(_ => new CreateResultsMetaDataRequest.Types.ResultCreate { Name = new Guid().ToString()}).ToList();
+        var resultsCreate = Enumerable.Range(0, quantity).Select(_ =>
+            new CreateResultsMetaDataRequest.Types.ResultCreate { Name = new Guid().ToString() }).ToList();
 
         var blobsCreationResponse =
             await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
@@ -111,7 +112,8 @@ public class BlobService : IBlobService
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
 
-        var resultsCreate = names.Select(blobName => new CreateResultsMetaDataRequest.Types.ResultCreate { Name = blobName }).ToList();
+        var resultsCreate = names
+            .Select(blobName => new CreateResultsMetaDataRequest.Types.ResultCreate { Name = blobName }).ToList();
 
         var blobsCreationResponse =
             await blobClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
@@ -161,7 +163,7 @@ public class BlobService : IBlobService
             var data = await blobClient.DownloadResultData(session.Id, blobInfo.BlobId, cancellationToken);
             blob.AddContent(data);
             return blob;
-        } 
+        }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
@@ -170,7 +172,8 @@ public class BlobService : IBlobService
     }
 
     //à voir si on a besoin des chuncks
-    public async Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session, CancellationToken cancellationToken = default)
+    public async Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session,
+        CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);

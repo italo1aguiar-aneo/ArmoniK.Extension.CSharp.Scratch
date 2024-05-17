@@ -9,14 +9,18 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 public class TaskNode
 {
     public IEnumerable<BlobInfo> ExpectedOutputs { get; set; }
+
     public ICollection<BlobInfo> DataDependencies { get; set; } = new List<BlobInfo>();
-    // echange avec jerome et flo pour voir si on garde ça ou pas -- j'aime pas cette façon de faire...
+
+    // Choix de desgin à faire
     public IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> DataDependenciesContent { get; set; } =
         ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
     public BlobInfo Payload { get; set; } = null;
-    // echange avec jerome et flo pour voir si on garde ça ou pas
+
+    // Choix de desgin à faire
     public KeyValuePair<string, ReadOnlyMemory<byte>> PayloadContent { get; set; } =
         new(string.Empty, ReadOnlyMemory<byte>.Empty);
+
     [CanBeNull] public TaskOptions TaskOptions { get; set; }
 }

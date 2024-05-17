@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -32,29 +31,24 @@ public class TasksService : ITasksService
     public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session,
         CancellationToken cancellationToken = default)
     {
-        // À voir si ça doit etre fait ici
+        // Choix de desgin à faire
 
         await CreateNewBlobs(taskNodes, session, cancellationToken);
 
-        // until here
+        // Choix de desgin à faire
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
         var tasksClient = new TasksClient(channel);
 
-        var taskCreations = new ConcurrentBag<SubmitTasksRequest.Types.TaskCreation>();
-
-        Parallel.ForEach(taskNodes, taskNode =>
+        var taskCreations = taskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
         {
-            var taskCreation = new SubmitTasksRequest.Types.TaskCreation
-            {
-                PayloadId = taskNode.Payload.BlobId,
-                ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
-                DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? [] },
-                TaskOptions = taskNode.TaskOptions
-            };
-            taskCreations.Add(taskCreation);
-        });
+            PayloadId = taskNode.Payload.BlobId,
+            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
+            DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? Enumerable.Empty<string>() },
+            TaskOptions = taskNode.TaskOptions
+        }).ToList();
+
 
         var submitTasksRequest = new SubmitTasksRequest
         {
@@ -67,18 +61,20 @@ public class TasksService : ITasksService
         return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
     }
 
-    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes, Session session, CancellationToken cancellationToken)
+    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes, Session session,
+        CancellationToken cancellationToken)
     {
         var nodesWithNewBlobs = taskNodes
             .Where(x => !Equals(x.DataDependenciesContent, ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty))
             .ToList();
-        
+
 
         if (nodesWithNewBlobs.Any())
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x=>x.Key), blobKeyValues, session, cancellationToken);
+                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session,
+                    cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
             foreach (var taskNode in taskNodes)
@@ -95,7 +91,8 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session, cancellationToken);
+                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session,
+                    cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
             foreach (var taskNode in taskNodes)

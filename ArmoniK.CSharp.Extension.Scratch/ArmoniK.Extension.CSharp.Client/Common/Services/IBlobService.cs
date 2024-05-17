@@ -24,6 +24,9 @@ public interface IBlobService
     Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names,
         IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session,
         CancellationToken cancellationToken = default);
+
     Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
-    Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session, CancellationToken cancellationToken = default);
+
+    Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session,
+        CancellationToken cancellationToken = default);
 }
