@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Exceptions;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -38,6 +39,12 @@ public class TasksService : ITasksService
         CancellationToken cancellationToken = default)
     {
         session ??= _session;
+
+        if (session == null)
+        {
+            throw new UnsetSessionException();
+        }
+
         // Choix de desgin à faire
 
         await CreateNewBlobs(taskNodes, session, cancellationToken);

@@ -6,6 +6,7 @@ using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Exceptions;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -25,9 +26,22 @@ public class EventsService : IEventsService
         _logger = loggerFactory.CreateLogger<EventsService>();
     }
 
+    private Session _session;
+    public void SetSession(Session session)
+    {
+        _session = session;
+    }
+
     public async Task WaitForBlobsAsync(ICollection<string> blobIds, Session session,
         CancellationToken cancellationToken = default)
     {
+        session ??= _session;
+
+        if (session == null)
+        {
+            throw new UnsetSessionException();
+        }
+
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
         await eventsClient.WaitForResultsAsync(session.Id,
@@ -38,6 +52,13 @@ public class EventsService : IEventsService
     public async Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session,
         CancellationToken cancellationToken = default)
     {
+        session ??= _session;
+
+        if (session == null)
+        {
+            throw new UnsetSessionException();
+        }
+
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
         await eventsClient.WaitForResultsAsync(session.Id,

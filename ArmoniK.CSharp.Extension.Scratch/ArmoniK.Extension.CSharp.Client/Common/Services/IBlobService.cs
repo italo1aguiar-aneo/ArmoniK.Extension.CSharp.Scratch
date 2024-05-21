@@ -9,24 +9,25 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IBlobService
 {
-    Task<BlobInfo> CreateBlobAsync(Session session, CancellationToken cancellationToken = default);
-    Task<BlobInfo> CreateBlobAsync(string name, Session session, CancellationToken cancellationToken = default);
+    void SetSession(Session session);
+    Task<BlobInfo> CreateBlobAsync(Session session = null, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobAsync(string name, Session session = null, CancellationToken cancellationToken = default);
 
-    Task<BlobInfo> CreateBlobAsync(string name, ReadOnlyMemory<byte> content, Session session,
+    Task<BlobInfo> CreateBlobAsync(string name, ReadOnlyMemory<byte> content, Session session = null,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, Session session,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names, Session session = null,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(int quantity, Session session,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(int quantity, Session session = null,
         CancellationToken cancellationToken = default);
 
     Task<IEnumerable<BlobInfo>> CreateBlobsAsync(IEnumerable<string> names,
-        IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session,
+        IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session = null,
         CancellationToken cancellationToken = default);
 
-    Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session, CancellationToken cancellationToken = default);
+    Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session = null, CancellationToken cancellationToken = default);
 
-    Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session,
+    Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session = null,
         CancellationToken cancellationToken = default);
 }

@@ -8,6 +8,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface ITasksService
 {
-    Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session,
+    void SetSession(Session session);
+    Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session = null, 
         CancellationToken cancellationToken = default);
 }

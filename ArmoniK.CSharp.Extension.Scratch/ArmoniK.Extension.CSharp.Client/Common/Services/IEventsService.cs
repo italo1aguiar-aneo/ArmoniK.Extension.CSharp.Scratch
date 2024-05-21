@@ -8,9 +8,10 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IEventsService
 {
-    Task WaitForBlobsAsync(ICollection<string> blobIds, Session session,
+    void SetSession(Session session);
+    Task WaitForBlobsAsync(ICollection<string> blobIds, Session session = null,
         CancellationToken cancellationToken = default);
 
-    Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session,
+    Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session = null,
         CancellationToken cancellationToken = default);
 }
