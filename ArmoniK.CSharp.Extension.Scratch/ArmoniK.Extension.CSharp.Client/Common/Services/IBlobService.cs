@@ -33,13 +33,12 @@ public interface IBlobService
          IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs, Session session = null,
          CancellationToken cancellationToken = default);
 
-     Task<Blob> DownloadBlob(BlobInfo blobInfo, Session session = null,
+     Task<Blob> DownloadBlob(BlobInfo blobInfo,
          CancellationToken cancellationToken = default);
 
-     Task UploadBlobChunk(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs, Session session = null,
+     Task UploadBlobChunk(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
          CancellationToken cancellationToken = default);
 
      Task UploadBlobChunk(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
-         Session session = null,
          CancellationToken cancellationToken = default);
 }

@@ -57,9 +57,9 @@ public class TasksService : ITasksService
 
         var taskCreations = taskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
         {
-            PayloadId = taskNode.Payload.BlobId,
-            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
-            DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? Enumerable.Empty<string>() },
+            PayloadId = taskNode.Payload.Id,
+            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
+            DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
             TaskOptions = taskNode.TaskOptions
         }).ToList();
 

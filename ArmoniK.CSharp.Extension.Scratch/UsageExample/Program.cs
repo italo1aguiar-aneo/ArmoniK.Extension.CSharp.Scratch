@@ -105,11 +105,11 @@ internal class Program
 
         var payload = await blobService.CreateBlobAsync("Payload", Encoding.ASCII.GetBytes("Hello"), session);
 
-        Console.WriteLine($"payloadId: {payload.BlobId}");
+        Console.WriteLine($"payloadId: {payload.Id}");
 
         var result = await blobService.CreateBlobAsync("Result", session);
 
-        Console.WriteLine($"resultId: {result.BlobId}");
+        Console.WriteLine($"resultId: {result.Id}");
 
         var task = await tasksService.SubmitTasksAsync(
             new List<TaskNode>([
@@ -125,7 +125,6 @@ internal class Program
         await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]), session);
 
         var download = await blobService.DownloadBlob(result,
-            session,
             CancellationToken.None);
         var stringArray = Encoding.ASCII.GetString(download.Content.Span)
             .Split(new[]
