@@ -10,6 +10,7 @@ public class BlobInfo
         Id = id;
         Session = session;
     }
+
     public Session Session { get; }
     public string Name { get; }
     public string Id { get; }

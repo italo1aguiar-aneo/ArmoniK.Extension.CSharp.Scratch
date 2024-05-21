@@ -1,24 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Exceptions
+namespace ArmoniK.Extension.CSharp.Client.Common.Exceptions;
+
+public class UnsetSessionException : Exception
 {
-    public class UnsetSessionException : Exception
+    public UnsetSessionException()
+        : base("The session has not been set.")
     {
-        public UnsetSessionException()
-            : base("The session has not been set.")
-        {
-        }
+    }
 
-        public UnsetSessionException(string message)
-            : base(message)
-        {
-        }
+    public UnsetSessionException(string message)
+        : base(message)
+    {
+    }
 
-        public UnsetSessionException(string message, Exception inner)
-            : base(message, inner)
-        {
-        }
+    public UnsetSessionException(string message, Exception inner)
+        : base(message, inner)
+    {
     }
 }

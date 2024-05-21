@@ -33,7 +33,6 @@ public class ArmoniKClient
     public async Task<IBlobService> GetBlobService()
     {
         if (_blobService is not null) return _blobService;
-        ChannelBase channel = await ChannelPool.GetAsync();
         _blobService = BlobServiceFactory.CreateBlobService(ChannelPool, _loggerFactory);
         return _blobService;
     }
@@ -41,7 +40,6 @@ public class ArmoniKClient
     public async Task<ISessionService> GetSessionService()
     {
         if (_sessionService is not null) return _sessionService;
-        ChannelBase channel = await ChannelPool.GetAsync();
         _sessionService = SessionServiceFactory.CreateSessionService(ChannelPool, _properties, _loggerFactory);
         return _sessionService;
     }
@@ -49,7 +47,6 @@ public class ArmoniKClient
     public async Task<ITasksService> GetTasksService()
     {
         if (_tasksService is not null) return _tasksService;
-        ChannelBase channel = await ChannelPool.GetAsync();
         _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool, await GetBlobService(), _loggerFactory);
         return _tasksService;
     }
@@ -57,7 +54,6 @@ public class ArmoniKClient
     public async Task<IEventsService> GetEventsService()
     {
         if (_eventsService is not null) return _eventsService;
-        ChannelBase channel = await ChannelPool.GetAsync();
         _eventsService = EventsServiceFactory.CreateEventsService(ChannelPool, _loggerFactory);
         return _eventsService;
     }

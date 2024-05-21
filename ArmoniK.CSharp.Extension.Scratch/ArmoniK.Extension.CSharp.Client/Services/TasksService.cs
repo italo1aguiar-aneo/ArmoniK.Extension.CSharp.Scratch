@@ -22,6 +22,8 @@ public class TasksService : ITasksService
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<TasksService> _logger;
 
+    private Session _session;
+
     public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, ILoggerFactory loggerFactory)
     {
         _channelPool = channel;
@@ -29,7 +31,6 @@ public class TasksService : ITasksService
         _blobService = blobService;
     }
 
-    private Session _session;
     public void SetSession(Session session)
     {
         _session = session;
@@ -40,10 +41,7 @@ public class TasksService : ITasksService
     {
         session ??= _session;
 
-        if (session == null)
-        {
-            throw new UnsetSessionException();
-        }
+        if (session == null) throw new UnsetSessionException();
 
         // Choix de desgin à faire
 

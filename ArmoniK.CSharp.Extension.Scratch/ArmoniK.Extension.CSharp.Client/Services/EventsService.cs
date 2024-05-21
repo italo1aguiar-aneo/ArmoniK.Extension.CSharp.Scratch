@@ -20,13 +20,14 @@ public class EventsService : IEventsService
 
     private readonly ILogger<EventsService> _logger;
 
+    private Session _session;
+
     public EventsService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
     {
         _channel = channel;
         _logger = loggerFactory.CreateLogger<EventsService>();
     }
 
-    private Session _session;
     public void SetSession(Session session)
     {
         _session = session;
@@ -37,10 +38,7 @@ public class EventsService : IEventsService
     {
         session ??= _session;
 
-        if (session == null)
-        {
-            throw new UnsetSessionException();
-        }
+        if (session == null) throw new UnsetSessionException();
 
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
@@ -54,10 +52,7 @@ public class EventsService : IEventsService
     {
         session ??= _session;
 
-        if (session == null)
-        {
-            throw new UnsetSessionException();
-        }
+        if (session == null) throw new UnsetSessionException();
 
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
