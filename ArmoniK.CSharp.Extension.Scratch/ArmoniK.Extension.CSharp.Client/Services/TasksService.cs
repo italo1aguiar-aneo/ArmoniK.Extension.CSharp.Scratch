@@ -87,7 +87,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session,
+                await _blobService.CreateBlobsAsync(blobKeyValues, session,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
@@ -105,7 +105,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues.Select(x => x.Key), blobKeyValues, session,
+                await _blobService.CreateBlobsAsync(blobKeyValues, session,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
