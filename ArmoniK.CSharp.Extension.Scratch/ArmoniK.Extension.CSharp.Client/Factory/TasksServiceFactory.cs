@@ -1,4 +1,5 @@
-﻿using ArmoniK.Extension.CSharp.Client.Common.Services;
+﻿using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Services;
 using ArmoniK.Utils;
 using Grpc.Core;

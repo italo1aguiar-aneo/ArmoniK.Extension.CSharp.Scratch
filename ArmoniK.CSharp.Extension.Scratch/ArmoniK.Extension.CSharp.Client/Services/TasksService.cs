@@ -28,9 +28,16 @@ public class TasksService : ITasksService
         _blobService = blobService;
     }
 
-    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session,
+    private Session _session;
+    public void SetSession(Session session)
+    {
+        _session = session;
+    }
+
+    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session = null,
         CancellationToken cancellationToken = default)
     {
+        session ??= _session;
         // Choix de desgin à faire
 
         await CreateNewBlobs(taskNodes, session, cancellationToken);
