@@ -176,27 +176,32 @@ public class BlobService : IBlobService
         if (session == null)
         {
             throw new UnsetSessionException();
-        } 
+        }
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
 
-        var resultsCreate = new ConcurrentBag<CreateResultsRequest.Types.ResultCreate>();
-        Parallel.ForEach(blobKeyValuePairs, blob =>
+        var tasks = blobKeyValuePairs.Select(blobKeyValuePair =>
+            Task.Run(() =>
+            {
+                var resultCreate = new CreateResultsRequest.Types.ResultCreate
+                {
+                    Name = blobKeyValuePair.Key,
+                    Data = ByteString.CopyFrom(blobKeyValuePair.Value.Span)
+                };
+                return resultCreate;
+            }, cancellationToken)
+        ).ToList();
+
+        // Wait for all tasks to complete and gather results
+        var resultsCreate = await Task.WhenAll(tasks);
+
+        // Create the blobs using the collected results
+        var blobsCreationResponse = await blobClient.CreateResultsAsync(new CreateResultsRequest
         {
-            var taskCreation = new CreateResultsRequest.Types.ResultCreate
-            {
-                Name = blob.Key,
-                Data = ByteString.CopyFrom(blob.Value.Span)
-            };
-            resultsCreate.Add(taskCreation);
-        });
-        var blobsCreationResponse =
-            await blobClient.CreateResultsAsync(new CreateResultsRequest
-            {
-                SessionId = session.Id,
-                Results = { resultsCreate.ToList() }
-            }, cancellationToken: cancellationToken);
+            SessionId = session.Id,
+            Results = { resultsCreate }
+        }, cancellationToken: cancellationToken);
 
         return blobsCreationResponse.Results.Select(x => new BlobInfo(x.Name, x.ResultId)).ToList();
     }
@@ -227,7 +232,6 @@ public class BlobService : IBlobService
         }
     }
 
-    //à voir si on a besoin des chuncks
     public async Task UploadBlob(BlobInfo blobInfo, ReadOnlyMemory<byte> content, Session session = null,
         CancellationToken cancellationToken = default)
     {

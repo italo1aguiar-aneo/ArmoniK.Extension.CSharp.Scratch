@@ -83,3 +83,4 @@ A project with a simple use case is available.
 
 - End-to-end tests
 - Delagate functions as parameters
+- Send Tasks in chunk
