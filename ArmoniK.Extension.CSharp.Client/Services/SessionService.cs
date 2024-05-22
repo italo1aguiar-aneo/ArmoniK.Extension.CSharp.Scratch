@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
@@ -23,9 +24,9 @@ public class SessionService : ISessionService
         _channel = channel;
     }
 
-    public async Task<Session> CreateSession()
+    public async Task<Session> CreateSession(CancellationToken cancellationToken = default)
     {
-        await using var channel = await _channel.GetAsync();
+        await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
         {

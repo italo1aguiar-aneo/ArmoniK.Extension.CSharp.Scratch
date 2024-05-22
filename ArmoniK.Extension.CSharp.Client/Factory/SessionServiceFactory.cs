@@ -10,7 +10,7 @@ namespace ArmoniK.Extension.CSharp.Client.Factory;
 public class SessionServiceFactory
 {
     public static ISessionService CreateSessionService(ObjectPool<ChannelBase> channel, Properties properties,
-        ILoggerFactory loggerFactory = null)
+        ILoggerFactory loggerFactory)
     {
         return new SessionService(channel, properties, loggerFactory);
     }

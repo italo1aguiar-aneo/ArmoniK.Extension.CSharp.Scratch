@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common;
@@ -23,8 +24,8 @@ public class ArmoniKClient
 
     public ArmoniKClient(Properties properties, ILoggerFactory loggerFactory)
     {
-        _properties = properties;
-        _loggerFactory = loggerFactory;
+        _properties = properties ?? throw new ArgumentNullException(nameof(properties));
+        _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _logger = loggerFactory.CreateLogger<ArmoniKClient>();
     }
 
