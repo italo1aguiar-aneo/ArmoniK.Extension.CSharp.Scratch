@@ -66,13 +66,13 @@ Users will exchange with ArmoniK by ArmoniKClient, which manages all services an
 - **SessionService:** `Task<ISessionService> GetSessionService()`
   - Retrieves the service responsible for managing sessions, including creating and handling session lifecycles.
 
-- **BlobService:** `Task<IBlobService> GetBlobService()`
+- **BlobService:** `Task<IBlobService> GetBlobService(Session session)`
   - Retrieves the service responsible for managing blobs, including creating, uploading, downloading, and managing data blobs.
 
-- **TasksService:** `Task<ITasksService> GetTasksService()`
+- **TasksService:** `Task<ITasksService> GetTasksService(Session session)`
   - Retrieves the service responsible for managing tasks, including submitting tasks, monitoring their status, and retrieving results.
 
-- **EventsService:** `Task<IEventsService> GetEventsService()`
+- **EventsService:** `Task<IEventsService> GetEventsService(Session session)`
   - Retrieves the service responsible for managing events, including subscribing to, publishing, and handling events within the ArmoniK ecosystem.
 
 ## Usage
