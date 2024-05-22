@@ -1,4 +1,5 @@
-﻿using ArmoniK.Extension.CSharp.Client.Common.Services;
+﻿using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -8,8 +9,8 @@ namespace ArmoniK.Extension.CSharp.Client.Factory;
 
 public class BlobServiceFactory
 {
-    public static IBlobService CreateBlobService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory = null)
+    public static IBlobService CreateBlobService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory = null)
     {
-        return new BlobService(channel, loggerFactory);
+        return new BlobService(channel, session, loggerFactory);
     }
 }

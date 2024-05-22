@@ -93,21 +93,21 @@ internal class Program
 
         var sessionService = await client.GetSessionService();
 
-        var blobService = await client.GetBlobService();
-
-        var tasksService = await client.GetTasksService();
-
-        var eventsService = await client.GetEventsService();
-
         var session = await sessionService.CreateSession();
 
         Console.WriteLine($"sessionId: {session.Id}");
 
-        var payload = await blobService.CreateBlobAsync("Payload", Encoding.ASCII.GetBytes("Hello"), session);
+        var blobService = await client.GetBlobService(session);
+
+        var tasksService = await client.GetTasksService(session);
+
+        var eventsService = await client.GetEventsService(session);
+
+        var payload = await blobService.CreateBlobAsync("Payload", Encoding.ASCII.GetBytes("Hello"));
 
         Console.WriteLine($"payloadId: {payload.Id}");
 
-        var result = await blobService.CreateBlobAsync("Result", session);
+        var result = await blobService.CreateBlobAsync("Result");
 
         Console.WriteLine($"resultId: {result.Id}");
 
@@ -118,11 +118,11 @@ internal class Program
                     Payload = payload,
                     ExpectedOutputs = new[] { result }
                 }
-            ]), session);
+            ]));
 
         Console.WriteLine($"taskId: {task.Single()}");
 
-        await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]), session);
+        await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]));
 
         var download = await blobService.DownloadBlob(result,
             CancellationToken.None);

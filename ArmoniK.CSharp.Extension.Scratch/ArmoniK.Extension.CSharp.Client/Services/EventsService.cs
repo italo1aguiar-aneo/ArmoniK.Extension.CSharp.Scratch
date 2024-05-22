@@ -6,7 +6,6 @@ using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
-using ArmoniK.Extension.CSharp.Client.Common.Exceptions;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -22,41 +21,30 @@ public class EventsService : IEventsService
 
     private Session _session;
 
-    public EventsService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
+    public EventsService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory)
     {
         _channel = channel;
         _logger = loggerFactory.CreateLogger<EventsService>();
-    }
-
-    public void SetSession(Session session)
-    {
         _session = session;
     }
 
-    public async Task WaitForBlobsAsync(ICollection<string> blobIds, Session session,
+    public async Task WaitForBlobsAsync(ICollection<string> blobIds,
         CancellationToken cancellationToken = default)
     {
-        session ??= _session;
-
-        if (session == null) throw new UnsetSessionException();
 
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(session.Id,
+        await eventsClient.WaitForResultsAsync(_session.Id,
             blobIds,
             cancellationToken);
     }
 
-    public async Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos, Session session,
+    public async Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos,
         CancellationToken cancellationToken = default)
     {
-        session ??= _session;
-
-        if (session == null) throw new UnsetSessionException();
-
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(session.Id,
+        await eventsClient.WaitForResultsAsync(_session.Id,
             blobInfos.Select(x => x.Id).ToList(),
             cancellationToken);
     }

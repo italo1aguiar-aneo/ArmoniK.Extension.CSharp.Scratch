@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
-using ArmoniK.Extension.CSharp.Client.Common.Exceptions;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -22,38 +21,27 @@ public class TasksService : ITasksService
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<TasksService> _logger;
 
-    private Session _session;
+    private readonly Session _session;
 
-    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, ILoggerFactory loggerFactory)
+    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, Session session, ILoggerFactory loggerFactory)
     {
         _channelPool = channel;
         _logger = loggerFactory.CreateLogger<TasksService>();
         _blobService = blobService;
-    }
-
-    public void SetSession(Session session)
-    {
         _session = session;
     }
 
-    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes, Session session = null,
+    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken = default)
     {
-        session ??= _session;
-
-        if (session == null) throw new UnsetSessionException();
-
-        // Choix de desgin à faire
-
-        await CreateNewBlobs(taskNodes, session, cancellationToken);
-
-        // Choix de desgin à faire
+        var enumerableTaskNodes = taskNodes.ToList();
+        await CreateNewBlobs(enumerableTaskNodes, cancellationToken);
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
         var tasksClient = new TasksClient(channel);
 
-        var taskCreations = taskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
+        var taskCreations = enumerableTaskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
         {
             PayloadId = taskNode.Payload.Id,
             ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
@@ -64,7 +52,7 @@ public class TasksService : ITasksService
 
         var submitTasksRequest = new SubmitTasksRequest
         {
-            SessionId = session.Id,
+            SessionId = _session.Id,
             TaskCreations = { taskCreations.ToList() }
         };
 
@@ -73,29 +61,36 @@ public class TasksService : ITasksService
         return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
     }
 
-    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes, Session session,
+    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken)
     {
-        var nodesWithNewBlobs = taskNodes
+        var enumerableNodes = taskNodes.ToList();
+        var nodesWithNewBlobs = enumerableNodes
             .Where(x => !Equals(x.DataDependenciesContent, ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty))
             .ToList();
-
 
         if (nodesWithNewBlobs.Any())
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues, session,
+                await _blobService.CreateBlobsAsync(blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
-            foreach (var taskNode in taskNodes)
-            foreach (var dependency in taskNode.DataDependenciesContent)
-                if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
-                    taskNode.DataDependencies.Add(createdBlob);
+            foreach (var taskNode in enumerableNodes)
+            {
+                foreach (var dependency in taskNode.DataDependenciesContent)
+                {
+
+                    if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
+                    {
+                        taskNode.DataDependencies.Add(createdBlob);
+                    }
+                }
+            }
         }
 
-        var nodeWithNewPayloads = taskNodes
+        var nodeWithNewPayloads = enumerableNodes
             .Where(x => !Equals(x.Payload, null))
             .ToList();
 
@@ -103,11 +98,11 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues, session,
+                await _blobService.CreateBlobsAsync(blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
-            foreach (var taskNode in taskNodes)
+            foreach (var taskNode in enumerableNodes)
                 if (createdBlobDictionary.TryGetValue(taskNode.PayloadContent.Key, out var createdBlob))
                     taskNode.Payload = createdBlob;
         }
