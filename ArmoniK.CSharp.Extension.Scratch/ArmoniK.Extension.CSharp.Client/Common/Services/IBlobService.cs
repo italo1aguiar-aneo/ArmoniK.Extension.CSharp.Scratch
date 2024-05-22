@@ -9,8 +9,6 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IBlobService
 {
-    void SetSession(Session session);
-
     Task<BlobInfo> CreateBlobAsync(string name, Session session = null,
         CancellationToken cancellationToken = default);
 
