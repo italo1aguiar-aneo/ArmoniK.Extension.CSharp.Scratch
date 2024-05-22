@@ -20,9 +20,9 @@ public class BlobService : IBlobService
 {
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<BlobService> _logger;
-    private ResultsServiceConfigurationResponse _serviceConfiguration;
 
     private readonly Session _session;
+    private ResultsServiceConfigurationResponse _serviceConfiguration;
 
     public BlobService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory)
     {
@@ -133,7 +133,8 @@ public class BlobService : IBlobService
                 Results = { resultsCreate }
             }, cancellationToken: cancellationToken);
 
-        return new List<BlobInfo>(blobsCreationResponse.Results.Select(b => new BlobInfo(b.Name, b.ResultId, _session)));
+        return new List<BlobInfo>(
+            blobsCreationResponse.Results.Select(b => new BlobInfo(b.Name, b.ResultId, _session)));
     }
 
     public async Task<IEnumerable<BlobInfo>> CreateBlobsAsync(

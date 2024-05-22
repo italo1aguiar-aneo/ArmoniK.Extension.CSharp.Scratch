@@ -9,7 +9,8 @@ namespace ArmoniK.Extension.CSharp.Client.Factory;
 
 public class TasksServiceFactory
 {
-    public static ITasksService CreateTaskService(ObjectPool<ChannelBase> channel, IBlobService blobService, Session session,
+    public static ITasksService CreateTaskService(ObjectPool<ChannelBase> channel, IBlobService blobService,
+        Session session,
         ILoggerFactory loggerFactory = null)
     {
         return new TasksService(channel, blobService, session, loggerFactory);

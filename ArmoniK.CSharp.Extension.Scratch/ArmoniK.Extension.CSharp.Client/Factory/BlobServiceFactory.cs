@@ -9,7 +9,8 @@ namespace ArmoniK.Extension.CSharp.Client.Factory;
 
 public class BlobServiceFactory
 {
-    public static IBlobService CreateBlobService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory = null)
+    public static IBlobService CreateBlobService(ObjectPool<ChannelBase> channel, Session session,
+        ILoggerFactory loggerFactory = null)
     {
         return new BlobService(channel, session, loggerFactory);
     }

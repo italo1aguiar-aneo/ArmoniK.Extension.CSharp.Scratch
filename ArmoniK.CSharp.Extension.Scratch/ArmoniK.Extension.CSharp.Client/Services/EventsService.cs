@@ -19,7 +19,7 @@ public class EventsService : IEventsService
 
     private readonly ILogger<EventsService> _logger;
 
-    private Session _session;
+    private readonly Session _session;
 
     public EventsService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory)
     {
@@ -31,7 +31,6 @@ public class EventsService : IEventsService
     public async Task WaitForBlobsAsync(ICollection<string> blobIds,
         CancellationToken cancellationToken = default)
     {
-
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
         await eventsClient.WaitForResultsAsync(_session.Id,

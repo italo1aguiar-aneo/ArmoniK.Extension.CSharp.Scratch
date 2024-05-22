@@ -23,7 +23,8 @@ public class TasksService : ITasksService
 
     private readonly Session _session;
 
-    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, Session session, ILoggerFactory loggerFactory)
+    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, Session session,
+        ILoggerFactory loggerFactory)
     {
         _channelPool = channel;
         _logger = loggerFactory.CreateLogger<TasksService>();
@@ -78,16 +79,9 @@ public class TasksService : ITasksService
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
             foreach (var taskNode in enumerableNodes)
-            {
-                foreach (var dependency in taskNode.DataDependenciesContent)
-                {
-
-                    if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
-                    {
-                        taskNode.DataDependencies.Add(createdBlob);
-                    }
-                }
-            }
+            foreach (var dependency in taskNode.DataDependenciesContent)
+                if (createdBlobDictionary.TryGetValue(dependency.Key, out var createdBlob))
+                    taskNode.DataDependencies.Add(createdBlob);
         }
 
         var nodeWithNewPayloads = enumerableNodes

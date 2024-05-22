@@ -10,6 +10,7 @@ public class BlobInfo
         Id = id;
         Session = session;
     }
+
     //should blobInfo have a session ? -> problem: BlobService will have a session already
     //, and it might be ambiguous on functions where we receive the session as parameter
     public Session Session { get; }

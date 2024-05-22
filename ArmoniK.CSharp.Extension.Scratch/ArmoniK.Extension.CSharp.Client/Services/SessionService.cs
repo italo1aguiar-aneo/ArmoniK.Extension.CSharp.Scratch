@@ -6,7 +6,6 @@ using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 

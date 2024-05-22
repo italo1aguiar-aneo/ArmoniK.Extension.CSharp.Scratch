@@ -12,14 +12,14 @@ namespace ArmoniK.Extension.CSharp.Client;
 
 public class ArmoniKClient
 {
+    private readonly Dictionary<Session, IBlobService> _blobServiceDictionary = new();
+    private readonly Dictionary<Session, IEventsService> _eventsServicedDictionary = new();
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Properties _properties;
-    private readonly Dictionary<Session,IBlobService> _blobServiceDictionary = new();
+    private readonly Dictionary<Session, ITasksService> _tasksServicedDictionary = new();
     private ObjectPool<ChannelBase> _channelPool;
-    private readonly Dictionary<Session,IEventsService> _eventsServicedDictionary = new();
     private ISessionService _sessionService;
-    private readonly Dictionary<Session,ITasksService> _tasksServicedDictionary = new();
 
     public ArmoniKClient(Properties properties, ILoggerFactory loggerFactory)
     {
@@ -34,41 +34,32 @@ public class ArmoniKClient
 
     public Task<IBlobService> GetBlobService(Session session)
     {
-        if (_blobServiceDictionary.TryGetValue(session, out var blobService))
-        {
-            return Task.FromResult(blobService);
-        }
+        if (_blobServiceDictionary.TryGetValue(session, out var blobService)) return Task.FromResult(blobService);
         _blobServiceDictionary[session] = BlobServiceFactory.CreateBlobService(ChannelPool, session, _loggerFactory);
         return Task.FromResult(_blobServiceDictionary[session]);
     }
 
     public Task<ISessionService> GetSessionService()
     {
-        if (_sessionService is not null)
-        {
-            return Task.FromResult(_sessionService);
-        }
+        if (_sessionService is not null) return Task.FromResult(_sessionService);
         _sessionService = SessionServiceFactory.CreateSessionService(ChannelPool, _properties, _loggerFactory);
         return Task.FromResult(_sessionService);
     }
 
     public async Task<ITasksService> GetTasksService(Session session)
     {
-        if (_tasksServicedDictionary.TryGetValue(session, out var taskService))
-        {
-            return taskService;
-        }
-        _tasksServicedDictionary[session] = TasksServiceFactory.CreateTaskService(ChannelPool, await GetBlobService(session), session, _loggerFactory);
+        if (_tasksServicedDictionary.TryGetValue(session, out var taskService)) return taskService;
+        _tasksServicedDictionary[session] =
+            TasksServiceFactory.CreateTaskService(ChannelPool, await GetBlobService(session), session, _loggerFactory);
         return _tasksServicedDictionary[session];
     }
 
     public Task<IEventsService> GetEventsService(Session session)
     {
         if (_eventsServicedDictionary.TryGetValue(session, out var eventsService))
-        {
             return Task.FromResult(eventsService);
-        }
-        _eventsServicedDictionary[session] = EventsServiceFactory.CreateEventsService(ChannelPool, session, _loggerFactory);
+        _eventsServicedDictionary[session] =
+            EventsServiceFactory.CreateEventsService(ChannelPool, session, _loggerFactory);
         return Task.FromResult(_eventsServicedDictionary[session]);
     }
 }
