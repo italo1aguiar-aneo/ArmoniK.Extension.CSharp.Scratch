@@ -20,10 +20,10 @@ jobs:
 
     - name: Restore
       run: |
-        dotnet restore ArmoniK.CSharp.Extension.Scratch.sln
+        dotnet restore ArmoniK.CSharp.Extension.Scratch/ArmoniK.CSharp.Extension.Scratch.sln
     - name: Reformat
       run: |
-        jb cleanupcode ArmoniK.CSharp.Extension.Scratch.sln
+        jb cleanupcode ArmoniK.CSharp.Extension.Scratch/ArmoniK.CSharp.Extension.Scratch.sln
 
     - name: Check Diff
       id: check-diff
