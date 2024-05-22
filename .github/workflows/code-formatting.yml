@@ -2,7 +2,8 @@ name: Code Formatting
 
 on:
   pull_request:
-
+  workflow_dispatch:
+  
 jobs:
   format-csharp:
     runs-on: ubuntu-latest
