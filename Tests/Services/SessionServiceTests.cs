@@ -8,7 +8,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Tests.Services;
 
@@ -38,7 +39,7 @@ public class SessionServiceTests
         _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateSession_ReturnsNewSessionWithId()
     {
         // Arrange
@@ -68,7 +69,6 @@ public class SessionServiceTests
         var result = await sessionService.CreateSession();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("12345", result.Id);
+        ClassicAssert.AreEqual("12345", result.Id);
     }
 }

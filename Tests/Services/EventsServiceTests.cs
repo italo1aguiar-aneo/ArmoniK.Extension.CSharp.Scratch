@@ -8,7 +8,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Tests.Services;
 
@@ -38,7 +39,7 @@ public class EventsServiceTests
         _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateSession_ReturnsNewSessionWithId()
     {
         // Arrange
@@ -94,6 +95,6 @@ public class EventsServiceTests
 
         var blobId = new List<string> { "1234" };
 
-        await eventsService.WaitForBlobsAsync(blobId);
+        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(blobId)); 
     }
 }

@@ -2,11 +2,13 @@
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
+using ArmoniK.Extension.CSharp.Client.Services;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Tests;
 
@@ -43,26 +45,26 @@ public class ArmoniKClientTests
         _client = new ArmoniKClient(_defaultProperties, _loggerFactoryMock.Object);
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ThrowsArgumentNullException_IfPropertiesIsNull()
     {
         // Act 
         var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(null, _loggerFactoryMock.Object));
 
         // Assert
-        Assert.Equal("properties", exception.ParamName);
+        ClassicAssert.AreEqual("properties", exception.ParamName);
     }
 
-    [Fact]
+    [Test]
     public void Constructor_ThrowsArgumentNullException_IfLoggerFactoryIsNull()
     {
         // Act  
         var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(_defaultProperties, null));
         // Assert
-        Assert.Equal("loggerFactory", exception.ParamName);
+        ClassicAssert.AreEqual("loggerFactory", exception.ParamName);
     }
 
-    [Fact]
+    [Test]
     public async Task GetBlobService_ShouldReturnInstance()
     {
         // Arrange
@@ -75,10 +77,10 @@ public class ArmoniKClientTests
         var blobService = await _client.GetBlobService(session);
 
         // Assert
-        Assert.IsAssignableFrom<IBlobService>(blobService);
+        Assert.That(blobService, Is.InstanceOf<IBlobService>(), "The returned object should be an instance of IBlobService or derive from it.");
     }
 
-    [Fact]
+    [Test]
     public async Task GetBlobService_CachesInstance()
     {
         // Arrange
@@ -98,21 +100,21 @@ public class ArmoniKClientTests
 
 
         // Assert
-        Assert.Same(blobService1, blobService2);
-        Assert.NotSame(blobService1, blobService3);
+        ClassicAssert.AreEqual(blobService1, blobService2);
+        ClassicAssert.AreNotEqual(blobService1,blobService3);
     }
 
-    [Fact]
+    [Test]
     public async Task GetSessionService_ShouldReturnInstance()
     {
         // Act
         var sessionService = await _client.GetSessionService();
 
         // Assert
-        Assert.IsAssignableFrom<ISessionService>(sessionService);
+        Assert.That(sessionService, Is.InstanceOf<ISessionService>(), "The returned object should be an instance of ISessionService or derive from it.");
     }
 
-    [Fact]
+    [Test]
     public async Task GetTasksService_ShouldReturnInstance()
     {
         // Arrange
@@ -122,10 +124,10 @@ public class ArmoniKClientTests
         var taskService = await _client.GetTasksService(session);
 
         // Assert
-        Assert.IsAssignableFrom<ITasksService>(taskService);
+        Assert.That(taskService, Is.InstanceOf<ITasksService>(), "The returned object should be an instance of ITasksService or derive from it.");
     }
 
-    [Fact]
+    [Test]
     public async Task GetTasksService_CachesInstance()
     {
         // Arrange
@@ -138,11 +140,11 @@ public class ArmoniKClientTests
         var taskService3 = await _client.GetTasksService(session2);
 
         // Assert
-        Assert.Same(taskService1, taskService2);
-        Assert.NotSame(taskService1, taskService3);
+        ClassicAssert.AreEqual(taskService1, taskService2);
+        ClassicAssert.AreNotEqual(taskService1, taskService3);
     }
 
-    [Fact]
+    [Test]
     public async Task GetEventsService_ShouldReturnInstance()
     {
         // Arrange
@@ -152,10 +154,10 @@ public class ArmoniKClientTests
         var eventsService = await _client.GetEventsService(session);
 
         // Assert
-        Assert.IsAssignableFrom<IEventsService>(eventsService);
+        Assert.That(eventsService, Is.InstanceOf<IEventsService>(), "The returned object should be an instance of IEventsService or derive from it.");
     }
 
-    [Fact]
+    [Test]
     public async Task GetEventsService_CachesInstance()
     {
         // Arrange
@@ -168,7 +170,7 @@ public class ArmoniKClientTests
         var eventsService3 = await _client.GetEventsService(session2);
 
         // Assert
-        Assert.Same(eventsService1, eventsService2);
-        Assert.NotSame(eventsService1, eventsService3);
+        ClassicAssert.AreEqual(eventsService1, eventsService2);
+        ClassicAssert.AreNotEqual(eventsService1, eventsService3);
     }
 }

@@ -11,7 +11,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Tests.Services;
 
@@ -41,7 +42,7 @@ public class TasksServiceTests
         _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateTask_ReturnsNewTaskWithId()
     {
         // Arrange
@@ -99,13 +100,12 @@ public class TasksServiceTests
         var result = await taskService.SubmitTasksAsync(taskNodes);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("taskId1", result.FirstOrDefault()?.TaskId);
-        Assert.Equal("payloadId1", result.FirstOrDefault()?.PayloadId);
-        Assert.Equal("blobId1", result.FirstOrDefault()?.ExpectedOutputIds[0]);
+        ClassicAssert.AreEqual("taskId1", result.FirstOrDefault()?.TaskId);
+        ClassicAssert.AreEqual("payloadId1", result.FirstOrDefault()?.PayloadId);
+        ClassicAssert.AreEqual("blobId1", result.FirstOrDefault()?.ExpectedOutputIds[0]);
     }
 
-    [Fact]
+    [Test]
     public async Task SubmitTasksAsync_MultipleTasksWithOutputs_ReturnsCorrectResponses()
     {
         // Arrange
@@ -160,15 +160,17 @@ public class TasksServiceTests
         var result = await taskService.SubmitTasksAsync(taskNodes);
 
         // Assert
-        Assert.Equal(2, result.Count());
-        Assert.Contains(result,
-            r => r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1"));
-        Assert.Contains(result,
-            r => r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputIds.Contains("outputId2"));
+        ClassicAssert.AreEqual(2, result.Count());
+        Assert.That(result, Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r => r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1")),
+            "Result should contain an item with taskId1, payloadId1, and outputId1");
+
+        Assert.That(result, Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r => r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputIds.Contains("outputId2")),
+            "Result should contain an item with taskId2, payloadId2, and outputId2");
+
     }
 
 
-    [Fact]
+    [Test]
     public async Task SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
     {
         // Arrange
@@ -190,10 +192,10 @@ public class TasksServiceTests
         };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync(taskNodes));
+        Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync(taskNodes));
     }
 
-    [Fact]
+    [Test]
     public async Task SubmitTasksAsync_WithDataDependencies_CreatesBlobsCorrectly()
     {
         // Arrange
@@ -264,12 +266,12 @@ public class TasksServiceTests
         mockBlobService.Verify(
             m => m.CreateBlobsAsync(It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
-        Assert.NotEmpty(taskNodes.First().DataDependencies);
-        Assert.Equal("dependencyBlobId", taskNodes.First().DataDependencies.First().Id);
-        Assert.Equal("dependencyBlobId", result.First().DataDependencies.First());
+
+        ClassicAssert.AreEqual("dependencyBlobId", taskNodes.First().DataDependencies.First().Id);
+        ClassicAssert.AreEqual("dependencyBlobId", result.First().DataDependencies.First());
     }
 
-    [Fact]
+    [Test]
     public async Task SubmitTasksAsync_EmptyDataDependencies_DoesNotCreateBlobs()
     {
         // Arrange
@@ -329,6 +331,6 @@ public class TasksServiceTests
         mockBlobService.Verify(
             m => m.CreateBlobsAsync(It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Never);
-        Assert.Empty(taskNodes.First().DataDependencies);
+        Assert.That(taskNodes.First().DataDependencies, Is.Empty);
     }
 }

@@ -6,7 +6,8 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Xunit;
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 
 namespace Tests.Services;
@@ -15,7 +16,7 @@ public class BlobServiceTests
 {
     private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
 
-    [Fact]
+    [Test]
     public async Task CreateBlob_ReturnsNewBlobInfo()
     {
         // Arrange
@@ -56,11 +57,10 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("sessionId", result.Session.Id);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateBlob_WithName_ReturnsNewBlobInfo()
     {
         // Arrange
@@ -104,12 +104,11 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobAsync(name);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("sessionId", result.Session.Id);
-        Assert.Equal(name, result.Name);
+        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual(name, result.Name);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateBlobAsync_WithIAsyncEnumerableContent_CreatesBlobAndUploadsContent()
     {
         // Arrange
@@ -187,12 +186,11 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobAsync(name, contents);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("sessionId", result.Session.Id);
-        Assert.Equal(name, result.Name);
+        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual(name, result.Name);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateBlobAsync_WithContent_CreatesBlobAndUploadsContent()
     {
         // Arrange
@@ -291,12 +289,11 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobAsync(name, contents);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("sessionId", result.Session.Id);
-        Assert.Equal(name, result.Name);
+        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual(name, result.Name);
     }
 
-    [Fact]
+    [Test]
     public async Task CreateBlobAsync_WithBigContent_CreatesBlobAndUploadsContent()
     {
         // Arrange
@@ -395,8 +392,7 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobAsync(name, contents);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("sessionId", result.Session.Id);
-        Assert.Equal(name, result.Name);
+        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual(name, result.Name);
     }
 }
