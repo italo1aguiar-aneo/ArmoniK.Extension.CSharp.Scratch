@@ -120,7 +120,7 @@ internal class Program
                 }
             ]));
 
-        Console.WriteLine($"taskId: {task.Single()}");
+        Console.WriteLine($"taskId: {task.Single().TaskId}");
 
         await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]));
 

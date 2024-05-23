@@ -32,10 +32,17 @@ public class TasksService : ITasksService
         _session = session;
     }
 
-    public async Task<IEnumerable<string>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes,
+    public async Task<IEnumerable<SubmitTasksResponse.Types.TaskInfo>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken = default)
     {
         var enumerableTaskNodes = taskNodes.ToList();
+
+        // Validate each task node
+        if (enumerableTaskNodes.Any(node => node.ExpectedOutputs == null || !node.ExpectedOutputs.Any()))
+        {
+            throw new InvalidOperationException("Expected outputs cannot be empty.");
+        }
+
         await CreateNewBlobs(enumerableTaskNodes, cancellationToken);
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
@@ -43,13 +50,13 @@ public class TasksService : ITasksService
         var tasksClient = new TasksClient(channel);
 
         var taskCreations = enumerableTaskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
-        {
-            PayloadId = taskNode.Payload.Id,
-            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
-            DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
-            TaskOptions = taskNode.TaskOptions
-        }).ToList();
-
+            {
+                PayloadId = taskNode.Payload.Id,
+                ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
+                DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
+                TaskOptions = taskNode.TaskOptions
+            }).ToList();
+        
 
         var submitTasksRequest = new SubmitTasksRequest
         {
@@ -59,7 +66,7 @@ public class TasksService : ITasksService
 
         var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
 
-        return taskSubmissionResponse.TaskInfos.Select(i => i.TaskId);
+        return taskSubmissionResponse.TaskInfos;
     }
 
     private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes,
@@ -85,7 +92,7 @@ public class TasksService : ITasksService
         }
 
         var nodeWithNewPayloads = enumerableNodes
-            .Where(x => !Equals(x.Payload, null))
+            .Where(x => Equals(x.Payload, null))
             .ToList();
 
         if (nodeWithNewPayloads.Any())
