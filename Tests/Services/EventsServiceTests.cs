@@ -47,21 +47,34 @@ public class EventsServiceTests
         // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
         var mockCallInvoker = new Mock<CallInvoker>();
 
+        var responses = new Queue<EventSubscriptionResponse>(
+            new[]
+            {
+                new EventSubscriptionResponse { SessionId = "1234", NewResult = new EventSubscriptionResponse.Types.NewResult()
+                {
+                    ResultId = "1234",
+                    Status = ResultStatus.Completed
+                }}
+            }
+        );
+
+        // Setup the mock stream reader
+        var streamReaderMock = new Mock<IAsyncStreamReader<EventSubscriptionResponse>>();
+        streamReaderMock.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(responses.Count > 0))
+            .Returns(() => Task.FromResult(false));  // End of stream
+
+        streamReaderMock.SetupGet(x => x.Current)
+            .Returns(() => responses.Dequeue());
+
         mockCallInvoker.Setup(invoker => invoker.AsyncServerStreamingCall(
                 It.IsAny<Method<EventSubscriptionRequest, EventSubscriptionResponse>>(),
                 It.IsAny<string>(),
                 It.IsAny<CallOptions>(),
                 It.IsAny<EventSubscriptionRequest>()))
             .Returns(new AsyncServerStreamingCall<EventSubscriptionResponse>
-                (Task.FromResult(new EventSubscriptionResponse
-                    {
-                        NewResult = new EventSubscriptionResponse.Types.NewResult
-                        {
-                            OwnerId = "1234",
-                            ResultId = "1234",
-                            Status = ResultStatus.Completed
-                        }
-                    }) as IAsyncStreamReader<EventSubscriptionResponse>,
+                (
+                    streamReaderMock.Object,
                     Task.FromResult(new Metadata()), () => Status.DefaultSuccess, () => new Metadata(),
                     () => { }
                 )
