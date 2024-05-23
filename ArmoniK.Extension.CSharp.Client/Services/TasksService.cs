@@ -39,9 +39,7 @@ public class TasksService : ITasksService
 
         // Validate each task node
         if (enumerableTaskNodes.Any(node => node.ExpectedOutputs == null || !node.ExpectedOutputs.Any()))
-        {
             throw new InvalidOperationException("Expected outputs cannot be empty.");
-        }
 
         await CreateNewBlobs(enumerableTaskNodes, cancellationToken);
 
@@ -50,13 +48,13 @@ public class TasksService : ITasksService
         var tasksClient = new TasksClient(channel);
 
         var taskCreations = enumerableTaskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
-            {
-                PayloadId = taskNode.Payload.Id,
-                ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
-                DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
-                TaskOptions = taskNode.TaskOptions
-            }).ToList();
-        
+        {
+            PayloadId = taskNode.Payload.Id,
+            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
+            DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
+            TaskOptions = taskNode.TaskOptions
+        }).ToList();
+
 
         var submitTasksRequest = new SubmitTasksRequest
         {
