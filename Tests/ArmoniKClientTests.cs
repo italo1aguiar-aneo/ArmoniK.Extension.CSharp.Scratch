@@ -2,7 +2,6 @@
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
-using ArmoniK.Extension.CSharp.Client.Services;
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -77,7 +76,8 @@ public class ArmoniKClientTests
         var blobService = await _client.GetBlobService(session);
 
         // Assert
-        Assert.That(blobService, Is.InstanceOf<IBlobService>(), "The returned object should be an instance of IBlobService or derive from it.");
+        Assert.That(blobService, Is.InstanceOf<IBlobService>(),
+            "The returned object should be an instance of IBlobService or derive from it.");
     }
 
     [Test]
@@ -101,7 +101,7 @@ public class ArmoniKClientTests
 
         // Assert
         ClassicAssert.AreEqual(blobService1, blobService2);
-        ClassicAssert.AreNotEqual(blobService1,blobService3);
+        ClassicAssert.AreNotEqual(blobService1, blobService3);
     }
 
     [Test]
@@ -111,7 +111,8 @@ public class ArmoniKClientTests
         var sessionService = await _client.GetSessionService();
 
         // Assert
-        Assert.That(sessionService, Is.InstanceOf<ISessionService>(), "The returned object should be an instance of ISessionService or derive from it.");
+        Assert.That(sessionService, Is.InstanceOf<ISessionService>(),
+            "The returned object should be an instance of ISessionService or derive from it.");
     }
 
     [Test]
@@ -124,7 +125,8 @@ public class ArmoniKClientTests
         var taskService = await _client.GetTasksService(session);
 
         // Assert
-        Assert.That(taskService, Is.InstanceOf<ITasksService>(), "The returned object should be an instance of ITasksService or derive from it.");
+        Assert.That(taskService, Is.InstanceOf<ITasksService>(),
+            "The returned object should be an instance of ITasksService or derive from it.");
     }
 
     [Test]
@@ -154,7 +156,8 @@ public class ArmoniKClientTests
         var eventsService = await _client.GetEventsService(session);
 
         // Assert
-        Assert.That(eventsService, Is.InstanceOf<IEventsService>(), "The returned object should be an instance of IEventsService or derive from it.");
+        Assert.That(eventsService, Is.InstanceOf<IEventsService>(),
+            "The returned object should be an instance of IEventsService or derive from it.");
     }
 
     [Test]

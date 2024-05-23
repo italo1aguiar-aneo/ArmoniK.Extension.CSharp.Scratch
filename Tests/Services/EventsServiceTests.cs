@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 
 namespace Tests.Services;
 
@@ -95,6 +94,6 @@ public class EventsServiceTests
 
         var blobId = new List<string> { "1234" };
 
-        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(blobId)); 
+        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(blobId));
     }
 }

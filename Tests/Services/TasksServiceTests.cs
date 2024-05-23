@@ -161,12 +161,15 @@ public class TasksServiceTests
 
         // Assert
         ClassicAssert.AreEqual(2, result.Count());
-        Assert.That(result, Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r => r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1")),
+        Assert.That(result,
+            Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r =>
+                r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1")),
             "Result should contain an item with taskId1, payloadId1, and outputId1");
 
-        Assert.That(result, Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r => r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputIds.Contains("outputId2")),
+        Assert.That(result,
+            Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r =>
+                r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputIds.Contains("outputId2")),
             "Result should contain an item with taskId2, payloadId2, and outputId2");
-
     }
 
 
