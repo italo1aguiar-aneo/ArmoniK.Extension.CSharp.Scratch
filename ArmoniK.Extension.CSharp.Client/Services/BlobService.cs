@@ -62,9 +62,6 @@ public class BlobService : IBlobService
         if (_serviceConfiguration is null)
             await LoadBlobServiceConfiguration(cancellationToken);
 
-        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
-        var blobClient = new ResultsClient(channel);
-
         var blobInfo = await CreateBlobAsync(name, cancellationToken);
         var blob = new Blob(blobInfo.Name, blobInfo.Id, blobInfo.Session);
         await foreach (var content in contents.WithCancellation(cancellationToken))
@@ -142,7 +139,6 @@ public class BlobService : IBlobService
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
-        var blobClient = new ResultsClient(channel);
 
         var tasks = blobKeyValuePairs.Select(blobKeyValuePair =>
             Task.Run(async () =>
