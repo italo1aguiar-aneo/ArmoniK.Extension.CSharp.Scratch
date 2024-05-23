@@ -50,11 +50,14 @@ public class EventsServiceTests
         var responses = new Queue<EventSubscriptionResponse>(
             new[]
             {
-                new EventSubscriptionResponse { SessionId = "1234", NewResult = new EventSubscriptionResponse.Types.NewResult()
+                new EventSubscriptionResponse
                 {
-                    ResultId = "1234",
-                    Status = ResultStatus.Completed
-                }}
+                    SessionId = "1234", NewResult = new EventSubscriptionResponse.Types.NewResult
+                    {
+                        ResultId = "1234",
+                        Status = ResultStatus.Completed
+                    }
+                }
             }
         );
 
@@ -62,7 +65,7 @@ public class EventsServiceTests
         var streamReaderMock = new Mock<IAsyncStreamReader<EventSubscriptionResponse>>();
         streamReaderMock.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>()))
             .Returns(() => Task.FromResult(responses.Count > 0))
-            .Returns(() => Task.FromResult(false));  // End of stream
+            .Returns(() => Task.FromResult(false)); // End of stream
 
         streamReaderMock.SetupGet(x => x.Current)
             .Returns(() => responses.Dequeue());

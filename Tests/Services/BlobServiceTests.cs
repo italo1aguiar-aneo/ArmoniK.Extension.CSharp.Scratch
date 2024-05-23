@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
-using Enum = Google.Protobuf.WellKnownTypes.Enum;
 
 namespace Tests.Services;
 
@@ -296,6 +295,7 @@ public class BlobServiceTests
         Assert.Equal("sessionId", result.Session.Id);
         Assert.Equal(name, result.Name);
     }
+
     [Fact]
     public async Task CreateBlobAsync_WithBigContent_CreatesBlobAndUploadsContent()
     {
