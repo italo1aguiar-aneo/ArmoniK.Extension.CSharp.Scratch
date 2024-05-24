@@ -65,7 +65,7 @@ public class EventsServiceTests
         var streamReaderMock = new Mock<IAsyncStreamReader<EventSubscriptionResponse>>();
         streamReaderMock.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>()))
             .Returns(() => Task.FromResult(responses.Count > 0))
-            .Returns(() => Task.FromResult(false)); // End of stream
+            .Returns(() => Task.FromResult(false)); 
 
         streamReaderMock.SetupGet(x => x.Current)
             .Returns(() => responses.Dequeue());
@@ -74,11 +74,15 @@ public class EventsServiceTests
                 It.IsAny<Method<EventSubscriptionRequest, EventSubscriptionResponse>>(),
                 It.IsAny<string>(),
                 It.IsAny<CallOptions>(),
-                It.IsAny<EventSubscriptionRequest>()))
+                It.IsAny<EventSubscriptionRequest>()
+                )
+            )
             .Returns(new AsyncServerStreamingCall<EventSubscriptionResponse>
                 (
                     streamReaderMock.Object,
-                    Task.FromResult(new Metadata()), () => Status.DefaultSuccess, () => new Metadata(),
+                    Task.FromResult(new Metadata()),
+                    () => Status.DefaultSuccess,
+                    () => new Metadata(),
                     () => { }
                 )
             );

@@ -48,15 +48,22 @@ public class SessionServiceTests
         // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
         var mockCallInvoker = new Mock<CallInvoker>();
 
+        // Configure CreateSession call
         mockCallInvoker.Setup(invoker =>
                 invoker.AsyncUnaryCall(
                     It.IsAny<Method<CreateSessionRequest, CreateSessionReply>>(),
                     It.IsAny<string>(),
                     It.IsAny<CallOptions>(),
-                    It.IsAny<CreateSessionRequest>()))
+                    It.IsAny<CreateSessionRequest>()
+                    )
+                )
             .Returns(new AsyncUnaryCall<CreateSessionReply>(
                 Task.FromResult(new CreateSessionReply { SessionId = "12345" }),
-                Task.FromResult(new Metadata()), () => Status.DefaultSuccess, () => new Metadata(), () => { }));
+                Task.FromResult(new Metadata()), () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
+                )
+            );
 
 
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);

@@ -19,27 +19,10 @@ namespace Tests.Services;
 public class TasksServiceTests
 {
     private readonly List<string> _defaultPartitionsIds;
-    private readonly Properties _defaultProperties;
-    private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
 
     public TasksServiceTests()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.tests.json", false)
-            .AddEnvironmentVariables().Build();
-
         _defaultPartitionsIds = new List<string> { "subtasking" };
-
-        var defaultTaskOptions = new TaskOptions
-        {
-            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-            MaxRetries = 2,
-            Priority = 1,
-            PartitionId = _defaultPartitionsIds[0]
-        };
-
-        _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
 
     [Test]
@@ -50,31 +33,37 @@ public class TasksServiceTests
 
         var mockCallInvoker = new Mock<CallInvoker>();
 
+        var submitTaskResponse = Task.FromResult(new SubmitTasksResponse
+            {
+                TaskInfos =
+                {
+                    new SubmitTasksResponse.Types.TaskInfo
+                    {
+                        TaskId = "taskId1",
+                        ExpectedOutputIds = { new List<string> { "blobId1" } },
+                        PayloadId = "payloadId1"
+                    }
+                }
+            }
+        );
+
+        // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
             It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
             It.IsAny<string>(),
             It.IsAny<CallOptions>(),
             It.IsAny<SubmitTasksRequest>()
-        )).Returns(
+            )
+        ).Returns(
             new AsyncUnaryCall<SubmitTasksResponse>(
-                Task.FromResult(new SubmitTasksResponse
-                    {
-                        TaskInfos =
-                        {
-                            new SubmitTasksResponse.Types.TaskInfo
-                            {
-                                TaskId = "taskId1",
-                                ExpectedOutputIds = { new List<string> { "blobId1" } },
-                                PayloadId = "payloadId1"
-                            }
-                        }
-                    }
-                ),
+                submitTaskResponse,
                 Task.FromResult(new Metadata()),
                 () => Status.DefaultSuccess,
                 () => new Metadata(),
-                () => { })
-        );
+                () => { }
+                )
+            );
+
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
 
         var taskNodes = new List<TaskNode>
@@ -122,22 +111,27 @@ public class TasksServiceTests
             }
         };
 
+        // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
             It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
             It.IsAny<string>(),
             It.IsAny<CallOptions>(),
             It.IsAny<SubmitTasksRequest>()
-        )).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
+            )
+        ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
             Task.FromResult(taskResponse),
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
             () => new Metadata(),
-            () => { })
+            () => { }
+            )
         );
 
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
+
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
+
         var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService,
             new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
 
@@ -161,6 +155,7 @@ public class TasksServiceTests
 
         // Assert
         ClassicAssert.AreEqual(2, result.Count());
+
         Assert.That(result,
             Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r =>
                 r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1")),
@@ -179,9 +174,12 @@ public class TasksServiceTests
         // Arrange
         var mockChannelBase = new Mock<ChannelBase>("localhost") { CallBase = true };
         var mockCallInvoker = new Mock<CallInvoker>();
+
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
+
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
+
         var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService,
             new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
 
@@ -215,18 +213,20 @@ public class TasksServiceTests
                 }
             }
         };
-
+        // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
             It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
             It.IsAny<string>(),
             It.IsAny<CallOptions>(),
             It.IsAny<SubmitTasksRequest>()
-        )).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
+            )
+        ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
             Task.FromResult(taskResponse),
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
             () => new Metadata(),
-            () => { })
+            () => { }
+            )
         );
 
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
@@ -289,17 +289,20 @@ public class TasksServiceTests
             }
         };
 
+        // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
             It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
             It.IsAny<string>(),
             It.IsAny<CallOptions>(),
             It.IsAny<SubmitTasksRequest>()
-        )).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
+            )
+        ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
             Task.FromResult(taskResponse),
             Task.FromResult(new Metadata()),
             () => Status.DefaultSuccess,
             () => new Metadata(),
-            () => { })
+            () => { }
+            )
         );
 
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
@@ -322,13 +325,13 @@ public class TasksServiceTests
             new()
             {
                 Payload = new BlobInfo("payloadId", "blobId", new Session { Id = "sessionId1" }),
-                ExpectedOutputs = new List<BlobInfo> { new("output1", "outputId1", new Session { Id = "sessionId1" }) },
+                ExpectedOutputs = expectedBlobs,
                 DataDependenciesContent = dataDependenciesContent
             }
         };
 
         // Act
-        var result = await taskService.SubmitTasksAsync(taskNodes);
+        await taskService.SubmitTasksAsync(taskNodes);
 
         // Assert
         mockBlobService.Verify(
