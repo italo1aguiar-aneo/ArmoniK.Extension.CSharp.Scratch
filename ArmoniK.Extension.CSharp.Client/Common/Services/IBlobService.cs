@@ -32,9 +32,12 @@ public interface IBlobService
     Task<Blob> DownloadBlob(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
-    Task UploadBlobChunk(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+    IAsyncEnumerable<byte[]> DownloadBlobAsync(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
-    Task UploadBlobChunk(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+    Task UploadBlobChunkAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+        CancellationToken cancellationToken = default);
+
+    Task UploadBlobChunkAsync(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
         CancellationToken cancellationToken = default);
 }
