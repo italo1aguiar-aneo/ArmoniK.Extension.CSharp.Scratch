@@ -70,24 +70,18 @@ internal class Program
 
         _configuration = builder.Build();
 
-        var taskOptions = new TaskOptions
-        {
-            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-            MaxRetries = 2,
-            Priority = 1,
-            PartitionId = "subtasking",
-            Options =
-            {
-                new MapField<string, string>
+        var defaultTaskOptions = new TaskConfiguration(
+            maxRetries: 2,
+            priority: 1,
+            partitionId: "subtasking",
+            maxDuration: TimeSpan.FromHours(1),
+            options: new Dictionary<string, string>
                 {
-                    {
-                        "UseCase", "Launch"
-                    }
+                    {"UseCase","Launch"},
                 }
-            }
-        };
+            );
 
-        var props = new Properties(_configuration, taskOptions, ["subtasking"]);
+        var props = new Properties(_configuration, defaultTaskOptions, ["subtasking"]);
 
         var client = new ArmoniKClient(props, factory);
 
@@ -95,15 +89,15 @@ internal class Program
 
         var session = await sessionService.CreateSession();
 
-        Console.WriteLine($"sessionId: {session.Id}");
+        Console.WriteLine($"sessionId: {session}");
 
-        var blobService = await client.GetBlobService(session);
+        var blobService = await client.GetBlobService();
 
-        var tasksService = await client.GetTasksService(session);
+        var tasksService = await client.GetTasksService();
 
-        var eventsService = await client.GetEventsService(session);
+        var eventsService = await client.GetEventsService();
 
-        var payload = await blobService.CreateBlobAsync("Payload", Encoding.ASCII.GetBytes("Hello"));
+        var payload = await blobService.CreateBlobAsync(session,"Payload", Encoding.ASCII.GetBytes("Hello"));
 
         Console.WriteLine($"payloadId: {payload.Id}");
 
@@ -111,7 +105,7 @@ internal class Program
 
         Console.WriteLine($"resultId: {result.Id}");
 
-        var task = await tasksService.SubmitTasksAsync(
+        var task = await tasksService.SubmitTasksAsync(session,
             new List<TaskNode>([
                 new TaskNode
                 {
@@ -122,7 +116,7 @@ internal class Program
 
         Console.WriteLine($"taskId: {task.Single().TaskId}");
 
-        await eventsService.WaitForBlobsAsync(new List<BlobInfo>([result]));
+        await eventsService.WaitForBlobsAsync(session, new List<BlobInfo>([result]));
 
         var download = await blobService.DownloadBlob(result,
             CancellationToken.None);

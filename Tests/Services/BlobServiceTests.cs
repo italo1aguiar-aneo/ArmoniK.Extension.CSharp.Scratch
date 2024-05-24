@@ -59,13 +59,13 @@ public class BlobServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var blobService =
-            BlobServiceFactory.CreateBlobService(objectPool, new Session { Id = "sessionId" },
+            BlobServiceFactory.CreateBlobService(objectPool,
                 NullLoggerFactory.Instance);
         // Act
-        var result = await blobService.CreateBlobAsync();
+        var result = await blobService.CreateBlobAsync("sessionId");
 
         // Assert
-        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("blobName", result.Name);
     }
 
     [Test]
@@ -112,14 +112,13 @@ public class BlobServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var blobService =
-            BlobServiceFactory.CreateBlobService(objectPool, new Session { Id = "sessionId" },
-                NullLoggerFactory.Instance);
+            BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
         var result = await blobService.CreateBlobAsync(name);
 
         // Assert
-        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("sessionId", result.SessionId);
         ClassicAssert.AreEqual(name, result.Name);
     }
 
@@ -215,14 +214,13 @@ public class BlobServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var blobService =
-            BlobServiceFactory.CreateBlobService(objectPool, new Session { Id = "sessionId" },
-                NullLoggerFactory.Instance);
+            BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync(name, contents);
+        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
 
         // Assert
-        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("sessionId", result.SessionId);
         ClassicAssert.AreEqual(name, result.Name);
     }
 
@@ -353,14 +351,13 @@ public class BlobServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var blobService =
-            BlobServiceFactory.CreateBlobService(objectPool, new Session { Id = "sessionId" },
-                NullLoggerFactory.Instance);
+            BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync(name, contents);
+        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
 
         // Assert
-        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("sessionId", result.SessionId);
         ClassicAssert.AreEqual(name, result.Name);
     }
 
@@ -490,14 +487,13 @@ public class BlobServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var blobService =
-            BlobServiceFactory.CreateBlobService(objectPool, new Session { Id = "sessionId" },
-                NullLoggerFactory.Instance);
+            BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync(name, contents);
+        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
 
         // Assert
-        ClassicAssert.AreEqual("sessionId", result.Session.Id);
+        ClassicAssert.AreEqual("sessionId", result.SessionId);
         ClassicAssert.AreEqual(name, result.Name);
     }
 }

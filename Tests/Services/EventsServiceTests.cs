@@ -15,27 +15,12 @@ namespace Tests.Services;
 public class EventsServiceTests
 {
     private readonly List<string> _defaultPartitionsIds;
-    private readonly Properties _defaultProperties;
     private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
 
     public EventsServiceTests()
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.tests.json", false)
-            .AddEnvironmentVariables().Build();
-
         _defaultPartitionsIds = new List<string> { "subtasking" };
 
-        var defaultTaskOptions = new TaskOptions
-        {
-            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-            MaxRetries = 2,
-            Priority = 1,
-            PartitionId = _defaultPartitionsIds[0]
-        };
-
-        _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
 
     [Test]
@@ -92,12 +77,11 @@ public class EventsServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
         var eventsService =
-            EventsServiceFactory.CreateEventsService(objectPool, new Session { Id = "1234" },
-                NullLoggerFactory.Instance);
+            EventsServiceFactory.CreateEventsService(objectPool, NullLoggerFactory.Instance);
         // Act
 
         var blobId = new List<string> { "1234" };
 
-        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(blobId));
+        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync("sessionId",blobId));
     }
 }

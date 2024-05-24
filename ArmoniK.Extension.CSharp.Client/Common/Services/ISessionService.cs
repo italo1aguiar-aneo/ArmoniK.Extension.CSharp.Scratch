@@ -6,5 +6,5 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface ISessionService
 {
-    Task<Session> CreateSession(CancellationToken cancellationToken = default);
+    Task<string> CreateSession(CancellationToken cancellationToken = default);
 }

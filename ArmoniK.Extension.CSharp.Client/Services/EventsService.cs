@@ -19,31 +19,28 @@ public class EventsService : IEventsService
 
     private readonly ILogger<EventsService> _logger;
 
-    private readonly Session _session;
-
-    public EventsService(ObjectPool<ChannelBase> channel, Session session, ILoggerFactory loggerFactory)
+    public EventsService(ObjectPool<ChannelBase> channel, ILoggerFactory loggerFactory)
     {
         _channel = channel;
         _logger = loggerFactory.CreateLogger<EventsService>();
-        _session = session;
     }
 
-    public async Task WaitForBlobsAsync(ICollection<string> blobIds,
+    public async Task WaitForBlobsAsync(string sessionId, ICollection<string> blobIds,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(_session.Id,
+        await eventsClient.WaitForResultsAsync(sessionId,
             blobIds,
             cancellationToken);
     }
 
-    public async Task WaitForBlobsAsync(ICollection<BlobInfo> blobInfos,
+    public async Task WaitForBlobsAsync(string sessionId, ICollection<BlobInfo> blobInfos,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(_session.Id,
+        await eventsClient.WaitForResultsAsync(sessionId,
             blobInfos.Select(x => x.Id).ToList(),
             cancellationToken);
     }

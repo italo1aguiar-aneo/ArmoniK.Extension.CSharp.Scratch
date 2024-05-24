@@ -21,18 +21,14 @@ public class TasksService : ITasksService
     private readonly ObjectPool<ChannelBase> _channelPool;
     private readonly ILogger<TasksService> _logger;
 
-    private readonly Session _session;
-
-    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, Session session,
-        ILoggerFactory loggerFactory)
+    public TasksService(ObjectPool<ChannelBase> channel, IBlobService blobService, ILoggerFactory loggerFactory)
     {
         _channelPool = channel;
         _logger = loggerFactory.CreateLogger<TasksService>();
         _blobService = blobService;
-        _session = session;
     }
 
-    public async Task<IEnumerable<SubmitTasksResponse.Types.TaskInfo>> SubmitTasksAsync(IEnumerable<TaskNode> taskNodes,
+    public async Task<IEnumerable<TaskInfos>> SubmitTasksAsync(string sessionId, IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken = default)
     {
         var enumerableTaskNodes = taskNodes.ToList();
@@ -41,7 +37,7 @@ public class TasksService : ITasksService
         if (enumerableTaskNodes.Any(node => node.ExpectedOutputs == null || !node.ExpectedOutputs.Any()))
             throw new InvalidOperationException("Expected outputs cannot be empty.");
 
-        await CreateNewBlobs(enumerableTaskNodes, cancellationToken);
+        await CreateNewBlobs(sessionId, enumerableTaskNodes, cancellationToken);
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
@@ -52,22 +48,22 @@ public class TasksService : ITasksService
             PayloadId = taskNode.Payload.Id,
             ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
             DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
-            TaskOptions = taskNode.TaskOptions
+            TaskOptions = taskNode.TaskOptions?.ToTaskOptions()
         }).ToList();
 
 
         var submitTasksRequest = new SubmitTasksRequest
         {
-            SessionId = _session.Id,
+            SessionId = sessionId,
             TaskCreations = { taskCreations.ToList() }
         };
 
         var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
 
-        return taskSubmissionResponse.TaskInfos;
+        return taskSubmissionResponse.TaskInfos.Select(x=>new TaskInfos(x));
     }
 
-    private async Task CreateNewBlobs(IEnumerable<TaskNode> taskNodes,
+    private async Task CreateNewBlobs(string sessionId, IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken)
     {
         var enumerableNodes = taskNodes.ToList();
@@ -79,7 +75,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues,
+                await _blobService.CreateBlobsAsync(sessionId, blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
@@ -97,7 +93,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(blobKeyValues,
+                await _blobService.CreateBlobsAsync(sessionId, blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 

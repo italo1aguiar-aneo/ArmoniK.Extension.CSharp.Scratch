@@ -72,9 +72,9 @@ public class TasksServiceTests
             {
                 ExpectedOutputs = new List<BlobInfo>
                 {
-                    new("blob1", "blobId1", new Session { Id = "sessionId1" })
+                    new("blob1", "blobId1", "sessionId1")
                 },
-                Payload = new BlobInfo("payload1", "payloadId1", new Session { Id = "sessionId1" })
+                Payload = new BlobInfo("payload1", "payloadId1", "sessionId1" )
             }
         };
 
@@ -83,15 +83,14 @@ public class TasksServiceTests
         var mockBlobService = new Mock<IBlobService>().Object;
 
         var taskService =
-            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, new Session { Id = "sessionId1" },
-                NullLoggerFactory.Instance);
+            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
         // Act
-        var result = await taskService.SubmitTasksAsync(taskNodes);
+        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
 
         // Assert
         ClassicAssert.AreEqual("taskId1", result.FirstOrDefault()?.TaskId);
         ClassicAssert.AreEqual("payloadId1", result.FirstOrDefault()?.PayloadId);
-        ClassicAssert.AreEqual("blobId1", result.FirstOrDefault()?.ExpectedOutputIds[0]);
+        ClassicAssert.AreEqual("blobId1", result.FirstOrDefault().ExpectedOutputs.First());
     }
 
     [Test]
@@ -132,38 +131,37 @@ public class TasksServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService,
-            new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
+        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
 
         var taskNodes = new List<TaskNode>
         {
             new()
             {
-                Payload = new BlobInfo("payload1", "payloadId1", new Session { Id = "sessionId1" }),
+                Payload = new BlobInfo("payload1", "payloadId1", "sessionId1"),
                 ExpectedOutputs =
-                    new List<BlobInfo> { new("output1", "outputId1", new Session { Id = "sessionId1" }) }
+                    new List<BlobInfo> { new("output1", "outputId1", "sessionId1") }
             },
             new()
             {
-                Payload = new BlobInfo("payload2", "payloadId2", new Session { Id = "sessionId1" }),
-                ExpectedOutputs = new List<BlobInfo> { new("output2", "outputId2", new Session { Id = "sessionId2" }) }
+                Payload = new BlobInfo("payload2", "payloadId2", "sessionId1"),
+                ExpectedOutputs = new List<BlobInfo> { new("output2", "outputId2", "sessionId1" ) }
             }
         };
 
         // Act
-        var result = await taskService.SubmitTasksAsync(taskNodes);
+        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
 
         // Assert
         ClassicAssert.AreEqual(2, result.Count());
 
         Assert.That(result,
-            Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r =>
-                r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputIds.Contains("outputId1")),
+            Has.Some.Matches<TaskInfos>(r =>
+                r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputs.Contains("outputId1")),
             "Result should contain an item with taskId1, payloadId1, and outputId1");
 
         Assert.That(result,
-            Has.Some.Matches<SubmitTasksResponse.Types.TaskInfo>(r =>
-                r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputIds.Contains("outputId2")),
+            Has.Some.Matches<TaskInfos>(r =>
+                r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputs.Contains("outputId2")),
             "Result should contain an item with taskId2, payloadId2, and outputId2");
     }
 
@@ -180,20 +178,19 @@ public class TasksServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService,
-            new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
+        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
 
         var taskNodes = new List<TaskNode>
         {
             new()
             {
-                Payload = new BlobInfo("payload1", "payloadId1", new Session { Id = "sessionId1" }),
+                Payload = new BlobInfo("payload1", "payloadId1", "sessionId1"),
                 ExpectedOutputs = new List<BlobInfo>() // Empty expected outputs
             }
         };
 
         // Act & Assert
-        Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync(taskNodes));
+        Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync("sessionId1", taskNodes));
     }
 
     [Test]
@@ -236,16 +233,15 @@ public class TasksServiceTests
 
         var expectedBlobs = new List<BlobInfo>
         {
-            new("dependencyBlob", "dependencyBlobId", new Session { Id = "sessionId1" })
+            new("dependencyBlob", "dependencyBlobId", "sessionId1")
         };
 
         mockBlobService.Setup(m =>
-                m.CreateBlobsAsync(It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+                m.CreateBlobsAsync(It.IsAny<string>(),It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedBlobs);
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object,
-            new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
+        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
 
         var dataDependenciesContent = new Dictionary<string, ReadOnlyMemory<byte>>
         {
@@ -256,18 +252,18 @@ public class TasksServiceTests
         {
             new()
             {
-                Payload = new BlobInfo("payloadId", "blobId", new Session { Id = "sessionId1" }),
-                ExpectedOutputs = new List<BlobInfo> { new("output1", "outputId1", new Session { Id = "sessionId1" }) },
+                Payload = new BlobInfo("payloadId", "blobId", "sessionId1"),
+                ExpectedOutputs = new List<BlobInfo> { new("output1", "outputId1", "sessionId1") },
                 DataDependenciesContent = dataDependenciesContent
             }
         };
 
         // Act
-        var result = await taskService.SubmitTasksAsync(taskNodes);
+        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+            m => m.CreateBlobsAsync(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
 
         ClassicAssert.AreEqual("dependencyBlobId", taskNodes.First().DataDependencies.First().Id);
@@ -312,11 +308,10 @@ public class TasksServiceTests
 
         var expectedBlobs = new List<BlobInfo>
         {
-            new("dependencyBlob", "dependencyBlobId", new Session { Id = "sessionId1" })
+            new("dependencyBlob", "dependencyBlobId", "sessionId1")
         };
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object,
-            new Session { Id = "sessionId1" }, NullLoggerFactory.Instance);
+        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
 
         var dataDependenciesContent = ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
@@ -324,18 +319,18 @@ public class TasksServiceTests
         {
             new()
             {
-                Payload = new BlobInfo("payloadId", "blobId", new Session { Id = "sessionId1" }),
+                Payload = new BlobInfo("payloadId", "blobId", "sessionId1"),
                 ExpectedOutputs = expectedBlobs,
                 DataDependenciesContent = dataDependenciesContent
             }
         };
 
         // Act
-        await taskService.SubmitTasksAsync(taskNodes);
+        await taskService.SubmitTasksAsync("sessionId1", taskNodes);
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+            m => m.CreateBlobsAsync(It.IsAny<string>(),It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Never);
         Assert.That(taskNodes.First().DataDependencies, Is.Empty);
     }

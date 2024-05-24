@@ -4,16 +4,13 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
 public class BlobInfo
 {
-    public BlobInfo(string name, string id, Session session)
+    public BlobInfo(string name, string id, string sessionId)
     {
         Name = name;
         Id = id;
-        Session = session;
+        SessionId = sessionId;
     }
-
-    //should blobInfo have a session ? -> problem: BlobService will have a session already
-    //, and it might be ambiguous on functions where we receive the session as parameter
-    public Session Session { get; }
+    public string SessionId { get; }
     public string Name { get; }
     public string Id { get; }
 }

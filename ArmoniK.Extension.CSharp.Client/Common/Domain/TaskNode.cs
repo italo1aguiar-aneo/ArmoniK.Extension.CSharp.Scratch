@@ -20,5 +20,6 @@ public class TaskNode
     public KeyValuePair<string, ReadOnlyMemory<byte>> PayloadContent { get; set; } =
         new(string.Empty, ReadOnlyMemory<byte>.Empty);
 
-    [CanBeNull] public TaskOptions TaskOptions { get; set; }
+    [CanBeNull] public TaskConfiguration TaskOptions { get; set; }
+    public Session Session { get; set; }
 }

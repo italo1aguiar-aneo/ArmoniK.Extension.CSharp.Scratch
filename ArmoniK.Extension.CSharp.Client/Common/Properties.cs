@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
@@ -36,22 +37,6 @@ public class Properties
     private const string SectionRetryMaxBackoff = "RetryMaxBackoff";
 
     /// <summary>
-    ///     The default configuration to submit task in a Session
-    /// </summary>
-    // TODO: define [PublicApi] ?
-    // ReSharper disable once UnusedMember.Global
-    public static readonly TaskOptions DefaultTaskOptions = new()
-    {
-        MaxDuration = new Duration
-        {
-            Seconds = 300000
-        },
-        MaxRetries = 3,
-        Priority = 1
-    };
-
-
-    /// <summary>
     ///     The constructor to instantiate Properties object
     /// </summary>
     /// <param name="options">The taskOptions to set to a session</param>
@@ -66,7 +51,7 @@ public class Properties
     /// <param name="sslValidation">Disable the ssl strong validation of ssl certificate (default : enable => true)</param>
     // TODO: define [PublicApi] ?
     // ReSharper disable once UnusedMember.Global
-    public Properties(TaskOptions options,
+    public Properties(TaskConfiguration options,
         string connectionAddress,
         IEnumerable<string> partitionIds,
         int connectionPort = 0,
@@ -110,7 +95,7 @@ public class Properties
     /// <param name="retryMaxBackoff">Max retry backoff</param>
     /// <exception cref="ArgumentException"></exception>
     public Properties(IConfiguration configuration,
-        TaskOptions options,
+        TaskConfiguration options,
         IEnumerable<string> partitionIds,
         string connectionAddress = null,
         int connectionPort = 0,
@@ -281,7 +266,7 @@ public class Properties
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public TaskOptions TaskOptions { get; set; }
+    public TaskConfiguration TaskOptions { get; set; }
 
     /// <summary>
     ///     The TaskOptions to pass to the session or the submission session

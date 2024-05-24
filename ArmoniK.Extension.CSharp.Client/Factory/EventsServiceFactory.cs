@@ -9,9 +9,9 @@ namespace ArmoniK.Extension.CSharp.Client.Factory;
 
 public class EventsServiceFactory
 {
-    public static IEventsService CreateEventsService(ObjectPool<ChannelBase> channel, Session session,
+    public static IEventsService CreateEventsService(ObjectPool<ChannelBase> channel,
         ILoggerFactory loggerFactory = null)
     {
-        return new EventsService(channel, session, loggerFactory);
+        return new EventsService(channel, loggerFactory);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
 using Google.Protobuf.WellKnownTypes;
@@ -28,13 +29,12 @@ public class SessionServiceTests
 
         _defaultPartitionsIds = new List<string> { "subtasking" };
 
-        var defaultTaskOptions = new TaskOptions
-        {
-            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-            MaxRetries = 2,
-            Priority = 1,
-            PartitionId = _defaultPartitionsIds[0]
-        };
+        var defaultTaskOptions = new TaskConfiguration(
+            maxRetries: 2,
+            priority: 1,
+            partitionId: _defaultPartitionsIds[0],
+            maxDuration: TimeSpan.FromHours(1)
+        );
 
         _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
     }
@@ -76,6 +76,6 @@ public class SessionServiceTests
         var result = await sessionService.CreateSession();
 
         // Assert
-        ClassicAssert.AreEqual("12345", result.Id);
+        ClassicAssert.AreEqual("12345", result);
     }
 }

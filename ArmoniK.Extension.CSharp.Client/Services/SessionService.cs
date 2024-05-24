@@ -24,22 +24,19 @@ public class SessionService : ISessionService
         _channel = channel;
     }
 
-    public async Task<Session> CreateSession(CancellationToken cancellationToken = default)
+    public async Task<string> CreateSession(CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
         {
-            DefaultTaskOption = _properties.TaskOptions,
+            DefaultTaskOption = _properties.TaskOptions.ToTaskOptions(),
             PartitionIds =
             {
                 _properties.PartitionIds
             }
         });
 
-        return new Session
-        {
-            Id = createSessionReply.SessionId
-        };
+        return createSessionReply.SessionId;
     }
 }

@@ -5,7 +5,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
 public class Blob : BlobInfo
 {
-    public Blob(string blobName, string id, Session session) : base(blobName, id, session)
+    public Blob(string blobName, string id, string sessionId) : base(blobName, id, sessionId)
     {
     }
 
