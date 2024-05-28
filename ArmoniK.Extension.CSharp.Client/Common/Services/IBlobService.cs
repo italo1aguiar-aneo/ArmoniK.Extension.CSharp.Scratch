@@ -47,4 +47,7 @@ public interface IBlobService
         CancellationToken cancellationToken = default);
 
     Task<BlobState> GetBlobStateAsync(BlobInfo blobInfo, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<BlobState>> ListBlobsAsync(BlobPagination blobPagination,
+        CancellationToken cancellationToken = default);
 }
