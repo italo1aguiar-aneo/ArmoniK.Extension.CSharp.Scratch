@@ -117,7 +117,7 @@ internal class Program
 
         var download = await blobService.DownloadBlob(result,
             CancellationToken.None);
-        var stringArray = Encoding.ASCII.GetString(download.Content.Span)
+        var stringArray = Encoding.ASCII.GetString(download)
             .Split(new[]
                 {
                     '\n'

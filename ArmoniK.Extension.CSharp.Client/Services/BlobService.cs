@@ -246,7 +246,7 @@ public class BlobService : IBlobService
         }
     }
 
-    public async Task<Blob> DownloadBlob(BlobInfo blobInfo,
+    public async Task<byte[]> DownloadBlob(BlobInfo blobInfo,
         CancellationToken cancellationToken = default)
     {
         try
@@ -254,9 +254,7 @@ public class BlobService : IBlobService
             await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
             var blobClient = new ResultsClient(channel);
             var blob = new Blob(blobInfo.Name, blobInfo.Id, blobInfo.SessionId);
-            var data = await blobClient.DownloadResultData(blob.SessionId, blobInfo.Id, cancellationToken);
-            blob.AddContent(data);
-            return blob;
+            return await blobClient.DownloadResultData(blob.SessionId, blobInfo.Id, cancellationToken);
         }
         catch (Exception e)
         {

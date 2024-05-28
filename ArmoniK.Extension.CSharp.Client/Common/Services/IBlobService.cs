@@ -28,7 +28,7 @@ public interface IBlobService
         IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs,
         CancellationToken cancellationToken = default);
 
-    Task<Blob> DownloadBlob(BlobInfo blobInfo,
+    Task<byte[]> DownloadBlob(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<byte[]> DownloadBlobAsync(BlobInfo blobInfo,
