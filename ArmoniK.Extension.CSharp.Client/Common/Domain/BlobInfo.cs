@@ -1,6 +1,4 @@
-﻿using ArmoniK.Api.gRPC.V1;
-
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+﻿namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 
 public class BlobInfo
 {
@@ -10,7 +8,12 @@ public class BlobInfo
         Id = id;
         SessionId = sessionId;
     }
-    public string SessionId { get; }
-    public string Name { get; }
-    public string Id { get; }
+
+    protected BlobInfo()
+    {
+    }
+
+    public string SessionId { get; set; }
+    public string Name { get; set; }
+    public string Id { get; set; }
 }

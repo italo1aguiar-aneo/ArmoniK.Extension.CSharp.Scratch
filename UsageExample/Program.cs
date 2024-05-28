@@ -24,12 +24,9 @@
 
 
 using System.Text;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
-using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -71,15 +68,15 @@ internal class Program
         _configuration = builder.Build();
 
         var defaultTaskOptions = new TaskConfiguration(
-            maxRetries: 2,
-            priority: 1,
-            partitionId: "subtasking",
-            maxDuration: TimeSpan.FromHours(1),
-            options: new Dictionary<string, string>
-                {
-                    {"UseCase","Launch"},
-                }
-            );
+            2,
+            1,
+            "subtasking",
+            TimeSpan.FromHours(1),
+            new Dictionary<string, string>
+            {
+                { "UseCase", "Launch" }
+            }
+        );
 
         var props = new Properties(_configuration, defaultTaskOptions, ["subtasking"]);
 
@@ -87,7 +84,7 @@ internal class Program
 
         var sessionService = await client.GetSessionService();
 
-        var session = await sessionService.CreateSession();
+        var session = await sessionService.CreateSessionAsync();
 
         Console.WriteLine($"sessionId: {session}");
 
@@ -97,7 +94,7 @@ internal class Program
 
         var eventsService = await client.GetEventsService();
 
-        var payload = await blobService.CreateBlobAsync(session,"Payload", Encoding.ASCII.GetBytes("Hello"));
+        var payload = await blobService.CreateBlobAsync(session, "Payload", Encoding.ASCII.GetBytes("Hello"));
 
         Console.WriteLine($"payloadId: {payload.Id}");
 

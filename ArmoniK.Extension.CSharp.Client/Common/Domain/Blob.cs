@@ -1,5 +1,4 @@
 ﻿using System;
-using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
 

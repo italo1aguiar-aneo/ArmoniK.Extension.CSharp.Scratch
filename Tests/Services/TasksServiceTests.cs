@@ -1,14 +1,10 @@
 ﻿using System.Collections.Immutable;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
@@ -49,10 +45,10 @@ public class TasksServiceTests
 
         // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
-            It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-            It.IsAny<string>(),
-            It.IsAny<CallOptions>(),
-            It.IsAny<SubmitTasksRequest>()
+                It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
+                It.IsAny<string>(),
+                It.IsAny<CallOptions>(),
+                It.IsAny<SubmitTasksRequest>()
             )
         ).Returns(
             new AsyncUnaryCall<SubmitTasksResponse>(
@@ -61,8 +57,8 @@ public class TasksServiceTests
                 () => Status.DefaultSuccess,
                 () => new Metadata(),
                 () => { }
-                )
-            );
+            )
+        );
 
         mockChannelBase.Setup(m => m.CreateCallInvoker()).Returns(mockCallInvoker.Object);
 
@@ -74,7 +70,7 @@ public class TasksServiceTests
                 {
                     new("blob1", "blobId1", "sessionId1")
                 },
-                Payload = new BlobInfo("payload1", "payloadId1", "sessionId1" )
+                Payload = new BlobInfo("payload1", "payloadId1", "sessionId1")
             }
         };
 
@@ -112,17 +108,17 @@ public class TasksServiceTests
 
         // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
-            It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-            It.IsAny<string>(),
-            It.IsAny<CallOptions>(),
-            It.IsAny<SubmitTasksRequest>()
+                It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
+                It.IsAny<string>(),
+                It.IsAny<CallOptions>(),
+                It.IsAny<SubmitTasksRequest>()
             )
         ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
-            Task.FromResult(taskResponse),
-            Task.FromResult(new Metadata()),
-            () => Status.DefaultSuccess,
-            () => new Metadata(),
-            () => { }
+                Task.FromResult(taskResponse),
+                Task.FromResult(new Metadata()),
+                () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
             )
         );
 
@@ -131,7 +127,8 @@ public class TasksServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
+        var taskService =
+            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
 
         var taskNodes = new List<TaskNode>
         {
@@ -144,7 +141,7 @@ public class TasksServiceTests
             new()
             {
                 Payload = new BlobInfo("payload2", "payloadId2", "sessionId1"),
-                ExpectedOutputs = new List<BlobInfo> { new("output2", "outputId2", "sessionId1" ) }
+                ExpectedOutputs = new List<BlobInfo> { new("output2", "outputId2", "sessionId1") }
             }
         };
 
@@ -178,7 +175,8 @@ public class TasksServiceTests
         var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
         var mockBlobService = new Mock<IBlobService>().Object;
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
+        var taskService =
+            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
 
         var taskNodes = new List<TaskNode>
         {
@@ -212,17 +210,17 @@ public class TasksServiceTests
         };
         // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
-            It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-            It.IsAny<string>(),
-            It.IsAny<CallOptions>(),
-            It.IsAny<SubmitTasksRequest>()
+                It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
+                It.IsAny<string>(),
+                It.IsAny<CallOptions>(),
+                It.IsAny<SubmitTasksRequest>()
             )
         ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
-            Task.FromResult(taskResponse),
-            Task.FromResult(new Metadata()),
-            () => Status.DefaultSuccess,
-            () => new Metadata(),
-            () => { }
+                Task.FromResult(taskResponse),
+                Task.FromResult(new Metadata()),
+                () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
             )
         );
 
@@ -237,11 +235,13 @@ public class TasksServiceTests
         };
 
         mockBlobService.Setup(m =>
-                m.CreateBlobsAsync(It.IsAny<string>(),It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+                m.CreateBlobsAsync(It.IsAny<string>(),
+                    It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedBlobs);
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
+        var taskService =
+            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
 
         var dataDependenciesContent = new Dictionary<string, ReadOnlyMemory<byte>>
         {
@@ -263,7 +263,8 @@ public class TasksServiceTests
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+            m => m.CreateBlobsAsync(It.IsAny<string>(),
+                It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
 
         ClassicAssert.AreEqual("dependencyBlobId", taskNodes.First().DataDependencies.First().Id);
@@ -287,17 +288,17 @@ public class TasksServiceTests
 
         // Configure SubmitTask call
         mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(
-            It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-            It.IsAny<string>(),
-            It.IsAny<CallOptions>(),
-            It.IsAny<SubmitTasksRequest>()
+                It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
+                It.IsAny<string>(),
+                It.IsAny<CallOptions>(),
+                It.IsAny<SubmitTasksRequest>()
             )
         ).Returns(new AsyncUnaryCall<SubmitTasksResponse>(
-            Task.FromResult(taskResponse),
-            Task.FromResult(new Metadata()),
-            () => Status.DefaultSuccess,
-            () => new Metadata(),
-            () => { }
+                Task.FromResult(taskResponse),
+                Task.FromResult(new Metadata()),
+                () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
             )
         );
 
@@ -311,7 +312,8 @@ public class TasksServiceTests
             new("dependencyBlob", "dependencyBlobId", "sessionId1")
         };
 
-        var taskService = TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
+        var taskService =
+            TasksServiceFactory.CreateTaskService(objectPool, mockBlobService.Object, NullLoggerFactory.Instance);
 
         var dataDependenciesContent = ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
@@ -330,7 +332,8 @@ public class TasksServiceTests
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<string>(),It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
+            m => m.CreateBlobsAsync(It.IsAny<string>(),
+                It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Never);
         Assert.That(taskNodes.First().DataDependencies, Is.Empty);
     }

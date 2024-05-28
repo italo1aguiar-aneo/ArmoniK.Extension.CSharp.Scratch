@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
-using ArmoniK.Extension.CSharp.Client.Services;
+using ArmoniK.Extension.CSharp.Client.Handlers;
 using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -14,14 +13,14 @@ namespace ArmoniK.Extension.CSharp.Client;
 
 public class ArmoniKClient
 {
-    private IBlobService _blobService;
-    private IEventsService _eventsService;
     private readonly ILogger _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Properties _properties;
-    private ITasksService _tasksService;
+    private IBlobService _blobService;
     private ObjectPool<ChannelBase> _channelPool;
+    private IEventsService _eventsService;
     private ISessionService _sessionService;
+    private ITasksService _tasksService;
 
     public ArmoniKClient(Properties properties, ILoggerFactory loggerFactory)
     {
@@ -63,5 +62,20 @@ public class ArmoniKClient
         _eventsService =
             EventsServiceFactory.CreateEventsService(ChannelPool, _loggerFactory);
         return Task.FromResult(_eventsService);
+    }
+
+    public Task<BlobHandler> GetBlobHandler(BlobInfo blobInfo)
+    {
+        return Task.FromResult(new BlobHandler(blobInfo, this));
+    }
+
+    public Task<TaskHandler> GetTaskHandler(TaskInfos taskInfos)
+    {
+        return Task.FromResult(new TaskHandler(this, taskInfos));
+    }
+
+    public Task<SessionHandler> GetSessionHandler(string sessionId)
+    {
+        return Task.FromResult(new SessionHandler(sessionId, this));
     }
 }

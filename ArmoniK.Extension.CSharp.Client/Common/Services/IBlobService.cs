@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
@@ -35,9 +34,17 @@ public interface IBlobService
     IAsyncEnumerable<byte[]> DownloadBlobAsync(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
+    Task UploadBlobAsync(BlobInfo blobInfo, ReadOnlyMemory<byte> blobContent,
+        CancellationToken cancellationToken = default);
+
+    Task UploadBlobChunkAsync(BlobInfo blobInfo, IAsyncEnumerable<ReadOnlyMemory<byte>> blobContent,
+        CancellationToken cancellationToken = default);
+
     Task UploadBlobChunkAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
         CancellationToken cancellationToken = default);
 
     Task UploadBlobChunkAsync(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
         CancellationToken cancellationToken = default);
+
+    Task<BlobState> GetBlobStateAsync(BlobInfo blobInfo, CancellationToken cancellationToken = default);
 }

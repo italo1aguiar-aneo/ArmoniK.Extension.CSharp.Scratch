@@ -3,7 +3,6 @@ using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -31,10 +30,10 @@ public class ArmoniKClientTests
         _defaultPartitionsIds = new List<string> { "subtasking" };
 
         _defaultTaskOptions = new TaskConfiguration(
-            maxRetries: 2,
-            priority: 1,
-            partitionId: "subtasking",
-            maxDuration: TimeSpan.FromHours(1)
+            2,
+            1,
+            "subtasking",
+            TimeSpan.FromHours(1)
         );
 
         _defaultProperties = new Properties(_configuration, _defaultTaskOptions, _defaultPartitionsIds);

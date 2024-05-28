@@ -1,11 +1,8 @@
 ﻿using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
-using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
@@ -20,7 +17,6 @@ public class EventsServiceTests
     public EventsServiceTests()
     {
         _defaultPartitionsIds = new List<string> { "subtasking" };
-
     }
 
     [Test]
@@ -50,16 +46,16 @@ public class EventsServiceTests
         var streamReaderMock = new Mock<IAsyncStreamReader<EventSubscriptionResponse>>();
         streamReaderMock.SetupSequence(x => x.MoveNext(It.IsAny<CancellationToken>()))
             .Returns(() => Task.FromResult(responses.Count > 0))
-            .Returns(() => Task.FromResult(false)); 
+            .Returns(() => Task.FromResult(false));
 
         streamReaderMock.SetupGet(x => x.Current)
             .Returns(() => responses.Dequeue());
 
         mockCallInvoker.Setup(invoker => invoker.AsyncServerStreamingCall(
-                It.IsAny<Method<EventSubscriptionRequest, EventSubscriptionResponse>>(),
-                It.IsAny<string>(),
-                It.IsAny<CallOptions>(),
-                It.IsAny<EventSubscriptionRequest>()
+                    It.IsAny<Method<EventSubscriptionRequest, EventSubscriptionResponse>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CallOptions>(),
+                    It.IsAny<EventSubscriptionRequest>()
                 )
             )
             .Returns(new AsyncServerStreamingCall<EventSubscriptionResponse>
@@ -82,6 +78,6 @@ public class EventsServiceTests
 
         var blobId = new List<string> { "1234" };
 
-        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync("sessionId",blobId));
+        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync("sessionId", blobId));
     }
 }

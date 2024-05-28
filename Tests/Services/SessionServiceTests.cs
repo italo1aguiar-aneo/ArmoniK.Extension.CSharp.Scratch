@@ -1,10 +1,8 @@
-﻿using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.gRPC.V1.Sessions;
+﻿using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,10 +28,10 @@ public class SessionServiceTests
         _defaultPartitionsIds = new List<string> { "subtasking" };
 
         var defaultTaskOptions = new TaskConfiguration(
-            maxRetries: 2,
-            priority: 1,
-            partitionId: _defaultPartitionsIds[0],
-            maxDuration: TimeSpan.FromHours(1)
+            2,
+            1,
+            _defaultPartitionsIds[0],
+            TimeSpan.FromHours(1)
         );
 
         _defaultProperties = new Properties(configuration, defaultTaskOptions, _defaultPartitionsIds);
@@ -55,13 +53,13 @@ public class SessionServiceTests
                     It.IsAny<string>(),
                     It.IsAny<CallOptions>(),
                     It.IsAny<CreateSessionRequest>()
-                    )
                 )
+            )
             .Returns(new AsyncUnaryCall<CreateSessionReply>(
-                Task.FromResult(new CreateSessionReply { SessionId = "12345" }),
-                Task.FromResult(new Metadata()), () => Status.DefaultSuccess,
-                () => new Metadata(),
-                () => { }
+                    Task.FromResult(new CreateSessionReply { SessionId = "12345" }),
+                    Task.FromResult(new Metadata()), () => Status.DefaultSuccess,
+                    () => new Metadata(),
+                    () => { }
                 )
             );
 
@@ -73,7 +71,7 @@ public class SessionServiceTests
         var sessionService =
             SessionServiceFactory.CreateSessionService(objectPool, _defaultProperties, NullLoggerFactory.Instance);
         // Act
-        var result = await sessionService.CreateSession();
+        var result = await sessionService.CreateSessionAsync();
 
         // Assert
         ClassicAssert.AreEqual("12345", result);

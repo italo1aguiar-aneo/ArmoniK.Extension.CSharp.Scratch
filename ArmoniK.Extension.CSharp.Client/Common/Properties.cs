@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
-using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 

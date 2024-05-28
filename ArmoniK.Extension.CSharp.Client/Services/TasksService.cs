@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
@@ -60,7 +59,57 @@ public class TasksService : ITasksService
 
         var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
 
-        return taskSubmissionResponse.TaskInfos.Select(x=>new TaskInfos(x));
+        return taskSubmissionResponse.TaskInfos.Select(x => new TaskInfos(x, sessionId));
+    }
+
+    public async Task<TaskState> GetTasksDetailedAsync(string taskId, CancellationToken cancellationToken = default)
+    {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+
+        var tasksClient = new TasksClient(channel);
+
+        var tasks = await tasksClient.GetTaskAsync(new GetTaskRequest { TaskId = taskId });
+
+        return new TaskState
+        {
+            DataDependencies = tasks.Task.DataDependencies,
+            ExpectedOutputs = tasks.Task.ExpectedOutputIds,
+            TaskId = tasks.Task.Id,
+            Status = tasks.Task.Status,
+            CreateAt = tasks.Task.CreatedAt.ToDateTime(),
+            StartedAt = tasks.Task.StartedAt.ToDateTime(),
+            EndedAt = tasks.Task.EndedAt.ToDateTime(),
+            SessionId = tasks.Task.SessionId
+        };
+    }
+
+    public async Task<IEnumerable<TaskState>> ListTasksDetailedAsync(string sessionId, TaskPagination paginationOptions,
+        CancellationToken cancellationToken = default)
+    {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+
+        var tasksClient = new TasksClient(channel);
+
+        var tasks = await tasksClient.ListTasksDetailedAsync(new ListTasksRequest
+            {
+                Filters = paginationOptions.Filter, // should have sessionId filter... see how it should be implemented
+                Page = paginationOptions.Page,
+                PageSize = paginationOptions.PageSize,
+                Sort = new ListTasksRequest.Types.Sort { Direction = paginationOptions.SortDirection }
+            }
+        );
+
+        return tasks.Tasks.Select(x => new TaskState
+        {
+            DataDependencies = x.DataDependencies,
+            ExpectedOutputs = x.ExpectedOutputIds,
+            TaskId = x.Id,
+            Status = x.Status,
+            CreateAt = x.CreatedAt.ToDateTime(),
+            StartedAt = x.StartedAt.ToDateTime(),
+            EndedAt = x.EndedAt.ToDateTime(),
+            SessionId = x.SessionId
+        });
     }
 
     private async Task CreateNewBlobs(string sessionId, IEnumerable<TaskNode> taskNodes,
