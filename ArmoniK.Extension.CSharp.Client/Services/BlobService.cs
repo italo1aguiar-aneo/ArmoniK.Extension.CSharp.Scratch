@@ -375,7 +375,7 @@ public class BlobService : IBlobService
         }
     }
 
-    public async Task<IEnumerable<BlobState>> ListBlobsAsync(string sessionId, BlobPagination blobPagination,
+    public async Task<IEnumerable<BlobState>> ListBlobsAsync(BlobPagination blobPagination,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
