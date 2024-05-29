@@ -8,7 +8,7 @@ public class SessionHandler: SessionInfo
 {
     public readonly ArmoniKClient ArmoniKClient;
 
-    public SessionHandler(string sessionId, ArmoniKClient armoniKClient): base(sessionId)
+    public SessionHandler(SessionInfo session, ArmoniKClient armoniKClient): base(session.SessionId)
     {
         ArmoniKClient = armoniKClient;
     }

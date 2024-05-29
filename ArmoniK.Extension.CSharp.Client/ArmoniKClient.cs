@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
@@ -75,8 +76,8 @@ public class ArmoniKClient
         return Task.FromResult(new TaskHandler(this, taskInfos));
     }
 
-    public Task<SessionHandler> GetSessionHandler(string sessionId)
+    public Task<SessionHandler> GetSessionHandler(SessionInfo session)
     {
-        return Task.FromResult(new SessionHandler(sessionId, this));
+        return Task.FromResult(new SessionHandler(session, this));
     }
 }
