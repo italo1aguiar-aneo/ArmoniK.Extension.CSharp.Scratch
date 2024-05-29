@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 

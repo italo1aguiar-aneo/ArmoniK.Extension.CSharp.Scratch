@@ -1,6 +1,8 @@
 ﻿using System.Collections.Immutable;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
@@ -81,7 +83,7 @@ public class TasksServiceTests
         var taskService =
             TasksServiceFactory.CreateTaskService(objectPool, mockBlobService, NullLoggerFactory.Instance);
         // Act
-        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
+        var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"), taskNodes);
 
         // Assert
         ClassicAssert.AreEqual("taskId1", result.FirstOrDefault()?.TaskId);
@@ -146,7 +148,7 @@ public class TasksServiceTests
         };
 
         // Act
-        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
+        var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"), taskNodes);
 
         // Assert
         ClassicAssert.AreEqual(2, result.Count());
@@ -188,7 +190,7 @@ public class TasksServiceTests
         };
 
         // Act & Assert
-        Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync("sessionId1", taskNodes));
+        Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync(new SessionInfo("sessionId1"), taskNodes));
     }
 
     [Test]
@@ -235,7 +237,7 @@ public class TasksServiceTests
         };
 
         mockBlobService.Setup(m =>
-                m.CreateBlobsAsync(It.IsAny<string>(),
+                m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                     It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedBlobs);
@@ -259,11 +261,11 @@ public class TasksServiceTests
         };
 
         // Act
-        var result = await taskService.SubmitTasksAsync("sessionId1", taskNodes);
+        var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"), taskNodes);
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<string>(),
+            m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                 It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
 
@@ -328,11 +330,11 @@ public class TasksServiceTests
         };
 
         // Act
-        await taskService.SubmitTasksAsync("sessionId1", taskNodes);
+        await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"), taskNodes);
 
         // Assert
         mockBlobService.Verify(
-            m => m.CreateBlobsAsync(It.IsAny<string>(),
+            m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                 It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Never);
         Assert.That(taskNodes.First().DataDependencies, Is.Empty);

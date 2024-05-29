@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1.Events;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -24,22 +25,22 @@ public class EventsService : IEventsService
         _logger = loggerFactory.CreateLogger<EventsService>();
     }
 
-    public async Task WaitForBlobsAsync(string sessionId, ICollection<string> blobIds,
+    public async Task WaitForBlobsAsync(SessionInfo session, ICollection<string> blobIds,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(sessionId,
+        await eventsClient.WaitForResultsAsync(session.SessionId,
             blobIds,
             cancellationToken);
     }
 
-    public async Task WaitForBlobsAsync(string sessionId, ICollection<BlobInfo> blobInfos,
+    public async Task WaitForBlobsAsync(SessionInfo session, ICollection<BlobInfo> blobInfos,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(sessionId,
+        await eventsClient.WaitForResultsAsync(session.SessionId,
             blobInfos.Select(x => x.Id).ToList(),
             cancellationToken);
     }

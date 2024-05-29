@@ -1,4 +1,4 @@
-﻿namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+﻿namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 public class BlobInfo
 {

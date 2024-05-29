@@ -4,8 +4,10 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -27,7 +29,7 @@ public class TasksService : ITasksService
         _blobService = blobService;
     }
 
-    public async Task<IEnumerable<TaskInfos>> SubmitTasksAsync(string sessionId, IEnumerable<TaskNode> taskNodes,
+    public async Task<IEnumerable<TaskInfos>> SubmitTasksAsync(SessionInfo session, IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken = default)
     {
         var enumerableTaskNodes = taskNodes.ToList();
@@ -36,7 +38,7 @@ public class TasksService : ITasksService
         if (enumerableTaskNodes.Any(node => node.ExpectedOutputs == null || !node.ExpectedOutputs.Any()))
             throw new InvalidOperationException("Expected outputs cannot be empty.");
 
-        await CreateNewBlobs(sessionId, enumerableTaskNodes, cancellationToken);
+        await CreateNewBlobs(session, enumerableTaskNodes, cancellationToken);
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
@@ -53,13 +55,13 @@ public class TasksService : ITasksService
 
         var submitTasksRequest = new SubmitTasksRequest
         {
-            SessionId = sessionId,
+            SessionId = session.SessionId,
             TaskCreations = { taskCreations.ToList() }
         };
 
         var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
 
-        return taskSubmissionResponse.TaskInfos.Select(x => new TaskInfos(x, sessionId));
+        return taskSubmissionResponse.TaskInfos.Select(x => new TaskInfos(x, session.SessionId));
     }
 
     public async Task<TaskState> GetTasksDetailedAsync(string taskId, CancellationToken cancellationToken = default)
@@ -83,7 +85,7 @@ public class TasksService : ITasksService
         };
     }
 
-    public async Task<IEnumerable<TaskState>> ListTasksDetailedAsync(string sessionId, TaskPagination paginationOptions,
+    public async Task<IEnumerable<TaskState>> ListTasksDetailedAsync(SessionInfo session, TaskPagination paginationOptions,
         CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
@@ -112,7 +114,7 @@ public class TasksService : ITasksService
         });
     }
 
-    private async Task CreateNewBlobs(string sessionId, IEnumerable<TaskNode> taskNodes,
+    private async Task CreateNewBlobs(SessionInfo session, IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken)
     {
         var enumerableNodes = taskNodes.ToList();
@@ -124,7 +126,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(sessionId, blobKeyValues,
+                await _blobService.CreateBlobsAsync(session, blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 
@@ -142,7 +144,7 @@ public class TasksService : ITasksService
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
             var createdBlobs =
-                await _blobService.CreateBlobsAsync(sessionId, blobKeyValues,
+                await _blobService.CreateBlobsAsync(session, blobKeyValues,
                     cancellationToken);
             var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
 

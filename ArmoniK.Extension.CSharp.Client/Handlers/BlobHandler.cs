@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 namespace ArmoniK.Extension.CSharp.Client.Handlers;
 
@@ -33,7 +33,7 @@ public class BlobHandler : BlobInfo
     {
         var blobClient = await ArmoniKClient.GetBlobService();
 
-        await foreach (var chunk in blobClient.DownloadBlobAsync(this, cancellationToken).ConfigureAwait(false))
+        await foreach (var chunk in blobClient.DownloadBlobWithChunksAsync(this, cancellationToken).ConfigureAwait(false))
             yield return chunk;
     }
 

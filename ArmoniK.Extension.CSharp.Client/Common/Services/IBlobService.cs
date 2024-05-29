@@ -2,36 +2,37 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IBlobService
 {
-    Task<BlobInfo> CreateBlobAsync(string sessionId, string name, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session, string name, CancellationToken cancellationToken = default);
 
-    Task<BlobInfo> CreateBlobAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session, CancellationToken cancellationToken = default);
 
-    Task<BlobInfo> CreateBlobAsync(string sessionId, string name, IAsyncEnumerable<ReadOnlyMemory<byte>> contents,
+    Task<BlobInfo> CreateBlobFromChunksAsync(SessionInfo session, string name, IAsyncEnumerable<ReadOnlyMemory<byte>> contents,
         CancellationToken cancellationToken = default);
 
-    Task<BlobInfo> CreateBlobAsync(string sessionId, string name, ReadOnlyMemory<byte> content,
+    Task<BlobInfo> CreateBlobAsync(SessionInfo session, string name, ReadOnlyMemory<byte> content,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string sessionId, int quantity,
+    Task<IEnumerable<BlobInfo>> CreateBlobsMetadataAsync(SessionInfo session, int quantity,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string sessionId, IEnumerable<string> names,
+    Task<IEnumerable<BlobInfo>> CreateBlobsMetadataAsync(SessionInfo session, IEnumerable<string> names,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(string sessionId,
+    Task<IEnumerable<BlobInfo>> CreateBlobsAsync(SessionInfo session,
         IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs,
         CancellationToken cancellationToken = default);
 
-    Task<byte[]> DownloadBlob(BlobInfo blobInfo,
+    Task<byte[]> DownloadBlobAsync(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<byte[]> DownloadBlobAsync(BlobInfo blobInfo,
+    IAsyncEnumerable<byte[]> DownloadBlobWithChunksAsync(BlobInfo blobInfo,
         CancellationToken cancellationToken = default);
 
     Task UploadBlobAsync(BlobInfo blobInfo, ReadOnlyMemory<byte> blobContent,
@@ -40,7 +41,7 @@ public interface IBlobService
     Task UploadBlobChunkAsync(BlobInfo blobInfo, IAsyncEnumerable<ReadOnlyMemory<byte>> blobContent,
         CancellationToken cancellationToken = default);
 
-    Task UploadBlobChunkAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+    Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
         CancellationToken cancellationToken = default);
 
     Task UploadBlobChunkAsync(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,

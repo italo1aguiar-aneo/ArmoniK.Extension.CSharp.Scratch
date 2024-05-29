@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 public class TaskNode
 {
@@ -21,5 +23,5 @@ public class TaskNode
         new(string.Empty, ReadOnlyMemory<byte>.Empty);
 
     [CanBeNull] public TaskConfiguration TaskOptions { get; set; }
-    public Session Session { get; set; }
+    public SessionInfo Session { get; set; }
 }

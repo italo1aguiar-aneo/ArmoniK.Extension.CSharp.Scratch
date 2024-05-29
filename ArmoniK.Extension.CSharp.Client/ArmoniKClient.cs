@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Extension.CSharp.Client.Handlers;

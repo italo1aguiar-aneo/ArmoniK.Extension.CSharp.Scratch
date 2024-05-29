@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 public interface IEventsService
 {
-    Task WaitForBlobsAsync(string sessionId, ICollection<string> blobIds,
+    Task WaitForBlobsAsync(SessionInfo session, ICollection<string> blobIds,
         CancellationToken cancellationToken = default);
 
-    Task WaitForBlobsAsync(string sessionId, ICollection<BlobInfo> blobInfos,
+    Task WaitForBlobsAsync(SessionInfo session, ICollection<BlobInfo> blobInfos,
         CancellationToken cancellationToken = default);
 }

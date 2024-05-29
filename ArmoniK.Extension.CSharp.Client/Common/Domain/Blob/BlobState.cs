@@ -1,7 +1,7 @@
 ﻿using System;
 using ArmoniK.Api.gRPC.V1;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 public class BlobState : BlobInfo
 {

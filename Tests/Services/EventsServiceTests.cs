@@ -1,5 +1,6 @@
 ﻿using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -78,6 +79,6 @@ public class EventsServiceTests
 
         var blobId = new List<string> { "1234" };
 
-        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync("sessionId", blobId));
+        Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(new SessionInfo("sessionId"), blobId));
     }
 }

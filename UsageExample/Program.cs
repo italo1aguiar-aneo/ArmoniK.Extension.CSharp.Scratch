@@ -26,7 +26,8 @@
 using System.Text;
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -86,7 +87,7 @@ internal class Program
 
         var session = await sessionService.CreateSessionAsync();
 
-        Console.WriteLine($"sessionId: {session}");
+        Console.WriteLine($"sessionId: {session.SessionId}");
 
         var blobService = await client.GetBlobService();
 
@@ -98,7 +99,7 @@ internal class Program
 
         Console.WriteLine($"payloadId: {payload.Id}");
 
-        var result = await blobService.CreateBlobAsync("Result");
+        var result = await blobService.CreateBlobMetadataAsync(session, "Result");
 
         Console.WriteLine($"resultId: {result.Id}");
 
@@ -115,7 +116,7 @@ internal class Program
 
         await eventsService.WaitForBlobsAsync(session, new List<BlobInfo>([result]));
 
-        var download = await blobService.DownloadBlob(result,
+        var download = await blobService.DownloadBlobAsync(result,
             CancellationToken.None);
         var stringArray = Encoding.ASCII.GetString(download)
             .Split(new[]

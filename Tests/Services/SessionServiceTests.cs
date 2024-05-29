@@ -1,6 +1,7 @@
 ﻿using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -74,6 +75,6 @@ public class SessionServiceTests
         var result = await sessionService.CreateSessionAsync();
 
         // Assert
-        ClassicAssert.AreEqual("12345", result);
+        ClassicAssert.AreEqual("12345", result.SessionId);
     }
 }

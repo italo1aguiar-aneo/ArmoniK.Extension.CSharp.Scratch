@@ -4,7 +4,7 @@ using ArmoniK.Api.gRPC.V1;
 using Google.Protobuf.WellKnownTypes;
 using JetBrains.Annotations;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 public class TaskConfiguration
 {

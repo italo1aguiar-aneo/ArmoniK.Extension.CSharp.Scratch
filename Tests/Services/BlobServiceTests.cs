@@ -1,5 +1,6 @@
 ﻿using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
 using Google.Protobuf.WellKnownTypes;
@@ -62,7 +63,7 @@ public class BlobServiceTests
             BlobServiceFactory.CreateBlobService(objectPool,
                 NullLoggerFactory.Instance);
         // Act
-        var result = await blobService.CreateBlobAsync("sessionId");
+        var result = await blobService.CreateBlobMetadataAsync(new SessionInfo("sessionId"));
 
         // Assert
         ClassicAssert.AreEqual("blobName", result.Name);
@@ -115,7 +116,7 @@ public class BlobServiceTests
             BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync(name);
+        var result = await blobService.CreateBlobMetadataAsync(new SessionInfo("sessionId"),name);
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
@@ -217,7 +218,7 @@ public class BlobServiceTests
             BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
+        var result = await blobService.CreateBlobFromChunksAsync(new SessionInfo("sessionId"), name, contents);
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
@@ -354,7 +355,7 @@ public class BlobServiceTests
             BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
+        var result = await blobService.CreateBlobAsync(new SessionInfo("sessionId"), name, contents);
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
@@ -490,7 +491,7 @@ public class BlobServiceTests
             BlobServiceFactory.CreateBlobService(objectPool, NullLoggerFactory.Instance);
 
         // Act
-        var result = await blobService.CreateBlobAsync("sessionId", name, contents);
+        var result = await blobService.CreateBlobAsync(new SessionInfo("sessionId"), name, contents);
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);

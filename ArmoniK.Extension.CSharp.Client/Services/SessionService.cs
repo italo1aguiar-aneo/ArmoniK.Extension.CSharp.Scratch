@@ -1,7 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 using Grpc.Core;
@@ -23,7 +25,7 @@ public class SessionService : ISessionService
         _channel = channel;
     }
 
-    public async Task<string> CreateSessionAsync(CancellationToken cancellationToken = default)
+    public async Task<SessionInfo> CreateSessionAsync(CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
@@ -36,76 +38,76 @@ public class SessionService : ISessionService
             }
         });
 
-        return createSessionReply.SessionId;
+        return new SessionInfo(createSessionReply.SessionId);
     }
 
-    public async Task CancelSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task CancelSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.CancelSessionAsync(new CancelSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task CloseSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task CloseSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.CloseSessionAsync(new CloseSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task PauseSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task PauseSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.PauseSessionAsync(new PauseSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task StopSubmissionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task StopSubmissionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.StopSubmissionAsync(new StopSubmissionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task ResumeSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task ResumeSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.ResumeSessionAsync(new ResumeSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task PurgeSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task PurgeSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.PurgeSessionAsync(new PurgeSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 
-    public async Task DeleteSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    public async Task DeleteSessionAsync(SessionInfo session, CancellationToken cancellationToken = default)
     {
         await using var channel = await _channel.GetAsync(cancellationToken);
         var sessionClient = new Sessions.SessionsClient(channel);
         await sessionClient.DeleteSessionAsync(new DeleteSessionRequest
         {
-            SessionId = sessionId
+            SessionId = session.SessionId
         });
     }
 }

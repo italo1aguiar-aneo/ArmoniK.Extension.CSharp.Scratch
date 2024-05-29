@@ -1,9 +1,9 @@
-﻿using ArmoniK.Api.gRPC.V1.SortDirection;
-using ArmoniK.Api.gRPC.V1.Tasks;
+﻿using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
-public class TaskPagination
+public class BlobPagination
 {
     public int Page { get; set; }
     public int PageSize { get; set; }
