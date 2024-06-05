@@ -97,11 +97,11 @@ internal class Program
 
         var payload = await blobService.CreateBlobAsync(session, "Payload", Encoding.ASCII.GetBytes("Hello"));
 
-        Console.WriteLine($"payloadId: {payload.Id}");
+        Console.WriteLine($"payloadId: {payload.BlobId}");
 
         var result = await blobService.CreateBlobMetadataAsync(session, "Result");
 
-        Console.WriteLine($"resultId: {result.Id}");
+        Console.WriteLine($"resultId: {result.BlobId}");
 
         var task = await tasksService.SubmitTasksAsync(session,
             new List<TaskNode>([

@@ -13,8 +13,8 @@ public class BlobState : BlobInfo
     {
     }
 
-    public BlobState(string name, string id, string sessionId, DateTime createAt, DateTime completedAt,
-        ResultStatus status) : base(name, id, sessionId)
+    public BlobState(string blobName, string blobId, string sessionId, DateTime createAt, DateTime completedAt,
+        ResultStatus status) : base(blobName, blobId, sessionId)
     {
         CreateAt = createAt;
         CompletedAt = completedAt;

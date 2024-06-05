@@ -66,7 +66,7 @@ public class BlobServiceTests
         var result = await blobService.CreateBlobMetadataAsync(new SessionInfo("sessionId"));
 
         // Assert
-        ClassicAssert.AreEqual("blobName", result.Name);
+        ClassicAssert.AreEqual("blobName", result.BlobName);
     }
 
     [Test]
@@ -120,7 +120,7 @@ public class BlobServiceTests
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
-        ClassicAssert.AreEqual(name, result.Name);
+        ClassicAssert.AreEqual(name, result.BlobName);
     }
 
     [Test]
@@ -222,7 +222,7 @@ public class BlobServiceTests
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
-        ClassicAssert.AreEqual(name, result.Name);
+        ClassicAssert.AreEqual(name, result.BlobName);
     }
 
     [Test]
@@ -359,7 +359,7 @@ public class BlobServiceTests
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
-        ClassicAssert.AreEqual(name, result.Name);
+        ClassicAssert.AreEqual(name, result.BlobName);
     }
 
     [Test]
@@ -495,6 +495,6 @@ public class BlobServiceTests
 
         // Assert
         ClassicAssert.AreEqual("sessionId", result.SessionId);
-        ClassicAssert.AreEqual(name, result.Name);
+        ClassicAssert.AreEqual(name, result.BlobName);
     }
 }

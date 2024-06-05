@@ -46,9 +46,9 @@ public class TasksService : ITasksService
 
         var taskCreations = enumerableTaskNodes.Select(taskNode => new SubmitTasksRequest.Types.TaskCreation
         {
-            PayloadId = taskNode.Payload.Id,
-            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.Id) },
-            DataDependencies = { taskNode.DataDependencies?.Select(i => i.Id) ?? Enumerable.Empty<string>() },
+            PayloadId = taskNode.Payload.BlobId,
+            ExpectedOutputKeys = { taskNode.ExpectedOutputs.Select(i => i.BlobId) },
+            DataDependencies = { taskNode.DataDependencies?.Select(i => i.BlobId) ?? Enumerable.Empty<string>() },
             TaskOptions = taskNode.TaskOptions?.ToTaskOptions()
         }).ToList();
 
@@ -128,7 +128,7 @@ public class TasksService : ITasksService
             var createdBlobs =
                 await _blobService.CreateBlobsAsync(session, blobKeyValues,
                     cancellationToken);
-            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
+            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
 
             foreach (var taskNode in enumerableNodes)
             foreach (var dependency in taskNode.DataDependenciesContent)
@@ -146,7 +146,7 @@ public class TasksService : ITasksService
             var createdBlobs =
                 await _blobService.CreateBlobsAsync(session, blobKeyValues,
                     cancellationToken);
-            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.Name);
+            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
 
             foreach (var taskNode in enumerableNodes)
                 if (createdBlobDictionary.TryGetValue(taskNode.PayloadContent.Key, out var createdBlob))

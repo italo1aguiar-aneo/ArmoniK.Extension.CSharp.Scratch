@@ -97,7 +97,7 @@ public class BlobService : IBlobService
             var blobInfo = await CreateBlobMetadataAsync(session, name, cancellationToken);
             await UploadBlobsAsync(new List<Tuple<BlobInfo, ReadOnlyMemory<byte>>> { new(blobInfo, content) },
                 cancellationToken);
-            return new BlobInfo(name, blobInfo.Id, session.SessionId);
+            return new BlobInfo(name, blobInfo.BlobId, session.SessionId);
         }
 
         var blobCreationResponse = await blobClient.CreateResultsAsync(
@@ -129,7 +129,7 @@ public class BlobService : IBlobService
                 cancellationToken);
         }
 
-        return new BlobInfo(name, blobInfo.Id, session.SessionId);
+        return new BlobInfo(name, blobInfo.BlobId, session.SessionId);
     }
 
     public async Task<IEnumerable<BlobInfo>> CreateBlobsAsync(SessionInfo session,
@@ -150,7 +150,7 @@ public class BlobService : IBlobService
         // Wait for all tasks to complete and gather results
         var blobCreationResponse = await Task.WhenAll(tasks);
 
-        return blobCreationResponse.Select(x => new BlobInfo(x.Name, x.Id, session.SessionId)).ToList();
+        return blobCreationResponse.Select(x => new BlobInfo(x.BlobName, x.BlobId, session.SessionId)).ToList();
     }
 
     public async Task UploadBlobChunkAsync(BlobInfo blobInfo, IAsyncEnumerable<ReadOnlyMemory<byte>> blobContent,
@@ -231,7 +231,7 @@ public class BlobService : IBlobService
                 DataChunk = ByteString.CopyFrom(blobContent.Span),
                 Id = new UploadResultDataRequest.Types.ResultIdentifier
                 {
-                    ResultId = blobInfo.Id,
+                    ResultId = blobInfo.BlobId,
                     SessionId = blobInfo.SessionId
                 }
             });
@@ -250,7 +250,7 @@ public class BlobService : IBlobService
         {
             await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
             var blobClient = new ResultsClient(channel);
-            return await blobClient.DownloadResultData(blobInfo.SessionId, blobInfo.Id, cancellationToken);
+            return await blobClient.DownloadResultData(blobInfo.SessionId, blobInfo.BlobId, cancellationToken);
         }
         catch (Exception e)
         {
@@ -265,7 +265,7 @@ public class BlobService : IBlobService
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
         var stream = blobClient.DownloadResultData(
-            new DownloadResultDataRequest { ResultId = blobInfo.Id, SessionId = blobInfo.SessionId },
+            new DownloadResultDataRequest { ResultId = blobInfo.BlobId, SessionId = blobInfo.SessionId },
             cancellationToken: cancellationToken);
         while (await stream.ResponseStream.MoveNext(cancellationToken))
             yield return stream.ResponseStream.Current.DataChunk.ToByteArray();
@@ -277,16 +277,16 @@ public class BlobService : IBlobService
         var blobClient = new ResultsClient(channel);
         var blobDetails = await blobClient.GetResultAsync(new GetResultRequest
         {
-            ResultId = blobInfo.Id
+            ResultId = blobInfo.BlobId
         });
         return new BlobState
         {
             CreateAt = blobDetails.Result.CreatedAt.ToDateTime(),
             CompletedAt = blobDetails.Result.CompletedAt.ToDateTime(),
             Status = blobDetails.Result.Status,
-            Id = blobDetails.Result.ResultId,
+            BlobId = blobDetails.Result.ResultId,
             SessionId = blobDetails.Result.SessionId,
-            Name = blobDetails.Result.Name
+            BlobName = blobDetails.Result.Name
         };
     }
 
@@ -309,8 +309,8 @@ public class BlobService : IBlobService
             CreateAt = x.CreatedAt.ToDateTime(),
             CompletedAt = x.CompletedAt.ToDateTime(),
             Status = x.Status,
-            Id = x.ResultId,
-            Name = x.Name,
+            BlobId = x.ResultId,
+            BlobName = x.Name,
             SessionId = x.SessionId
         });
     }
@@ -335,7 +335,7 @@ public class BlobService : IBlobService
                     DataChunk = ByteString.CopyFrom(content.Span),
                     Id = new UploadResultDataRequest.Types.ResultIdentifier
                     {
-                        ResultId = blob.Id,
+                        ResultId = blob.BlobId,
                         SessionId = blob.SessionId
                     }
                 });
@@ -359,7 +359,7 @@ public class BlobService : IBlobService
                     DataChunk = ByteString.CopyFrom(blob.Item2.Span),
                     Id = new UploadResultDataRequest.Types.ResultIdentifier
                     {
-                        ResultId = blob.Item1.Id,
+                        ResultId = blob.Item1.BlobId,
                         SessionId = blob.Item1.SessionId
                     }
                 });

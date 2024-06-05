@@ -2,10 +2,10 @@
 
 public class BlobInfo
 {
-    public BlobInfo(string name, string id, string sessionId)
+    public BlobInfo(string blobName, string blobId, string sessionId)
     {
-        Name = name;
-        Id = id;
+        BlobName = blobName;
+        BlobId = blobId;
         SessionId = sessionId;
     }
 
@@ -14,6 +14,6 @@ public class BlobInfo
     }
 
     public string SessionId { get; set; }
-    public string Name { get; set; }
-    public string Id { get; set; }
+    public string BlobName { get; set; }
+    public string BlobId { get; set; }
 }

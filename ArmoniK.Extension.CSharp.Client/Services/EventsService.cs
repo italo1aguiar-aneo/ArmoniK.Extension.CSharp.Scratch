@@ -41,7 +41,7 @@ public class EventsService : IEventsService
         await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
         var eventsClient = new Events.EventsClient(channel);
         await eventsClient.WaitForResultsAsync(session.SessionId,
-            blobInfos.Select(x => x.Id).ToList(),
+            blobInfos.Select(x => x.BlobId).ToList(),
             cancellationToken);
     }
 }

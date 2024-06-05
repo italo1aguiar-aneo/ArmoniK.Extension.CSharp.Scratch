@@ -30,7 +30,7 @@ public class ArmoniKClient
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _logger = loggerFactory.CreateLogger<ArmoniKClient>();
     }
-
+ 
     public ObjectPool<ChannelBase> ChannelPool
         => _channelPool ??= ClientServiceConnector.ControlPlaneConnectionPool(_properties,
             _loggerFactory);

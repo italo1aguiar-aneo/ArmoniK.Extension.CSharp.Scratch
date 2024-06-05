@@ -269,7 +269,7 @@ public class TasksServiceTests
                 It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
 
-        ClassicAssert.AreEqual("dependencyBlobId", taskNodes.First().DataDependencies.First().Id);
+        ClassicAssert.AreEqual("dependencyBlobId", taskNodes.First().DataDependencies.First().BlobId);
         ClassicAssert.AreEqual("dependencyBlobId", result.First().DataDependencies.First());
     }
 

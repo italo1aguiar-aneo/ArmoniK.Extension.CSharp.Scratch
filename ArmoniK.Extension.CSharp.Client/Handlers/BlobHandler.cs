@@ -11,13 +11,13 @@ public class BlobHandler : BlobInfo
 {
     public readonly ArmoniKClient ArmoniKClient;
 
-    public BlobHandler(BlobInfo blobInfo, ArmoniKClient armoniKClient) : base(blobInfo.Name, blobInfo.Id,
+    public BlobHandler(BlobInfo blobInfo, ArmoniKClient armoniKClient) : base(blobInfo.BlobName, blobInfo.BlobId,
         blobInfo.SessionId)
     {
         ArmoniKClient = armoniKClient;
     }
 
-    public BlobHandler(string name, string id, string sessionId, ArmoniKClient armoniKClient) : base(name, id,
+    public BlobHandler(string blobName, string blobId, string sessionId, ArmoniKClient armoniKClient) : base(blobName, blobId,
         sessionId)
     {
         ArmoniKClient = armoniKClient;
