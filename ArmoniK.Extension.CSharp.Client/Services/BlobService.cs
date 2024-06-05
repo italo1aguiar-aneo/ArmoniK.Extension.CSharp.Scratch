@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Extension.CSharp.Client.Common.Domain;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
@@ -15,6 +13,7 @@ using ArmoniK.Utils;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Crypto;
 using static ArmoniK.Api.gRPC.V1.Results.Results;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
@@ -32,7 +31,8 @@ public class BlobService : IBlobService
         _logger = loggerFactory.CreateLogger<BlobService>();
     }
 
-    public async Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session, string name, CancellationToken cancellationToken = default)
+    public async Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session, string name,
+        CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
@@ -78,9 +78,27 @@ public class BlobService : IBlobService
             blobsCreationResponse.Results.Select(b => new BlobInfo(b.Name, b.ResultId, session.SessionId)));
     }
 
-    public async Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session, CancellationToken cancellationToken = default)
+    public async Task<BlobInfo> CreateBlobMetadataAsync(SessionInfo session,
+        CancellationToken cancellationToken = default)
     {
         return await CreateBlobMetadataAsync(session, Guid.NewGuid().ToString(), cancellationToken);
+    }
+
+    private async Task<BlobInfo> CreateEmptyBlobAsync(SessionInfo session, string name, ResultsClient blobClient, CancellationToken cancellationToken)
+    {
+        var blobCreationResponse = await blobClient.CreateResultsAsync(
+            new CreateResultsRequest
+            {
+                SessionId = session.SessionId,
+                Results =
+                {
+                    new CreateResultsRequest.Types.ResultCreate
+                    {
+                        Name = name
+                    }
+                }
+            }, cancellationToken: cancellationToken);
+        return new BlobInfo(name, blobCreationResponse.Results.Single().ResultId, session.SessionId);
     }
 
     public async Task<BlobInfo> CreateBlobAsync(SessionInfo session, string name, ReadOnlyMemory<byte> content,
@@ -91,15 +109,16 @@ public class BlobService : IBlobService
 
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
         var blobClient = new ResultsClient(channel);
+
         if (_serviceConfiguration != null && content.Length > _serviceConfiguration.DataChunkMaxSize)
         {
-            //MUST TEST
-            var blobInfo = await CreateBlobMetadataAsync(session, name, cancellationToken);
-            await UploadBlobsAsync(new List<Tuple<BlobInfo, ReadOnlyMemory<byte>>> { new(blobInfo, content) },
-                cancellationToken);
-            return new BlobInfo(name, blobInfo.BlobId, session.SessionId);
-        }
 
+            var blobInfoEmpty = await CreateEmptyBlobAsync(session, name, blobClient, cancellationToken);
+
+            await UploadBlobsAsync(new List<Tuple<BlobInfo, ReadOnlyMemory<byte>>> { new(blobInfoEmpty, content) },blobClient, cancellationToken);
+            return blobInfoEmpty;
+        }
+        
         var blobCreationResponse = await blobClient.CreateResultsAsync(
             new CreateResultsRequest
             {
@@ -108,25 +127,30 @@ public class BlobService : IBlobService
                 {
                     new CreateResultsRequest.Types.ResultCreate
                     {
-                        Name = name,
-                        Data = ByteString.CopyFrom(content.Span)
+                        Name = name
                     }
                 }
             }, cancellationToken: cancellationToken);
+
         return new BlobInfo(name, blobCreationResponse.Results.Single().ResultId, session.SessionId);
     }
 
-    public async Task<BlobInfo> CreateBlobFromChunksAsync(SessionInfo session, string name, IAsyncEnumerable<ReadOnlyMemory<byte>> contents,
+    public async Task<BlobInfo> CreateBlobFromChunksAsync(SessionInfo session, string name,
+        IAsyncEnumerable<ReadOnlyMemory<byte>> contents,
         CancellationToken cancellationToken = default)
     {
         if (_serviceConfiguration is null)
             await LoadBlobServiceConfiguration(cancellationToken);
 
-        var blobInfo = await CreateBlobMetadataAsync(session, name, cancellationToken);
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient = new ResultsClient(channel);
+
+        var blobInfo = await CreateEmptyBlobAsync(session, name, blobClient, cancellationToken);
         await foreach (var content in contents.WithCancellation(cancellationToken))
         {
-            await UploadBlobsAsync(new List<Tuple<BlobInfo, ReadOnlyMemory<byte>>> { new(blobInfo, content) },
-                cancellationToken);
+            await UploadBlobsAsync(
+                new List<Tuple<BlobInfo, ReadOnlyMemory<byte>>> { new(blobInfo, content) }, blobClient, cancellationToken
+            );
         }
 
         return new BlobInfo(name, blobInfo.BlobId, session.SessionId);
@@ -136,8 +160,6 @@ public class BlobService : IBlobService
         IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> blobKeyValuePairs,
         CancellationToken cancellationToken = default)
     {
-        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
-
         var tasks = blobKeyValuePairs.Select(blobKeyValuePair =>
             Task.Run(async () =>
             {
@@ -174,14 +196,12 @@ public class BlobService : IBlobService
         }
     }
 
-    public async Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+    private async Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs, ResultsClient blobClient, 
         CancellationToken cancellationToken = default)
     {
         if (_serviceConfiguration is null)
             await LoadBlobServiceConfiguration(cancellationToken);
 
-        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
-        var blobClient = new ResultsClient(channel);
         try
         {
             foreach (var chunk in blobs.ToChunks(_serviceConfiguration.DataChunkMaxSize))
@@ -194,7 +214,19 @@ public class BlobService : IBlobService
         }
     }
 
-    public async Task UploadBlobChunkAsync(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+    public async Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
+        CancellationToken cancellationToken = default)
+    {
+        if (_serviceConfiguration is null)
+            await LoadBlobServiceConfiguration(cancellationToken);
+
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+        var blobClient = new ResultsClient(channel);
+
+        await UploadBlobsAsync(blobs, blobClient, cancellationToken);
+    }
+
+    public async Task UploadBlobsChunksAsync(IAsyncEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
         CancellationToken cancellationToken = default)
     {
         if (_serviceConfiguration is null)

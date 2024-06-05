@@ -160,7 +160,7 @@ public class BlobServiceTests
             );
 
         // Setup CreateMetadata method with mock response
-        var createMetadaResponse = Task.FromResult(new CreateResultsMetaDataResponse
+        var createResponse = Task.FromResult(new CreateResultsResponse()
         {
             Results =
             {
@@ -174,14 +174,14 @@ public class BlobServiceTests
 
         mockCallInvoker.Setup(invoker =>
                 invoker.AsyncUnaryCall(
-                    It.IsAny<Method<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>>(),
+                    It.IsAny<Method<CreateResultsRequest, CreateResultsResponse>>(),
                     It.IsAny<string>(),
                     It.IsAny<CallOptions>(),
-                    It.IsAny<CreateResultsMetaDataRequest>()
+                    It.IsAny<CreateResultsRequest>()
                 )
             )
-            .Returns(new AsyncUnaryCall<CreateResultsMetaDataResponse>(
-                createMetadaResponse,
+            .Returns(new AsyncUnaryCall<CreateResultsResponse>(
+                createResponse,
                 Task.FromResult(new Metadata()),
                 () => Status.DefaultSuccess,
                 () => new Metadata(),
