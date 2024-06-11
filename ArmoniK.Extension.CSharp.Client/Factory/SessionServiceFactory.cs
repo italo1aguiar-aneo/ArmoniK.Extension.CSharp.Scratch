@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Factory;
 
-public class SessionServiceFactory
+public static class SessionServiceFactory
 {
     public static ISessionService CreateSessionService(ObjectPool<ChannelBase> channel, Properties properties,
         ILoggerFactory loggerFactory)

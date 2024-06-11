@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Factory;
 
-public class EventsServiceFactory
+public static class EventsServiceFactory
 {
     public static IEventsService CreateEventsService(ObjectPool<ChannelBase> channel,
         ILoggerFactory loggerFactory = null)

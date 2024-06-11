@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Factory;
 
-public class BlobServiceFactory
+public static class BlobServiceFactory
 {
     public static IBlobService CreateBlobService(ObjectPool<ChannelBase> channel,
         ILoggerFactory loggerFactory = null)

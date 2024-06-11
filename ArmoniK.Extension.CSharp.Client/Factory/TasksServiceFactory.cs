@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Factory;
 
-public class TasksServiceFactory
+public static class TasksServiceFactory
 {
     public static ITasksService CreateTaskService(ObjectPool<ChannelBase> channel, IBlobService blobService,
         ILoggerFactory loggerFactory = null)
