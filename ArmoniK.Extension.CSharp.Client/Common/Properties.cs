@@ -12,22 +12,19 @@ namespace ArmoniK.Extension.CSharp.Client.Common;
 ///     2. The Option configuration AppSettings
 ///     The ssl mTLS certificate if needed to connect to the control plane
 /// </summary>
-[MarkDownDoc]
-// TODO: check all setter and mark the required as PublicApi
-// TODO: to be reworked to allow all options from API and add other elements.
 public record Properties
 {
     /// <summary>
     ///     Returns the section key Grpc from appSettings.json
     /// </summary>
-    private const string SectionGrpc = "Grpc";
+    private const string Grpc = "Grpc";
 
-    private const string SectionEndPoint = "EndPoint";
-    private const string SectionSSlValidation = "SSLValidation";
-    private const string SectionCaCert = "CaCert";
-    private const string SectionClientCert = "ClientCert";
-    private const string SectionClientKey = "ClientKey";
-    private const string SectionClientCertP12 = "ClientP12";
+    private const string EndPoint = "EndPoint";
+    private const string SSlValidation = "SSLValidation";
+    private const string CaCert = "CaCert";
+    private const string ClientCert = "ClientCert";
+    private const string ClientKey = "ClientKey";
+    private const string ClientCertP12 = "ClientP12";
     private const string SectionTargetNameOverride = "EndpointNameOverride";
 
     private const string SectionRetryInitialBackoff = "RetryInitialBackoff";
@@ -111,7 +108,7 @@ public record Properties
         Configuration = configuration;
         PartitionIds = partitionIds;
 
-        var sectionGrpc = configuration.GetSection(SectionGrpc);
+        var sectionGrpc = configuration.GetSection(Grpc);
 
         if (connectionAddress != null)
         {
@@ -125,7 +122,7 @@ public record Properties
             ConnectionAddress = string.Empty; // to remove a compiler message for netstandard2.0
             try
             {
-                var connectionString = sectionGrpc.GetSection(SectionEndPoint).Value;
+                var connectionString = sectionGrpc.GetSection(EndPoint).Value;
                 if (!string.IsNullOrEmpty(connectionString))
                 {
                     var uri = new Uri(connectionString);
@@ -146,12 +143,12 @@ public record Properties
 
         Protocol = protocol ?? Protocol;
 
-        ConfSslValidation = sslValidation ?? sectionGrpc[SectionSSlValidation] != "disable";
+        ConfSslValidation = sslValidation ?? sectionGrpc[SSlValidation] != "disable";
         TargetNameOverride = sectionGrpc[SectionTargetNameOverride] ?? string.Empty;
-        CaCertFilePem = caCertPem ?? sectionGrpc[SectionCaCert] ?? string.Empty;
-        ClientCertFilePem = clientCertFilePem ?? sectionGrpc[SectionClientCert] ?? string.Empty;
-        ClientKeyFilePem = clientKeyFilePem ?? sectionGrpc[SectionClientKey] ?? string.Empty;
-        ClientP12File = clientP12 ?? sectionGrpc[SectionClientCertP12] ?? string.Empty;
+        CaCertFilePem = caCertPem ?? sectionGrpc[CaCert] ?? string.Empty;
+        ClientCertFilePem = clientCertFilePem ?? sectionGrpc[ClientCert] ?? string.Empty;
+        ClientKeyFilePem = clientKeyFilePem ?? sectionGrpc[ClientKey] ?? string.Empty;
+        ClientP12File = clientP12 ?? sectionGrpc[ClientCertP12] ?? string.Empty;
 
         if (retryInitialBackoff != TimeSpan.Zero)
             RetryInitialBackoff = retryInitialBackoff;
@@ -298,6 +295,6 @@ public record Properties
     public TimeSpan RetryMaxBackoff { get; init; } = TimeSpan.FromSeconds(30);
 }
 
-public class MarkDownDocAttribute : Attribute
+internal class MarkDownDocAttribute : Attribute
 {
 }

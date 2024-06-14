@@ -11,24 +11,70 @@ using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
+/// <summary>
+///     Defines a service for managing tasks, including submission, retrieval, and cancellation of tasks.
+/// </summary>
 public interface ITasksService
 {
+    /// <summary>
+    ///     Asynchronously submits a collection of tasks for a given session.
+    /// </summary>
+    /// <param name="session">The session information to which the tasks belong.</param>
+    /// <param name="taskNodes">The tasks to be submitted.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains an enumerable of task information.</returns>
     Task<IEnumerable<TaskInfos>> SubmitTasksAsync(SessionInfo session, IEnumerable<TaskNode> taskNodes,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Asynchronously lists tasks based on pagination options.
+    /// </summary>
+    /// <param name="paginationOptions">The options for pagination, including page number, page size, and sorting.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous enumerable of task pages.</returns>
     IAsyncEnumerable<TaskPage> ListTasksAsync(TaskPagination paginationOptions,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Asynchronously retrieves detailed information about a specific task.
+    /// </summary>
+    /// <param name="taskId">The identifier of the task to retrieve details for.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains the detailed task state.</returns>
     Task<TaskState> GetTasksDetailedAsync(string taskId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Asynchronously lists detailed task information based on session and pagination options.
+    /// </summary>
+    /// <param name="session">The session information to which the tasks belong.</param>
+    /// <param name="paginationOptions">The options for pagination, including page number, page size, and sorting.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous enumerable of detailed task pages.</returns>
     IAsyncEnumerable<TaskDetailedPage> ListTasksDetailedAsync(SessionInfo session, TaskPagination paginationOptions,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Asynchronously cancels a collection of tasks based on their identifiers.
+    /// </summary>
+    /// <param name="taskIds">The identifiers of the tasks to cancel.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     Task CancelTask(IEnumerable<string> taskIds, CancellationToken cancellationToken = default);
 }
 
-public static class ITasksServiceExt
+/// <summary>
+///     Provides extension methods for the <see cref="ITasksService" /> interface.
+/// </summary>
+public static class TasksServiceExt
 {
+    /// <summary>
+    ///     Asynchronously retrieves tasks based on their identifiers, with support for pagination.
+    /// </summary>
+    /// <param name="taskService">The task service instance.</param>
+    /// <param name="taskIds">The identifiers of the tasks to retrieve.</param>
+    /// <param name="pageSize">The number of tasks to retrieve per page.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>An asynchronous enumerable of task pages.</returns>
     public static async IAsyncEnumerable<TaskPage> GetTasksAsync(this ITasksService taskService,
         IEnumerable<string> taskIds, int pageSize = 50,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -43,7 +89,7 @@ public static class ITasksServiceExt
                 }
             },
             Page = 0,
-            PageSize = 50,
+            PageSize = pageSize,
             SortDirection = SortDirection.Asc
         };
 
@@ -68,6 +114,11 @@ public static class ITasksServiceExt
         }
     }
 
+    /// <summary>
+    ///     Creates a filter for a task based on its identifier.
+    /// </summary>
+    /// <param name="taskId">The identifier of the task to filter.</param>
+    /// <returns>A filter that matches the specified task identifier.</returns>
     private static FiltersAnd TaskIdFilter(string taskId)
     {
         return new FiltersAnd
