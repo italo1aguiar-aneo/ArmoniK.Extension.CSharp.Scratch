@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
@@ -14,7 +15,6 @@ using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static ArmoniK.Api.gRPC.V1.Tasks.Tasks;
-using SortDirection = ArmoniK.Api.gRPC.V1.SortDirection.SortDirection;
 using TaskStatus = ArmoniK.Extension.CSharp.Client.Common.Domain.Task.TaskStatus;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;

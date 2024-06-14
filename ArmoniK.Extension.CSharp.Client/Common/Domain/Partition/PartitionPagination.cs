@@ -24,7 +24,7 @@ public class PartitionPagination
     public SortDirection SortDirection { get; set; }
 
     /// <summary>
-    ///    Filters to be applied to the partition listing.
+    ///     Filters to be applied to the partition listing.
     /// </summary>
     public Filters Filter { get; set; }
 }

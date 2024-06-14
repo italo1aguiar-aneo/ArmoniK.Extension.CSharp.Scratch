@@ -1,5 +1,5 @@
 ﻿using ArmoniK.Api.gRPC.V1.Results;
-using SortDirection = ArmoniK.Api.gRPC.V1.SortDirection.SortDirection;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 

@@ -45,7 +45,7 @@ public record TaskConfiguration
     public int Priority { get; init; }
 
     /// <summary>
-    ///    Partition identifier used for task segregation.
+    ///     Partition identifier used for task segregation.
     /// </summary>
     public string PartitionId { get; init; }
 

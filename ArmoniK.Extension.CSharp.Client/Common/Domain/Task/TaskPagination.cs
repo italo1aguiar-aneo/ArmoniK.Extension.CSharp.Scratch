@@ -1,5 +1,5 @@
 ﻿using ArmoniK.Api.gRPC.V1.Tasks;
-using SortDirection = ArmoniK.Extension.CSharp.Client.Common.Enum.SortDirection;
+using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 

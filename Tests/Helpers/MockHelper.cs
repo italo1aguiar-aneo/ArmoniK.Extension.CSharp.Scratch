@@ -42,7 +42,8 @@ internal static class MockHelper
 
         Metadata TrailersFunc()
         {
-            return [];
+            return []
+            ;
         }
 
         Status StatusFunc()

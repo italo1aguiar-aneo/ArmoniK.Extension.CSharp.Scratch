@@ -39,7 +39,7 @@ public record Partition
     public long PreemptionPercentage { get; init; }
 
     /// <summary>
-    ///    Priority of the partition, which may influence scheduling decisions.
+    ///     Priority of the partition, which may influence scheduling decisions.
     /// </summary>
     public long Priority { get; init; }
 }
