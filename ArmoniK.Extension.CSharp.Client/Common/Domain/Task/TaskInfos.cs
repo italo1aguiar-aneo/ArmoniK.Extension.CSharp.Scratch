@@ -3,9 +3,9 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
-public class TaskInfos
+public record TaskInfos
 {
-    public TaskInfos(SubmitTasksResponse.Types.TaskInfo taskInfo, string sessionId)
+    internal TaskInfos(SubmitTasksResponse.Types.TaskInfo taskInfo, string sessionId)
     {
         TaskId = taskInfo.TaskId;
         ExpectedOutputs = taskInfo.ExpectedOutputIds;
@@ -18,9 +18,9 @@ public class TaskInfos
     {
     }
 
-    public string TaskId { get; set; }
-    public IEnumerable<string> ExpectedOutputs { get; set; }
-    public IEnumerable<string> DataDependencies { get; set; }
-    public string PayloadId { get; set; }
-    public string SessionId { get; set; }
+    public string TaskId { get; init; }
+    public IEnumerable<string> ExpectedOutputs { get; init; }
+    public IEnumerable<string> DataDependencies { get; init; }
+    public string PayloadId { get; init; }
+    public string SessionId { get; init; }
 }

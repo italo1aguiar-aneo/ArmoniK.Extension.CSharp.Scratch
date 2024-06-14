@@ -13,7 +13,6 @@ namespace Tests;
 
 public class ArmoniKClientTests
 {
-    private static IConfiguration _configuration;
     private readonly ArmoniKClient _client;
     private readonly List<string> _defaultPartitionsIds;
     private readonly Properties _defaultProperties;
@@ -22,7 +21,7 @@ public class ArmoniKClientTests
 
     public ArmoniKClientTests()
     {
-        _configuration = new ConfigurationBuilder()
+        IConfiguration configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.tests.json", false)
             .AddEnvironmentVariables().Build();
@@ -36,7 +35,7 @@ public class ArmoniKClientTests
             TimeSpan.FromHours(1)
         );
 
-        _defaultProperties = new Properties(_configuration, _defaultTaskOptions, _defaultPartitionsIds);
+        _defaultProperties = new Properties(configuration, _defaultTaskOptions, _defaultPartitionsIds);
 
         _loggerFactoryMock = new Mock<ILoggerFactory>();
 
@@ -50,7 +49,7 @@ public class ArmoniKClientTests
         var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(null, _loggerFactoryMock.Object));
 
         // Assert
-        ClassicAssert.AreEqual("properties", exception.ParamName);
+        ClassicAssert.AreEqual("properties", exception?.ParamName);
     }
 
     [Test]
@@ -59,7 +58,7 @@ public class ArmoniKClientTests
         // Act  
         var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(_defaultProperties, null));
         // Assert
-        ClassicAssert.AreEqual("loggerFactory", exception.ParamName);
+        ClassicAssert.AreEqual("loggerFactory", exception?.ParamName);
     }
 
     [Test]

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Tasks;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
@@ -13,10 +14,12 @@ using ArmoniK.Utils;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using static ArmoniK.Api.gRPC.V1.Tasks.Tasks;
+using SortDirection = ArmoniK.Api.gRPC.V1.SortDirection.SortDirection;
+using TaskStatus = ArmoniK.Extension.CSharp.Client.Common.Domain.Task.TaskStatus;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
-public class TasksService : ITasksService
+internal class TasksService : ITasksService
 {
     private readonly IBlobService _blobService;
     private readonly ObjectPool<ChannelBase> _channelPool;
@@ -59,10 +62,39 @@ public class TasksService : ITasksService
             TaskCreations = { taskCreations.ToList() }
         };
 
-        var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest);
+        var taskSubmissionResponse = await tasksClient.SubmitTasksAsync(submitTasksRequest,
+            cancellationToken: cancellationToken);
 
         return taskSubmissionResponse.TaskInfos.Select(x => new TaskInfos(x, session.SessionId));
     }
+
+    public async IAsyncEnumerable<TaskPage> ListTasksAsync(TaskPagination paginationOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+
+        var tasksClient = new TasksClient(channel);
+
+        var tasks = await tasksClient.ListTasksAsync(new ListTasksRequest
+            {
+                Filters = paginationOptions.Filter,
+                Page = paginationOptions.Page,
+                PageSize = paginationOptions.PageSize,
+                Sort = new ListTasksRequest.Types.Sort { Direction = (SortDirection)paginationOptions.SortDirection }
+            },
+            cancellationToken: cancellationToken
+        );
+
+        foreach (var task in tasks.Tasks)
+            yield return new TaskPage
+            {
+                TaskId = task.Id,
+                TaskStatus = (TaskStatus)task.Status,
+                TotalPages = tasks.Total
+            };
+        ;
+    }
+
 
     public async Task<TaskState> GetTasksDetailedAsync(string taskId, CancellationToken cancellationToken = default)
     {
@@ -70,14 +102,15 @@ public class TasksService : ITasksService
 
         var tasksClient = new TasksClient(channel);
 
-        var tasks = await tasksClient.GetTaskAsync(new GetTaskRequest { TaskId = taskId });
+        var tasks = await tasksClient.GetTaskAsync(new GetTaskRequest { TaskId = taskId },
+            cancellationToken: cancellationToken);
 
         return new TaskState
         {
             DataDependencies = tasks.Task.DataDependencies,
             ExpectedOutputs = tasks.Task.ExpectedOutputIds,
             TaskId = tasks.Task.Id,
-            Status = tasks.Task.Status,
+            Status = (TaskStatus)tasks.Task.Status,
             CreateAt = tasks.Task.CreatedAt.ToDateTime(),
             StartedAt = tasks.Task.StartedAt.ToDateTime(),
             EndedAt = tasks.Task.EndedAt.ToDateTime(),
@@ -85,8 +118,9 @@ public class TasksService : ITasksService
         };
     }
 
-    public async Task<IEnumerable<TaskState>> ListTasksDetailedAsync(SessionInfo session, TaskPagination paginationOptions,
-        CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TaskDetailedPage> ListTasksDetailedAsync(SessionInfo session,
+        TaskPagination paginationOptions,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
 
@@ -94,23 +128,42 @@ public class TasksService : ITasksService
 
         var tasks = await tasksClient.ListTasksDetailedAsync(new ListTasksRequest
             {
-                Filters = paginationOptions.Filter, // should have sessionId filter... see how it should be implemented
+                Filters = paginationOptions.Filter,
                 Page = paginationOptions.Page,
                 PageSize = paginationOptions.PageSize,
-                Sort = new ListTasksRequest.Types.Sort { Direction = paginationOptions.SortDirection }
-            }
+                Sort = new ListTasksRequest.Types.Sort { Direction = (SortDirection)paginationOptions.SortDirection }
+            },
+            cancellationToken: cancellationToken
         );
 
-        return tasks.Tasks.Select(x => new TaskState
+        foreach (var task in tasks.Tasks)
+            yield return new TaskDetailedPage
+            {
+                TaskDetails = new TaskState
+                {
+                    DataDependencies = task.DataDependencies,
+                    ExpectedOutputs = task.ExpectedOutputIds,
+                    TaskId = task.Id,
+                    Status = (TaskStatus)task.Status,
+                    CreateAt = task.CreatedAt.ToDateTime(),
+                    StartedAt = task.StartedAt.ToDateTime(),
+                    EndedAt = task.EndedAt.ToDateTime(),
+                    SessionId = task.SessionId
+                },
+                TotalPages = tasks.Total
+            };
+        ;
+    }
+
+    public async Task CancelTask(IEnumerable<string> taskIds, CancellationToken cancellationToken = default)
+    {
+        await using var channel = await _channelPool.GetAsync(cancellationToken).ConfigureAwait(false);
+
+        var tasksClient = new TasksClient(channel);
+
+        await tasksClient.CancelTasksAsync(new CancelTasksRequest
         {
-            DataDependencies = x.DataDependencies,
-            ExpectedOutputs = x.ExpectedOutputIds,
-            TaskId = x.Id,
-            Status = x.Status,
-            CreateAt = x.CreatedAt.ToDateTime(),
-            StartedAt = x.StartedAt.ToDateTime(),
-            EndedAt = x.EndedAt.ToDateTime(),
-            SessionId = x.SessionId
+            TaskIds = { taskIds }
         });
     }
 
@@ -125,10 +178,11 @@ public class TasksService : ITasksService
         if (nodesWithNewBlobs.Any())
         {
             var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
-            var createdBlobs =
-                await _blobService.CreateBlobsAsync(session, blobKeyValues,
-                    cancellationToken);
-            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
+
+            var createdBlobDictionary = new Dictionary<string, BlobInfo>();
+
+            await foreach (var blob in _blobService.CreateBlobsAsync(session, blobKeyValues, cancellationToken))
+                createdBlobDictionary[blob.BlobName] = blob;
 
             foreach (var taskNode in enumerableNodes)
             foreach (var dependency in taskNode.DataDependenciesContent)
@@ -142,14 +196,15 @@ public class TasksService : ITasksService
 
         if (nodeWithNewPayloads.Any())
         {
-            var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
-            var createdBlobs =
-                await _blobService.CreateBlobsAsync(session, blobKeyValues,
-                    cancellationToken);
-            var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
+            var payloadBlobKeyValues = nodeWithNewPayloads.Select(x => x.PayloadContent);
+
+            var payloadBlobDictionary = new Dictionary<string, BlobInfo>();
+
+            await foreach (var blob in _blobService.CreateBlobsAsync(session, payloadBlobKeyValues, cancellationToken))
+                payloadBlobDictionary[blob.BlobName] = blob;
 
             foreach (var taskNode in enumerableNodes)
-                if (createdBlobDictionary.TryGetValue(taskNode.PayloadContent.Key, out var createdBlob))
+                if (payloadBlobDictionary.TryGetValue(taskNode.PayloadContent.Key, out var createdBlob))
                     taskNode.Payload = createdBlob;
         }
     }

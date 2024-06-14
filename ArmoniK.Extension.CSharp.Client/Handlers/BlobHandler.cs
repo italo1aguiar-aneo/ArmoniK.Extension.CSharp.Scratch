@@ -7,48 +7,56 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 namespace ArmoniK.Extension.CSharp.Client.Handlers;
 
-public class BlobHandler : BlobInfo
+public class BlobHandler
 {
     public readonly ArmoniKClient ArmoniKClient;
+    public readonly BlobInfo BlobInfo;
 
-    public BlobHandler(BlobInfo blobInfo, ArmoniKClient armoniKClient) : base(blobInfo.BlobName, blobInfo.BlobId,
-        blobInfo.SessionId)
+    public BlobHandler(BlobInfo blobInfo, ArmoniKClient armoniKClient)
     {
+        BlobInfo = blobInfo;
         ArmoniKClient = armoniKClient;
     }
 
-    public BlobHandler(string blobName, string blobId, string sessionId, ArmoniKClient armoniKClient) : base(blobName, blobId,
-        sessionId)
+    public BlobHandler(string blobName, string blobId, string sessionId, ArmoniKClient armoniKClient)
     {
+        BlobInfo = new BlobInfo
+        {
+            BlobId = blobId,
+            BlobName = blobName,
+            SessionId = sessionId
+        };
         ArmoniKClient = armoniKClient;
     }
 
     public async Task<BlobState> GetBlobStateAsync(CancellationToken cancellationToken = default)
     {
         var blobClient = await ArmoniKClient.GetBlobService();
-        return await blobClient.GetBlobStateAsync(this, cancellationToken);
+        return await blobClient.GetBlobStateAsync(BlobInfo, cancellationToken);
     }
 
     public async IAsyncEnumerable<byte[]> DownloadBlobData([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var blobClient = await ArmoniKClient.GetBlobService();
 
-        await foreach (var chunk in blobClient.DownloadBlobWithChunksAsync(this, cancellationToken).ConfigureAwait(false))
+        await foreach (var chunk in blobClient.DownloadBlobWithChunksAsync(BlobInfo, cancellationToken)
+                           .ConfigureAwait(false))
             yield return chunk;
     }
 
-    public async Task UploadBlobData(IAsyncEnumerable<ReadOnlyMemory<byte>> blobContent,
+    public async Task UploadBlobData(IEnumerable<ReadOnlyMemory<byte>> blobContent,
         CancellationToken cancellationToken)
     {
         var blobClient = await ArmoniKClient.GetBlobService();
 
-        await foreach (var chunk in blobContent.WithCancellation(cancellationToken))
-            await blobClient.UploadBlobAsync(this, chunk, cancellationToken);
+        await blobClient.UploadBlobChunkAsync(BlobInfo, blobContent, cancellationToken);
     }
 
     public async Task UploadBlobData(ReadOnlyMemory<byte> blobContent, CancellationToken cancellationToken)
     {
         var blobClient = await ArmoniKClient.GetBlobService();
-        await blobClient.UploadBlobAsync(this, blobContent, cancellationToken);
+
+        // Upload the blob chunk
+        await blobClient.UploadBlobChunkAsync(BlobInfo, new[] { blobContent }, cancellationToken);
     }
 }

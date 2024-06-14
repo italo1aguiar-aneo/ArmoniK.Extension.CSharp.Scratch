@@ -6,7 +6,7 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
-public class TaskConfiguration
+public record TaskConfiguration
 {
     public TaskConfiguration(int maxRetries, int priority, string partitionId,
         TimeSpan maxDuration, Dictionary<string, string> options = null,
@@ -20,12 +20,12 @@ public class TaskConfiguration
         ApplicationConfiguration = applicationConfiguration;
     }
 
-    public int MaxRetries { get; set; }
-    public int Priority { get; set; }
-    public string PartitionId { get; set; }
-    [CanBeNull] public Dictionary<string, string> Options { get; set; }
-    public TimeSpan MaxDuration { get; set; }
-    [CanBeNull] public ApplicationConfiguration ApplicationConfiguration { get; set; }
+    public int MaxRetries { get; init; }
+    public int Priority { get; init; }
+    public string PartitionId { get; init; }
+    [CanBeNull] public Dictionary<string, string> Options { get; init; }
+    public TimeSpan MaxDuration { get; init; }
+    [CanBeNull] public ApplicationConfiguration ApplicationConfiguration { get; init; }
 
     public TaskOptions ToTaskOptions()
     {

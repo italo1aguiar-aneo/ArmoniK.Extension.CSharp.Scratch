@@ -1,57 +1,60 @@
-﻿using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 
 namespace ArmoniK.Extension.CSharp.Client.Handlers;
 
-public class SessionHandler: SessionInfo
+public class SessionHandler
 {
-    public readonly ArmoniKClient ArmoniKClient;
+    private readonly ArmoniKClient ArmoniKClient;
 
-    public SessionHandler(SessionInfo session, ArmoniKClient armoniKClient): base(session.SessionId)
+    private readonly SessionInfo SessionInfo;
+
+    public SessionHandler(SessionInfo session, ArmoniKClient armoniKClient)
     {
         ArmoniKClient = armoniKClient;
+        SessionInfo = session;
     }
 
     public async Task CancelSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.CancelSessionAsync(this, cancellationToken);
+        await sessionService.CancelSessionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task CloseSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.CloseSessionAsync(this, cancellationToken);
+        await sessionService.CloseSessionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task PauseSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.PauseSessionAsync(this, cancellationToken);
+        await sessionService.PauseSessionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task StopSubmission(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.StopSubmissionAsync(this, cancellationToken);
+        await sessionService.StopSubmissionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task ResumeSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.ResumeSessionAsync(this, cancellationToken);
+        await sessionService.ResumeSessionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task PurgeSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.PurgeSessionAsync(this, cancellationToken);
+        await sessionService.PurgeSessionAsync(SessionInfo, cancellationToken);
     }
 
     public async Task DeleteSession(CancellationToken cancellationToken)
     {
         var sessionService = await ArmoniKClient.GetSessionService();
-        await sessionService.DeleteSessionAsync(this, cancellationToken);
+        await sessionService.DeleteSessionAsync(SessionInfo, cancellationToken);
     }
 }

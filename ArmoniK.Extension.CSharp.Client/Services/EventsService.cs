@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
-public class EventsService : IEventsService
+internal class EventsService : IEventsService
 {
     private readonly ObjectPool<ChannelBase> _channel;
 
@@ -23,16 +23,6 @@ public class EventsService : IEventsService
     {
         _channel = channel;
         _logger = loggerFactory.CreateLogger<EventsService>();
-    }
-
-    public async Task WaitForBlobsAsync(SessionInfo session, ICollection<string> blobIds,
-        CancellationToken cancellationToken = default)
-    {
-        await using var channel = await _channel.GetAsync(cancellationToken).ConfigureAwait(false);
-        var eventsClient = new Events.EventsClient(channel);
-        await eventsClient.WaitForResultsAsync(session.SessionId,
-            blobIds,
-            cancellationToken);
     }
 
     public async Task WaitForBlobsAsync(SessionInfo session, ICollection<BlobInfo> blobInfos,

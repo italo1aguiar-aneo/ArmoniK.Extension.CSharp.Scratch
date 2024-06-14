@@ -15,7 +15,7 @@ namespace ArmoniK.Extension.CSharp.Client.Common;
 [MarkDownDoc]
 // TODO: check all setter and mark the required as PublicApi
 // TODO: to be reworked to allow all options from API and add other elements.
-public class Properties
+public record Properties
 {
     /// <summary>
     ///     Returns the section key Grpc from appSettings.json
@@ -183,29 +183,29 @@ public class Properties
     /// </summary>
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public Uri ControlPlaneUri { get; set; }
+    public Uri ControlPlaneUri { get; init; }
 
     /// <summary>
     ///     The path to the CA Root file name
     /// </summary>
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public string CaCertFilePem { get; set; }
+    public string CaCertFilePem { get; init; }
 
     /// <summary>
     ///     The property to get the path of the certificate file
     /// </summary>
-    public string ClientCertFilePem { get; }
+    public string ClientCertFilePem { get; init; }
 
     /// <summary>
     ///     the property to get the path of the key certificate
     /// </summary>
-    public string ClientKeyFilePem { get; }
+    public string ClientKeyFilePem { get; init; }
 
     /// <summary>
     ///     the property to get the path of the certificate in P12/Pkcs12/PFX format
     /// </summary>
-    public string ClientP12File { get; }
+    public string ClientP12File { get; init; }
 
     /// <summary>
     ///     The SSL validation property to disable SSL strong verification
@@ -219,14 +219,14 @@ public class Properties
     /// <summary>
     ///     The SSL validation property to disable SSL strong verification
     /// </summary>
-    public bool ConfSslValidation { get; }
+    public bool ConfSslValidation { get; init; }
 
     /// <summary>
     ///     The configuration property to give to the ClientService connector
     /// </summary>
     // TODO: mark as [PublicApi] ?
     // ReSharper disable once UnusedAutoPropertyAccessor.Global
-    public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; init; }
 
     /// <summary>
     ///     The connection string building the value Port Protocol and address
@@ -241,14 +241,14 @@ public class Properties
     /// </summary>
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
-    public string Protocol { get; set; } = "http";
+    public string Protocol { get; init; } = "http";
 
     /// <summary>
     ///     The connection address property to connect to the control plane
     /// </summary>
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
-    public string ConnectionAddress { get; set; }
+    public string ConnectionAddress { get; init; }
 
     /// <summary>
     ///     The option connection port to connect to control plane (Default : 5001)
@@ -256,7 +256,7 @@ public class Properties
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public int ConnectionPort { get; set; } = 5001;
+    public int ConnectionPort { get; init; } = 5001;
 
     /// <summary>
     ///     The TaskOptions to pass to the session or the submission session
@@ -264,7 +264,7 @@ public class Properties
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public TaskConfiguration TaskOptions { get; set; }
+    public TaskConfiguration TaskOptions { get; init; }
 
     /// <summary>
     ///     The TaskOptions to pass to the session or the submission session
@@ -272,7 +272,7 @@ public class Properties
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public IEnumerable<string> PartitionIds { get; set; }
+    public IEnumerable<string> PartitionIds { get; init; }
 
     /// <summary>
     ///     The target name of the endpoint when ssl validation is disabled. Automatic if not set.
@@ -280,22 +280,22 @@ public class Properties
     // TODO: mark as [PublicApi] for setter ?
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-    public string TargetNameOverride { get; set; } = "";
+    public string TargetNameOverride { get; init; } = "";
 
     /// <summary>
     ///     Initial backoff from retries
     /// </summary>
-    public TimeSpan RetryInitialBackoff { get; } = TimeSpan.FromSeconds(1);
+    public TimeSpan RetryInitialBackoff { get; init; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
     ///     Backoff multiplier for retries
     /// </summary>
-    public double RetryBackoffMultiplier { get; } = 2;
+    public double RetryBackoffMultiplier { get; init; } = 2;
 
     /// <summary>
     ///     Max backoff for retries
     /// </summary>
-    public TimeSpan RetryMaxBackoff { get; } = TimeSpan.FromSeconds(30);
+    public TimeSpan RetryMaxBackoff { get; init; } = TimeSpan.FromSeconds(30);
 }
 
 public class MarkDownDocAttribute : Attribute

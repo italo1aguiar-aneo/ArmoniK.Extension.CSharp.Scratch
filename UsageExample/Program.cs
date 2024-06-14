@@ -38,8 +38,8 @@ namespace UsageExample;
 
 internal class Program
 {
-    private static IConfiguration _configuration;
-    private static ILogger<Program> logger_;
+    private static IConfiguration? _configuration;
+    private static ILogger<Program>? logger_;
 
     private static async Task Main(string[] args)
     {
@@ -99,7 +99,11 @@ internal class Program
 
         Console.WriteLine($"payloadId: {payload.BlobId}");
 
-        var result = await blobService.CreateBlobMetadataAsync(session, "Result");
+        var results = blobService.CreateBlobsMetadataAsync(session, new[] { "Result" });
+
+        var blobInfos = await results.ToListAsync();
+
+        var result = blobInfos[0];
 
         Console.WriteLine($"resultId: {result.BlobId}");
 

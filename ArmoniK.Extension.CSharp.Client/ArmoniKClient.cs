@@ -21,8 +21,11 @@ public class ArmoniKClient
     private IBlobService _blobService;
     private ObjectPool<ChannelBase> _channelPool;
     private IEventsService _eventsService;
+    private IHealthCheckService _healthCheckService;
+    private IPartitionsService _partitionsService;
     private ISessionService _sessionService;
     private ITasksService _tasksService;
+    private IVersionsService _versionsService;
 
     public ArmoniKClient(Properties properties, ILoggerFactory loggerFactory)
     {
@@ -30,7 +33,7 @@ public class ArmoniKClient
         _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         _logger = loggerFactory.CreateLogger<ArmoniKClient>();
     }
- 
+
     public ObjectPool<ChannelBase> ChannelPool
         => _channelPool ??= ClientServiceConnector.ControlPlaneConnectionPool(_properties,
             _loggerFactory);
@@ -64,6 +67,33 @@ public class ArmoniKClient
         _eventsService =
             EventsServiceFactory.CreateEventsService(ChannelPool, _loggerFactory);
         return Task.FromResult(_eventsService);
+    }
+
+    public Task<IVersionsService> GetVersionService()
+    {
+        if (_versionsService is not null)
+            return Task.FromResult(_versionsService);
+        _versionsService =
+            VersionsServiceFactory.CreateVersionsService(ChannelPool, _loggerFactory);
+        return Task.FromResult(_versionsService);
+    }
+
+    public Task<IPartitionsService> GetPartitionsService()
+    {
+        if (_partitionsService is not null)
+            return Task.FromResult(_partitionsService);
+        _partitionsService =
+            PartitionsServiceFactory.CreatePartitionsService(ChannelPool, _loggerFactory);
+        return Task.FromResult(_partitionsService);
+    }
+
+    public Task<IHealthCheckService> GetHealthCheckService()
+    {
+        if (_healthCheckService is not null)
+            return Task.FromResult(_healthCheckService);
+        _healthCheckService =
+            HealthCheckServiceFactory.CreateHealthCheckService(ChannelPool, _loggerFactory);
+        return Task.FromResult(_healthCheckService);
     }
 
     public Task<BlobHandler> GetBlobHandler(BlobInfo blobInfo)
