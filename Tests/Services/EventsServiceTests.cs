@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -32,11 +32,10 @@ namespace Tests.Services;
 
 public class EventsServiceTests
 {
-  private readonly List<string>                  _defaultPartitionsIds;
-  private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
+  private readonly List<string> defaultPartitionsIds_;
 
   public EventsServiceTests()
-    => _defaultPartitionsIds = new List<string>
+    => defaultPartitionsIds_ = new List<string>
                                {
                                  "subtasking",
                                };

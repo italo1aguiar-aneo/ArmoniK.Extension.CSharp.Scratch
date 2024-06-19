@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -32,8 +32,8 @@ namespace UsageExample;
 
 internal class Program
 {
-  private static IConfiguration   _configuration;
-  private static ILogger<Program> logger_;
+  private static IConfiguration?   _configuration;
+  private static ILogger<Program>? _logger;
 
   private static async Task Main(string[] args)
   {
@@ -53,7 +53,7 @@ internal class Program
                                     new LoggerFilterOptions().AddFilter("Grpc",
                                                                         LogLevel.Error));
 
-    logger_ = factory.CreateLogger<Program>();
+    _logger = factory.CreateLogger<Program>();
 
     var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                                             .AddJsonFile("appsettings.json",
@@ -75,8 +75,7 @@ internal class Program
 
     var props = new Properties(_configuration,
                                defaultTaskOptions,
-
-      ["subtasking"]);
+                               ["subtasking"]);
 
     var client = new ArmoniKClient(props,
                                    factory);
@@ -105,14 +104,16 @@ internal class Program
     Console.WriteLine($"resultId: {result.BlobId}");
 
     var task = await tasksService.SubmitTasksAsync(session,
-                                                   new List<TaskNode>([new TaskNode
-                                                                       {
-                                                                         Payload = payload,
-                                                                         ExpectedOutputs = new[]
-                                                                                           {
-                                                                                             result,
-                                                                                           },
-                                                                       }]));
+                                                   new List<TaskNode>([
+                                                     new TaskNode
+                                                     {
+                                                       Payload = payload,
+                                                       ExpectedOutputs = new[]
+                                                                         {
+                                                                           result,
+                                                                         },
+                                                     },
+                                                   ]));
 
     Console.WriteLine($"taskId: {task.Single().TaskId}");
 

@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -17,37 +17,26 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 namespace ArmoniK.Extension.CSharp.Client.Handlers;
 
-public class TaskHandler : TaskInfos
+public class TaskHandler
 {
-  public readonly ArmoniKClient ArmoniKClient;
+  public readonly  ArmoniKClient ArmoniKClient;
+  private readonly TaskInfos     taskInfos_;
 
   public TaskHandler(ArmoniKClient armoniKClient,
                      TaskInfos     taskInfo)
-    : base(new SubmitTasksResponse.Types.TaskInfo
-           {
-             DataDependencies =
-             {
-               taskInfo.DataDependencies,
-             },
-             ExpectedOutputIds =
-             {
-               taskInfo.ExpectedOutputs,
-             },
-             PayloadId = taskInfo.PayloadId,
-             TaskId    = taskInfo.TaskId,
-           },
-           taskInfo.SessionId)
-    => ArmoniKClient = armoniKClient;
+  {
+    ArmoniKClient = armoniKClient;
+    taskInfos_    = taskInfo;
+  }
 
   public async Task<TaskState> GetTaskDetails(CancellationToken cancellationToken)
   {
     var taskClient = await ArmoniKClient.GetTasksService();
-    return await taskClient.GetTasksDetailedAsync(TaskId,
+    return await taskClient.GetTasksDetailedAsync(taskInfos_.TaskId,
                                                   cancellationToken);
   }
 }

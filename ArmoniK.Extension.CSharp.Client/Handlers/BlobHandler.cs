@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -24,38 +24,45 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 namespace ArmoniK.Extension.CSharp.Client.Handlers;
 
-public class BlobHandler : BlobInfo
+public class BlobHandler
 {
   public readonly ArmoniKClient ArmoniKClient;
+  public readonly BlobInfo      BlobInfo;
 
   public BlobHandler(BlobInfo      blobInfo,
                      ArmoniKClient armoniKClient)
-    : base(blobInfo.BlobName,
-           blobInfo.BlobId,
-           blobInfo.SessionId)
-    => ArmoniKClient = armoniKClient;
+  {
+    BlobInfo      = blobInfo;
+    ArmoniKClient = armoniKClient;
+  }
 
   public BlobHandler(string        blobName,
                      string        blobId,
                      string        sessionId,
                      ArmoniKClient armoniKClient)
-    : base(blobName,
-           blobId,
-           sessionId)
-    => ArmoniKClient = armoniKClient;
+  {
+    BlobInfo = new BlobInfo
+               {
+                 BlobId    = blobId,
+                 BlobName  = blobName,
+                 SessionId = sessionId,
+               };
+    ArmoniKClient = armoniKClient;
+  }
 
   public async Task<BlobState> GetBlobStateAsync(CancellationToken cancellationToken = default)
   {
     var blobClient = await ArmoniKClient.GetBlobService();
-    return await blobClient.GetBlobStateAsync(this,
+    return await blobClient.GetBlobStateAsync(BlobInfo,
                                               cancellationToken);
   }
+
 
   public async IAsyncEnumerable<byte[]> DownloadBlobData([EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var blobClient = await ArmoniKClient.GetBlobService();
 
-    await foreach (var chunk in blobClient.DownloadBlobWithChunksAsync(this,
+    await foreach (var chunk in blobClient.DownloadBlobWithChunksAsync(BlobInfo,
                                                                        cancellationToken)
                                           .ConfigureAwait(false))
     {
@@ -70,7 +77,7 @@ public class BlobHandler : BlobInfo
 
     await foreach (var chunk in blobContent.WithCancellation(cancellationToken))
     {
-      await blobClient.UploadBlobAsync(this,
+      await blobClient.UploadBlobAsync(BlobInfo,
                                        chunk,
                                        cancellationToken);
     }
@@ -80,7 +87,7 @@ public class BlobHandler : BlobInfo
                                    CancellationToken    cancellationToken)
   {
     var blobClient = await ArmoniKClient.GetBlobService();
-    await blobClient.UploadBlobAsync(this,
+    await blobClient.UploadBlobAsync(BlobInfo,
                                      blobContent,
                                      cancellationToken);
   }

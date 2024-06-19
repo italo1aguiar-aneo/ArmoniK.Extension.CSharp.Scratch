@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -34,9 +34,7 @@ namespace Tests.Services;
 
 public class SessionServiceTests
 {
-  private readonly List<string>                  _defaultPartitionsIds;
-  private readonly Properties                    _defaultProperties;
-  private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
+  private readonly Properties defaultProperties_;
 
   public SessionServiceTests()
   {
@@ -46,19 +44,19 @@ public class SessionServiceTests
                                                   .AddEnvironmentVariables()
                                                   .Build();
 
-    _defaultPartitionsIds = new List<string>
-                            {
-                              "subtasking",
-                            };
+    List<string> defaultPartitionsIds = new()
+                                        {
+                                          "subtasking",
+                                        };
 
     var defaultTaskOptions = new TaskConfiguration(2,
                                                    1,
-                                                   _defaultPartitionsIds[0],
+                                                   defaultPartitionsIds[0],
                                                    TimeSpan.FromHours(1));
 
-    _defaultProperties = new Properties(configuration,
+    defaultProperties_ = new Properties(configuration,
                                         defaultTaskOptions,
-                                        _defaultPartitionsIds);
+                                        defaultPartitionsIds);
   }
 
   [Test]
@@ -96,7 +94,7 @@ public class SessionServiceTests
     var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
 
     var sessionService = SessionServiceFactory.CreateSessionService(objectPool,
-                                                                    _defaultProperties,
+                                                                    defaultProperties_,
                                                                     NullLoggerFactory.Instance);
     // Act
     var result = await sessionService.CreateSessionAsync();

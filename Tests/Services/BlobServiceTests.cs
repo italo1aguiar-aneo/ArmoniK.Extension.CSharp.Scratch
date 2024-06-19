@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -37,8 +37,6 @@ namespace Tests.Services;
 
 public class BlobServiceTests
 {
-  private readonly Mock<ObjectPool<ChannelBase>> _mockChannelPool;
-
   [Test]
   public async Task CreateBlob_ReturnsNewBlobInfo()
   {

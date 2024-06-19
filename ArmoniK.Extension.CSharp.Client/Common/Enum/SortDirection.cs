@@ -14,35 +14,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+using Google.Protobuf.Reflection;
+
+namespace ArmoniK.Extension.CSharp.Client.Common.Enum;
 
 /// <summary>
-///   Represents the configuration of an application, including its name, version, namespace, service, and engine type.
+///   Defines the directions in which sorting can be applied.
 /// </summary>
-public record ApplicationConfiguration
+public enum SortDirection
 {
   /// <summary>
-  ///   Name of the application.
+  ///   Unspecified sort direction. This value should not be used as it does not represent a valid sorting order.
   /// </summary>
-  public string ApplicationName { get; init; }
+  [OriginalName("SORT_DIRECTION_UNSPECIFIED")]
+  Unspecified,
 
   /// <summary>
-  ///   Version of the application.
+  ///   Ascending sort order where elements progress from the lowest value to the highest.
   /// </summary>
-  public string ApplicationVersion { get; init; }
+  [OriginalName("SORT_DIRECTION_ASC")]
+  Asc,
 
   /// <summary>
-  ///   Namespace of the application.
+  ///   Descending sort order where elements progress from the highest value to the lowest.
   /// </summary>
-  public string ApplicationNamespace { get; init; }
-
-  /// <summary>
-  ///   Service name of the application.
-  /// </summary>
-  public string ApplicationService { get; init; }
-
-  /// <summary>
-  ///   Type of engine used by the application.
-  /// </summary>
-  public string EngineType { get; init; }
+  [OriginalName("SORT_DIRECTION_DESC")]
+  Desc,
 }

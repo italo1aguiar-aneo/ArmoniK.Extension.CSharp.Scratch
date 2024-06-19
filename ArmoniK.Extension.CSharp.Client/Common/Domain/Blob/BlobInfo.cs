@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -16,22 +16,23 @@
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
-public class BlobInfo
+/// <summary>
+///   Represents information that minimally defines a blob.
+/// </summary>
+public record BlobInfo
 {
-  public BlobInfo(string blobName,
-                  string blobId,
-                  string sessionId)
-  {
-    BlobName  = blobName;
-    BlobId    = blobId;
-    SessionId = sessionId;
-  }
+  /// <summary>
+  ///   Session ID associated with the blob.
+  /// </summary>
+  public string SessionId { get; init; }
 
-  protected BlobInfo()
-  {
-  }
+  /// <summary>
+  ///   Name of the blob.
+  /// </summary>
+  public string BlobName { get; init; }
 
-  public string SessionId { get; set; }
-  public string BlobName  { get; set; }
-  public string BlobId    { get; set; }
+  /// <summary>
+  ///   Blob unique identifier.
+  /// </summary>
+  public string BlobId { get; init; }
 }
