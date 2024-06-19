@@ -5,9 +5,9 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 public class TaskPagination
 {
-    public int Page { get; set; }
-    public int PageSize { get; set; }
-    public int Total { get; set; }
-    public SortDirection SortDirection { get; set; }
-    public Filters Filter { get; set; }
+  public int           Page          { get; set; }
+  public int           PageSize      { get; set; }
+  public int           Total         { get; set; }
+  public SortDirection SortDirection { get; set; }
+  public Filters       Filter        { get; set; }
 }

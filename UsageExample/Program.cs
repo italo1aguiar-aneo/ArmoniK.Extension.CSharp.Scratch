@@ -24,12 +24,15 @@
 
 
 using System.Text;
+
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -38,93 +41,105 @@ namespace UsageExample;
 
 internal class Program
 {
-    private static IConfiguration _configuration;
-    private static ILogger<Program> logger_;
+  private static IConfiguration   _configuration;
+  private static ILogger<Program> logger_;
 
-    private static async Task Main(string[] args)
+  private static async Task Main(string[] args)
+  {
+    Console.WriteLine("Hello Armonik New Extension !");
+
+
+    Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
+                                                                 LogEventLevel.Information)
+                                          .Enrich.FromLogContext()
+                                          .WriteTo.Console()
+                                          .CreateLogger();
+
+    var factory = new LoggerFactory(new[]
+                                    {
+                                      new SerilogLoggerProvider(Log.Logger),
+                                    },
+                                    new LoggerFilterOptions().AddFilter("Grpc",
+                                                                        LogLevel.Error));
+
+    logger_ = factory.CreateLogger<Program>();
+
+    var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                            .AddJsonFile("appsettings.json",
+                                                         false)
+                                            .AddEnvironmentVariables();
+
+    _configuration = builder.Build();
+
+    var defaultTaskOptions = new TaskConfiguration(2,
+                                                   1,
+                                                   "subtasking",
+                                                   TimeSpan.FromHours(1),
+                                                   new Dictionary<string, string>
+                                                   {
+                                                     {
+                                                       "UseCase", "Launch"
+                                                     },
+                                                   });
+
+    var props = new Properties(_configuration,
+                               defaultTaskOptions,
+
+      ["subtasking"]);
+
+    var client = new ArmoniKClient(props,
+                                   factory);
+
+    var sessionService = await client.GetSessionService();
+
+    var session = await sessionService.CreateSessionAsync();
+
+    Console.WriteLine($"sessionId: {session.SessionId}");
+
+    var blobService = await client.GetBlobService();
+
+    var tasksService = await client.GetTasksService();
+
+    var eventsService = await client.GetEventsService();
+
+    var payload = await blobService.CreateBlobAsync(session,
+                                                    "Payload",
+                                                    Encoding.ASCII.GetBytes("Hello"));
+
+    Console.WriteLine($"payloadId: {payload.BlobId}");
+
+    var result = await blobService.CreateBlobMetadataAsync(session,
+                                                           "Result");
+
+    Console.WriteLine($"resultId: {result.BlobId}");
+
+    var task = await tasksService.SubmitTasksAsync(session,
+                                                   new List<TaskNode>([new TaskNode
+                                                                       {
+                                                                         Payload = payload,
+                                                                         ExpectedOutputs = new[]
+                                                                                           {
+                                                                                             result,
+                                                                                           },
+                                                                       }]));
+
+    Console.WriteLine($"taskId: {task.Single().TaskId}");
+
+    await eventsService.WaitForBlobsAsync(session,
+                                          new List<BlobInfo>([result]));
+
+    var download = await blobService.DownloadBlobAsync(result,
+                                                       CancellationToken.None);
+    var stringArray = Encoding.ASCII.GetString(download)
+                              .Split(new[]
+                                     {
+                                       '\n',
+                                     },
+                                     StringSplitOptions.RemoveEmptyEntries);
+
+    foreach (var returnString in stringArray)
     {
-        Console.WriteLine("Hello Armonik New Extension !");
-
-
-        Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
-                LogEventLevel.Information)
-            .Enrich.FromLogContext()
-            .WriteTo.Console()
-            .CreateLogger();
-
-        var factory = new LoggerFactory(new[]
-            {
-                new SerilogLoggerProvider(Log.Logger)
-            },
-            new LoggerFilterOptions().AddFilter("Grpc",
-                LogLevel.Error));
-
-        logger_ = factory.CreateLogger<Program>();
-
-        var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", false)
-            .AddEnvironmentVariables();
-
-        _configuration = builder.Build();
-
-        var defaultTaskOptions = new TaskConfiguration(
-            2,
-            1,
-            "subtasking",
-            TimeSpan.FromHours(1),
-            new Dictionary<string, string>
-            {
-                { "UseCase", "Launch" }
-            }
-        );
-
-        var props = new Properties(_configuration, defaultTaskOptions, ["subtasking"]);
-
-        var client = new ArmoniKClient(props, factory);
-
-        var sessionService = await client.GetSessionService();
-
-        var session = await sessionService.CreateSessionAsync();
-
-        Console.WriteLine($"sessionId: {session.SessionId}");
-
-        var blobService = await client.GetBlobService();
-
-        var tasksService = await client.GetTasksService();
-
-        var eventsService = await client.GetEventsService();
-
-        var payload = await blobService.CreateBlobAsync(session, "Payload", Encoding.ASCII.GetBytes("Hello"));
-
-        Console.WriteLine($"payloadId: {payload.BlobId}");
-
-        var result = await blobService.CreateBlobMetadataAsync(session, "Result");
-
-        Console.WriteLine($"resultId: {result.BlobId}");
-
-        var task = await tasksService.SubmitTasksAsync(session,
-            new List<TaskNode>([
-                new TaskNode
-                {
-                    Payload = payload,
-                    ExpectedOutputs = new[] { result }
-                }
-            ]));
-
-        Console.WriteLine($"taskId: {task.Single().TaskId}");
-
-        await eventsService.WaitForBlobsAsync(session, new List<BlobInfo>([result]));
-
-        var download = await blobService.DownloadBlobAsync(result,
-            CancellationToken.None);
-        var stringArray = Encoding.ASCII.GetString(download)
-            .Split(new[]
-                {
-                    '\n'
-                },
-                StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var returnString in stringArray) Console.WriteLine($"{returnString}");
+      Console.WriteLine($"{returnString}");
     }
+  }
 }
