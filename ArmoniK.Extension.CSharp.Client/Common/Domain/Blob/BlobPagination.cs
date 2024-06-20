@@ -15,34 +15,15 @@
 // limitations under the License.
 
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Extension.CSharp.Client.Common.Generic;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 /// <summary>
 ///   Provides pagination capabilities for listing blobs, including sorting and filtering functionalities.
 /// </summary>
-public class BlobPagination
+public class BlobPagination : Pagination<Filters>
 {
-  /// <summary>
-  ///   Current page number in the pagination query.
-  /// </summary>
-  public int Page { get; set; }
-
-  /// <summary>
-  ///   Number of items per page in the pagination query.
-  /// </summary>
-  public int PageSize { get; set; }
-
-  /// <summary>
-  ///   Direction in which the data should be sorted.
-  /// </summary>
-  public SortDirection SortDirection { get; set; }
-
-  /// <summary>
-  ///   filters to be applied to the blob listing.
-  /// </summary>
-  public Filters Filter { get; set; }
 }
 
 /// <summary>

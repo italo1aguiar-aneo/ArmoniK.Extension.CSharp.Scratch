@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
@@ -146,7 +147,7 @@ public class TasksService : ITasksService
                                                            PageSize = paginationOptions.PageSize,
                                                            Sort = new ListTasksRequest.Types.Sort
                                                                   {
-                                                                    Direction = paginationOptions.SortDirection,
+                                                                    Direction = (SortDirection)paginationOptions.SortDirection,
                                                                   },
                                                          });
 

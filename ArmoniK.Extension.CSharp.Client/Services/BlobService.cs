@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
@@ -426,7 +427,7 @@ public class BlobService : IBlobService
                                                                 {
                                                                   Sort = new ListResultsRequest.Types.Sort
                                                                          {
-                                                                           Direction = blobPagination.SortDirection,
+                                                                           Direction = (SortDirection)blobPagination.SortDirection,
                                                                          },
                                                                   Filters  = blobPagination.Filter, // should have sessionId filter... see how it should be implemented
                                                                   Page     = blobPagination.Page,

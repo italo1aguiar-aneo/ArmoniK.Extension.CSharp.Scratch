@@ -40,20 +40,17 @@ public record TaskConfiguration
   /// <param name="partitionId">The partition identifier for task segregation.</param>
   /// <param name="maxDuration">The maximum duration allowed for the task to complete.</param>
   /// <param name="options">Optional additional key-value pairs for further customization.</param>
-  /// <param name="applicationConfiguration">Optional application-specific configurations.</param>
   public TaskConfiguration(int                        maxRetries,
                            int                        priority,
                            string                     partitionId,
                            TimeSpan                   maxDuration,
-                           Dictionary<string, string> options                  = null,
-                           ApplicationConfiguration   applicationConfiguration = null)
+                           Dictionary<string, string> options = null)
   {
-    MaxRetries               = maxRetries;
-    Priority                 = priority;
-    PartitionId              = partitionId;
-    Options                  = options ?? new Dictionary<string, string>(); // Ensure options is never null
-    MaxDuration              = maxDuration;
-    ApplicationConfiguration = applicationConfiguration;
+    MaxRetries  = maxRetries;
+    Priority    = priority;
+    PartitionId = partitionId;
+    Options     = options ?? new Dictionary<string, string>(); // Ensure options is never null
+    MaxDuration = maxDuration;
   }
 
   /// <summary>
@@ -83,12 +80,6 @@ public record TaskConfiguration
   public TimeSpan MaxDuration { get; init; }
 
   /// <summary>
-  ///   Optional application-specific configuration.
-  /// </summary>
-  [CanBeNull]
-  public ApplicationConfiguration ApplicationConfiguration { get; init; }
-
-  /// <summary>
   ///   Converts this <see cref="TaskConfiguration" /> instance to a <see cref="TaskOptions" /> suitable for use with task
   ///   submission.
   /// </summary>
@@ -107,16 +98,6 @@ public record TaskConfiguration
     {
       taskOptions.Options.Add(Options);
     }
-
-    if (ApplicationConfiguration == null)
-    {
-      return taskOptions;
-    }
-
-    taskOptions.ApplicationName      = ApplicationConfiguration.ApplicationName;
-    taskOptions.ApplicationService   = ApplicationConfiguration.ApplicationService;
-    taskOptions.ApplicationNamespace = ApplicationConfiguration.ApplicationNamespace;
-    taskOptions.ApplicationVersion   = ApplicationConfiguration.ApplicationVersion;
 
     return taskOptions;
   }
