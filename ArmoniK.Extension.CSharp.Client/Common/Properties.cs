@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 
-using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
-
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
@@ -65,8 +63,7 @@ public record Properties
   /// <param name="sslValidation">Disable the ssl strong validation of ssl certificate (default : enable => true)</param>
   // TODO: define [PublicApi] ?
   // ReSharper disable once UnusedMember.Global
-  public Properties(TaskConfiguration   options,
-                    string              connectionAddress,
+  public Properties(string              connectionAddress,
                     IEnumerable<string> partitionIds,
                     int                 connectionPort = 0,
                     string              protocol       = null,
@@ -77,7 +74,6 @@ public record Properties
                     bool?               sslValidation  = null)
     : this(new ConfigurationBuilder().AddEnvironmentVariables()
                                      .Build(),
-           options,
            partitionIds,
            connectionAddress,
            connectionPort,
@@ -109,7 +105,6 @@ public record Properties
   /// <param name="retryMaxBackoff">Max retry backoff</param>
   /// <exception cref="ArgumentException"></exception>
   public Properties(IConfiguration      configuration,
-                    TaskConfiguration   options,
                     IEnumerable<string> partitionIds,
                     string              connectionAddress      = null,
                     int                 connectionPort         = 0,
@@ -123,7 +118,6 @@ public record Properties
                     double              retryBackoffMultiplier = 0,
                     TimeSpan            retryMaxBackoff        = new())
   {
-    TaskOptions   = options;
     Configuration = configuration;
     PartitionIds  = partitionIds;
 
@@ -289,14 +283,6 @@ public record Properties
   // ReSharper disable once MemberCanBePrivate.Global
   // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public int ConnectionPort { get; init; } = 5001;
-
-  /// <summary>
-  ///   The TaskOptions to pass to the session or the submission session
-  /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public TaskConfiguration TaskOptions { get; init; }
 
   /// <summary>
   ///   The TaskOptions to pass to the session or the submission session

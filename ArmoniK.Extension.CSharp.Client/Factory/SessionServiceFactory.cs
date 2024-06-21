@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -15,6 +15,7 @@
 // limitations under the License.
 
 using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Services;
 using ArmoniK.Utils;
@@ -29,8 +30,10 @@ public class SessionServiceFactory
 {
   public static ISessionService CreateSessionService(ObjectPool<ChannelBase> channel,
                                                      Properties              properties,
+                                                     TaskConfiguration       taskConfiguration,
                                                      ILoggerFactory          loggerFactory)
     => new SessionService(channel,
                           properties,
+                          taskConfiguration,
                           loggerFactory);
 }

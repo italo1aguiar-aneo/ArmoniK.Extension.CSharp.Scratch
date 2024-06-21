@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -31,30 +32,33 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 public class SessionService : ISessionService
 {
-  private readonly ObjectPool<ChannelBase> _channel;
-  private readonly ILogger<SessionService> _logger;
+  private readonly ObjectPool<ChannelBase> channel_;
+  private readonly TaskConfiguration       defaultTaskConfiguration_;
+  private readonly ILogger<SessionService> logger_;
 
-  private readonly Properties _properties;
+  private readonly Properties properties_;
 
   public SessionService(ObjectPool<ChannelBase> channel,
                         Properties              properties,
+                        TaskConfiguration       taskConfiguration,
                         ILoggerFactory          loggerFactory)
   {
-    _properties = properties;
-    _logger     = loggerFactory.CreateLogger<SessionService>();
-    _channel    = channel;
+    properties_               = properties;
+    logger_                   = loggerFactory.CreateLogger<SessionService>();
+    channel_                  = channel;
+    defaultTaskConfiguration_ = taskConfiguration;
   }
 
   public async Task<SessionInfo> CreateSessionAsync(CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
                                                                     {
-                                                                      DefaultTaskOption = _properties.TaskOptions.ToTaskOptions(),
+                                                                      DefaultTaskOption = defaultTaskConfiguration_.ToTaskOptions(),
                                                                       PartitionIds =
                                                                       {
-                                                                        _properties.PartitionIds,
+                                                                        properties_.PartitionIds,
                                                                       },
                                                                     });
 
@@ -64,7 +68,7 @@ public class SessionService : ISessionService
   public async Task CancelSessionAsync(SessionInfo       session,
                                        CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.CancelSessionAsync(new CancelSessionRequest
                                            {
@@ -75,7 +79,7 @@ public class SessionService : ISessionService
   public async Task CloseSessionAsync(SessionInfo       session,
                                       CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.CloseSessionAsync(new CloseSessionRequest
                                           {
@@ -86,7 +90,7 @@ public class SessionService : ISessionService
   public async Task PauseSessionAsync(SessionInfo       session,
                                       CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.PauseSessionAsync(new PauseSessionRequest
                                           {
@@ -97,7 +101,7 @@ public class SessionService : ISessionService
   public async Task StopSubmissionAsync(SessionInfo       session,
                                         CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.StopSubmissionAsync(new StopSubmissionRequest
                                             {
@@ -108,7 +112,7 @@ public class SessionService : ISessionService
   public async Task ResumeSessionAsync(SessionInfo       session,
                                        CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.ResumeSessionAsync(new ResumeSessionRequest
                                            {
@@ -119,7 +123,7 @@ public class SessionService : ISessionService
   public async Task PurgeSessionAsync(SessionInfo       session,
                                       CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.PurgeSessionAsync(new PurgeSessionRequest
                                           {
@@ -130,7 +134,7 @@ public class SessionService : ISessionService
   public async Task DeleteSessionAsync(SessionInfo       session,
                                        CancellationToken cancellationToken = default)
   {
-    await using var channel       = await _channel.GetAsync(cancellationToken);
+    await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     await sessionClient.DeleteSessionAsync(new DeleteSessionRequest
                                            {

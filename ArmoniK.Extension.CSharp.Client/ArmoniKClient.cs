@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -34,75 +34,106 @@ namespace ArmoniK.Extension.CSharp.Client;
 
 public class ArmoniKClient
 {
-  private readonly ILogger                 _logger;
-  private readonly ILoggerFactory          _loggerFactory;
-  private readonly Properties              _properties;
-  private          IBlobService            _blobService;
-  private          ObjectPool<ChannelBase> _channelPool;
-  private          IEventsService          _eventsService;
-  private          ISessionService         _sessionService;
-  private          ITasksService           _tasksService;
+  private readonly ILogger                 logger_;
+  private readonly ILoggerFactory          loggerFactory_;
+  private readonly Properties              properties_;
+  public readonly  TaskConfiguration       TaskConfiguration;
+  private          IBlobService            blobService_;
+  private          ObjectPool<ChannelBase> channelPool_;
+  private          IEventsService          eventsService_;
+  private          ISessionService         sessionService_;
+  private          ITasksService           tasksService_;
 
   public ArmoniKClient(Properties     properties,
                        ILoggerFactory loggerFactory)
   {
-    _properties    = properties    ?? throw new ArgumentNullException(nameof(properties));
-    _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-    _logger        = loggerFactory.CreateLogger<ArmoniKClient>();
+    properties_    = properties    ?? throw new ArgumentNullException(nameof(properties));
+    loggerFactory_ = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+    logger_        = loggerFactory.CreateLogger<ArmoniKClient>();
+  }
+
+  public ArmoniKClient(Properties        properties,
+                       ILoggerFactory    loggerFactory,
+                       TaskConfiguration taskConfiguration)
+  {
+    properties_       = properties    ?? throw new ArgumentNullException(nameof(properties));
+    loggerFactory_    = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+    TaskConfiguration = taskConfiguration;
+    logger_           = loggerFactory.CreateLogger<ArmoniKClient>();
   }
 
   public ObjectPool<ChannelBase> ChannelPool
-    => _channelPool ??= ClientServiceConnector.ControlPlaneConnectionPool(_properties,
-                                                                          _loggerFactory);
+    => channelPool_ ??= ClientServiceConnector.ControlPlaneConnectionPool(properties_,
+                                                                          loggerFactory_);
 
   public Task<IBlobService> GetBlobService()
   {
-    if (_blobService is not null)
+    if (blobService_ is not null)
     {
-      return Task.FromResult(_blobService);
+      return Task.FromResult(blobService_);
     }
 
-    _blobService = BlobServiceFactory.CreateBlobService(ChannelPool,
-                                                        _loggerFactory);
-    return Task.FromResult(_blobService);
+    blobService_ = BlobServiceFactory.CreateBlobService(ChannelPool,
+                                                        loggerFactory_);
+    return Task.FromResult(blobService_);
   }
 
   public Task<ISessionService> GetSessionService()
   {
-    if (_sessionService is not null)
+    if (sessionService_ is not null)
     {
-      return Task.FromResult(_sessionService);
+      return Task.FromResult(sessionService_);
     }
 
-    _sessionService = SessionServiceFactory.CreateSessionService(ChannelPool,
-                                                                 _properties,
-                                                                 _loggerFactory);
-    return Task.FromResult(_sessionService);
+    if (TaskConfiguration == null)
+    {
+      throw new ArgumentNullException(nameof(TaskConfiguration));
+    }
+
+    sessionService_ = SessionServiceFactory.CreateSessionService(ChannelPool,
+                                                                 properties_,
+                                                                 TaskConfiguration,
+                                                                 loggerFactory_);
+    return Task.FromResult(sessionService_);
+  }
+
+  public Task<ISessionService> GetSessionService(TaskConfiguration taskConfiguration)
+  {
+    if (sessionService_ is not null)
+    {
+      return Task.FromResult(sessionService_);
+    }
+
+    sessionService_ = SessionServiceFactory.CreateSessionService(ChannelPool,
+                                                                 properties_,
+                                                                 taskConfiguration,
+                                                                 loggerFactory_);
+    return Task.FromResult(sessionService_);
   }
 
   public async Task<ITasksService> GetTasksService()
   {
-    if (_tasksService is not null)
+    if (tasksService_ is not null)
     {
-      return _tasksService;
+      return tasksService_;
     }
 
-    _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool,
+    tasksService_ = TasksServiceFactory.CreateTaskService(ChannelPool,
                                                           await GetBlobService(),
-                                                          _loggerFactory);
-    return _tasksService;
+                                                          loggerFactory_);
+    return tasksService_;
   }
 
   public Task<IEventsService> GetEventsService()
   {
-    if (_eventsService is not null)
+    if (eventsService_ is not null)
     {
-      return Task.FromResult(_eventsService);
+      return Task.FromResult(eventsService_);
     }
 
-    _eventsService = EventsServiceFactory.CreateEventsService(ChannelPool,
-                                                              _loggerFactory);
-    return Task.FromResult(_eventsService);
+    eventsService_ = EventsServiceFactory.CreateEventsService(ChannelPool,
+                                                              loggerFactory_);
+    return Task.FromResult(eventsService_);
   }
 
   public Task<BlobHandler> GetBlobHandler(BlobInfo blobInfo)
