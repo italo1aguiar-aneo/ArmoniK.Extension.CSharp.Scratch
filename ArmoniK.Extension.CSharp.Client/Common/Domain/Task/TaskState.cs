@@ -63,7 +63,7 @@ public record TaskState : TaskInfos
   /// <summary>
   ///   Time when the task started.
   /// </summary>
-  public DateTime StartedAt { get; init; }
+  public DateTime? StartedAt { get; init; }
 
   /// <summary>
   ///   Current status of the task.

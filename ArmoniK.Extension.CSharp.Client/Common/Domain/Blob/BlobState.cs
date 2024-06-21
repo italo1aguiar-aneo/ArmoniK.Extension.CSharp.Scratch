@@ -33,12 +33,12 @@ public record BlobState : BlobInfo
   /// <summary>
   ///   Datetime when the blob was created.
   /// </summary>
-  public DateTime? CreateAt { get; init; }
+  public DateTime CreateAt { get; init; }
 
   /// <summary>
   ///   Current status of the blob.
   /// </summary>
-  public BlobStatus? Status { get; init; }
+  public BlobStatus Status { get; init; }
 }
 
 /// <summary>
