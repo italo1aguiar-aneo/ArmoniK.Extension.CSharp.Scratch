@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+
 using Google.Protobuf.Reflection;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Enum;
@@ -40,4 +42,29 @@ public enum SortDirection
   /// </summary>
   [OriginalName("SORT_DIRECTION_DESC")]
   Desc,
+}
+
+public static class SortDirectionExt
+{
+  public static Api.gRPC.V1.SortDirection.SortDirection ToGrpcStatus(this SortDirection direction)
+    => direction switch
+       {
+         SortDirection.Unspecified => Api.gRPC.V1.SortDirection.SortDirection.Unspecified,
+         SortDirection.Asc     => Api.gRPC.V1.SortDirection.SortDirection.Asc,
+         SortDirection.Desc   => Api.gRPC.V1.SortDirection.SortDirection.Desc,
+         _ => throw new ArgumentOutOfRangeException(nameof(direction),
+                                                    direction,
+                                                    null),
+       };
+
+  public static SortDirection ToGrpcStatus(this Api.gRPC.V1.SortDirection.SortDirection direction)
+    => direction switch
+       {
+         Api.gRPC.V1.SortDirection.SortDirection.Unspecified => SortDirection.Unspecified,
+         Api.gRPC.V1.SortDirection.SortDirection.Asc     => SortDirection.Asc,
+         Api.gRPC.V1.SortDirection.SortDirection.Desc   => SortDirection.Desc,
+         _ => throw new ArgumentOutOfRangeException(nameof(direction),
+                                                    direction,
+                                                    null),
+       };
 }

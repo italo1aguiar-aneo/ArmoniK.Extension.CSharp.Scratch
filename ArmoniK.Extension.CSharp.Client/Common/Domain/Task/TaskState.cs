@@ -148,3 +148,45 @@ public enum TaskStatus
   [OriginalName("TASK_STATUS_RETRIED")]
   Retried,
 }
+public static class TaskStatusExt
+{
+  public static Api.gRPC.V1.TaskStatus ToGrpcStatus(this TaskStatus status)
+    => status switch
+       {
+         TaskStatus.Unspecified => Api.gRPC.V1.TaskStatus.Unspecified,
+         TaskStatus.Creating     => Api.gRPC.V1.TaskStatus.Creating,
+         TaskStatus.Completed   => Api.gRPC.V1.TaskStatus.Completed,
+         TaskStatus.Submitted     => Api.gRPC.V1.TaskStatus.Submitted,
+         TaskStatus.Dispatched => Api.gRPC.V1.TaskStatus.Dispatched,
+         TaskStatus.Error => Api.gRPC.V1.TaskStatus.Error,
+         TaskStatus.Timeout     => Api.gRPC.V1.TaskStatus.Timeout,
+         TaskStatus.Cancelled => Api.gRPC.V1.TaskStatus.Cancelled,
+         TaskStatus.Cancelling => Api.gRPC.V1.TaskStatus.Cancelling,
+         TaskStatus.Processing     => Api.gRPC.V1.TaskStatus.Processing,
+         TaskStatus.Processed => Api.gRPC.V1.TaskStatus.Processed,
+         TaskStatus.Retried => Api.gRPC.V1.TaskStatus.Retried,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
+
+  public static TaskStatus ToGrpcStatus(this Api.gRPC.V1.TaskStatus status)
+    => status switch
+       {
+         Api.gRPC.V1.TaskStatus.Unspecified => TaskStatus.Unspecified,
+         Api.gRPC.V1.TaskStatus.Creating     => TaskStatus.Creating,
+         Api.gRPC.V1.TaskStatus.Completed   => TaskStatus.Completed,
+         Api.gRPC.V1.TaskStatus.Submitted     => TaskStatus.Submitted,
+         Api.gRPC.V1.TaskStatus.Dispatched => TaskStatus.Dispatched,
+         Api.gRPC.V1.TaskStatus.Error => TaskStatus.Error,
+         Api.gRPC.V1.TaskStatus.Timeout     => TaskStatus.Timeout,
+         Api.gRPC.V1.TaskStatus.Cancelled => TaskStatus.Cancelled,
+         Api.gRPC.V1.TaskStatus.Cancelling => TaskStatus.Cancelling,
+         Api.gRPC.V1.TaskStatus.Processing     => TaskStatus.Processing,
+         Api.gRPC.V1.TaskStatus.Processed => TaskStatus.Processed,
+         Api.gRPC.V1.TaskStatus.Retried => TaskStatus.Retried,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
+}

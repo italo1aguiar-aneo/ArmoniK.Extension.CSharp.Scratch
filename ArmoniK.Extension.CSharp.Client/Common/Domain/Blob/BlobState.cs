@@ -16,6 +16,8 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
+
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
 /// <summary>
@@ -74,4 +76,35 @@ public enum BlobStatus
   ///   See https://developers.google.com/protocol-buffers/docs/proto3#enum.
   /// </summary>
   Notfound = 127, // 0x0000007F
+}
+
+public static class BlobStatusExt
+{
+  public static ResultStatus ToGrpcStatus(this BlobStatus status)
+    => status switch
+       {
+         BlobStatus.Unspecified => ResultStatus.Unspecified,
+         BlobStatus.Created     => ResultStatus.Created,
+         BlobStatus.Completed   => ResultStatus.Completed,
+         BlobStatus.Aborted     => ResultStatus.Aborted,
+         BlobStatus.Deleted => ResultStatus.Deleted,
+         BlobStatus.Notfound => ResultStatus.Notfound,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
+
+  public static BlobStatus ToInternalStatus(this ResultStatus status)
+    => status switch
+       {
+         ResultStatus.Unspecified => BlobStatus.Unspecified,
+         ResultStatus.Created     => BlobStatus.Created,
+         ResultStatus.Completed   => BlobStatus.Completed,
+         ResultStatus.Aborted     => BlobStatus.Aborted,
+         ResultStatus.Notfound    => BlobStatus.Notfound,
+         ResultStatus.Deleted     => BlobStatus.Deleted,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
 }

@@ -24,9 +24,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Client;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Enum;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -410,7 +410,7 @@ public class BlobService : IBlobService
            {
              CreateAt    = blobDetails.Result.CreatedAt.ToDateTime(),
              CompletedAt = blobDetails.Result.CompletedAt.ToDateTime(),
-             Status      = (BlobStatus?)blobDetails.Result.Status,
+             Status      = blobDetails.Result.Status.ToInternalStatus(),
              BlobId      = blobDetails.Result.ResultId,
              SessionId   = blobDetails.Result.SessionId,
              BlobName    = blobDetails.Result.Name,
@@ -427,7 +427,7 @@ public class BlobService : IBlobService
                                                                 {
                                                                   Sort = new ListResultsRequest.Types.Sort
                                                                          {
-                                                                           Direction = (SortDirection)blobPagination.SortDirection,
+                                                                           Direction = blobPagination.SortDirection.ToGrpcStatus(),
                                                                          },
                                                                   Filters  = blobPagination.Filter, // should have sessionId filter... see how it should be implemented
                                                                   Page     = blobPagination.Page,
@@ -437,7 +437,7 @@ public class BlobService : IBlobService
                                                    {
                                                      CreateAt    = x.CreatedAt.ToDateTime(),
                                                      CompletedAt = x.CompletedAt.ToDateTime(),
-                                                     Status      = (BlobStatus?)x.Status,
+                                                     Status      = x.Status.ToInternalStatus(),
                                                      BlobId      = x.ResultId,
                                                      BlobName    = x.Name,
                                                      SessionId   = x.SessionId,

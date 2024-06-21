@@ -37,14 +37,6 @@ namespace Tests.Services;
 
 public class TasksServiceTests
 {
-  private readonly List<string> _defaultPartitionsIds;
-
-  public TasksServiceTests()
-    => _defaultPartitionsIds = new List<string>
-                               {
-                                 "subtasking",
-                               };
-
   [Test]
   public async Task CreateTask_ReturnsNewTaskWithId()
   {
@@ -93,11 +85,11 @@ public class TasksServiceTests
 
     var taskNodes = new List<TaskNode>
                     {
-                      new()
+                      new TaskNode
                       {
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new()
+                                            new BlobInfo
                                             {
                                               BlobName  = "blob1",
                                               BlobId    = "blobId1",
@@ -195,7 +187,7 @@ public class TasksServiceTests
 
     var taskNodes = new List<TaskNode>
                     {
-                      new()
+                      new TaskNode
                       {
                         Payload = new BlobInfo
                                   {
@@ -205,7 +197,7 @@ public class TasksServiceTests
                                   },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new()
+                                            new BlobInfo
                                             {
                                               BlobName  = "output1",
                                               BlobId    = "outputId1",
@@ -213,7 +205,7 @@ public class TasksServiceTests
                                             },
                                           },
                       },
-                      new()
+                      new TaskNode
                       {
                         Payload = new BlobInfo
                                   {
@@ -223,7 +215,7 @@ public class TasksServiceTests
                                   },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new()
+                                            new BlobInfo
                                             {
                                               BlobName  = "output2",
                                               BlobId    = "outputId2",
@@ -252,19 +244,19 @@ public class TasksServiceTests
 
 
   [Test]
-  public async Task SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
+  public void SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
   {
     // Arrange
     var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
+    {
+      CallBase = true,
+    };
     var mockCallInvoker = new Mock<CallInvoker>();
 
     mockChannelBase.Setup(m => m.CreateCallInvoker())
                    .Returns(mockCallInvoker.Object);
 
-    var objectPool      = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
+    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
     var mockBlobService = new Mock<IBlobService>().Object;
 
     var taskService = TasksServiceFactory.CreateTaskService(objectPool,
@@ -273,7 +265,7 @@ public class TasksServiceTests
 
     var taskNodes = new List<TaskNode>
                     {
-                      new()
+                      new TaskNode
                       {
                         Payload = new BlobInfo
                                   {
@@ -339,7 +331,7 @@ public class TasksServiceTests
 
     var expectedBlobs = new List<BlobInfo>
                         {
-                          new()
+                          new BlobInfo
                           {
                             BlobName  = "dependencyBlob",
                             BlobId    = "dependencyBlobId",
@@ -370,7 +362,7 @@ public class TasksServiceTests
 
     var taskNodes = new List<TaskNode>
                     {
-                      new()
+                      new TaskNode
                       {
                         Payload = new BlobInfo
                                   {
@@ -380,7 +372,7 @@ public class TasksServiceTests
                                   },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new()
+                                            new BlobInfo
                                             {
                                               BlobName  = "output1",
                                               BlobId    = "outputId1",
@@ -456,7 +448,7 @@ public class TasksServiceTests
 
     var expectedBlobs = new List<BlobInfo>
                         {
-                          new()
+                          new BlobInfo
                           {
                             BlobName  = "dependencyBlob",
                             BlobId    = "dependencyBlobId",
@@ -472,7 +464,7 @@ public class TasksServiceTests
 
     var taskNodes = new List<TaskNode>
                     {
-                      new()
+                      new TaskNode
                       {
                         Payload = new BlobInfo
                                   {

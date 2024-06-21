@@ -21,10 +21,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+using ArmoniK.Extension.CSharp.Client.Common.Enum;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -33,8 +33,6 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 
 using static ArmoniK.Api.gRPC.V1.Tasks.Tasks;
-
-using TaskStatus = ArmoniK.Extension.CSharp.Client.Common.Domain.Task.TaskStatus;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
@@ -123,7 +121,7 @@ public class TasksService : ITasksService
              DataDependencies = tasks.Task.DataDependencies,
              ExpectedOutputs  = tasks.Task.ExpectedOutputIds,
              TaskId           = tasks.Task.Id,
-             Status           = (TaskStatus)tasks.Task.Status,
+             Status           = tasks.Task.Status.ToGrpcStatus(),
              CreateAt         = tasks.Task.CreatedAt.ToDateTime(),
              StartedAt        = tasks.Task.StartedAt.ToDateTime(),
              EndedAt          = tasks.Task.EndedAt.ToDateTime(),
@@ -147,7 +145,7 @@ public class TasksService : ITasksService
                                                            PageSize = paginationOptions.PageSize,
                                                            Sort = new ListTasksRequest.Types.Sort
                                                                   {
-                                                                    Direction = (SortDirection)paginationOptions.SortDirection,
+                                                                    Direction = paginationOptions.SortDirection.ToGrpcStatus(),
                                                                   },
                                                          });
 
@@ -156,7 +154,7 @@ public class TasksService : ITasksService
                                      DataDependencies = x.DataDependencies,
                                      ExpectedOutputs  = x.ExpectedOutputIds,
                                      TaskId           = x.Id,
-                                     Status           = (TaskStatus)x.Status,
+                                     Status           = x.Status.ToGrpcStatus(),
                                      CreateAt         = x.CreatedAt.ToDateTime(),
                                      StartedAt        = x.StartedAt.ToDateTime(),
                                      EndedAt          = x.EndedAt.ToDateTime(),
