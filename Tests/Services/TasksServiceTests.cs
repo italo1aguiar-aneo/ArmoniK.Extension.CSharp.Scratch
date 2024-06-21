@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -37,14 +37,6 @@ namespace Tests.Services;
 
 public class TasksServiceTests
 {
-  private readonly List<string> _defaultPartitionsIds;
-
-  public TasksServiceTests()
-    => _defaultPartitionsIds = new List<string>
-                               {
-                                 "subtasking",
-                               };
-
   [Test]
   public async Task CreateTask_ReturnsNewTaskWithId()
   {
@@ -97,13 +89,19 @@ public class TasksServiceTests
                       {
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new("blob1",
-                                                "blobId1",
-                                                "sessionId1"),
+                                            new()
+                                            {
+                                              BlobName  = "blob1",
+                                              BlobId    = "blobId1",
+                                              SessionId = "sessionId1",
+                                            },
                                           },
-                        Payload = new BlobInfo("payload1",
-                                               "payloadId1",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payload1",
+                                    BlobId    = "payloadId1",
+                                    SessionId = "sessionId1",
+                                  },
                       },
                     };
 
@@ -191,26 +189,38 @@ public class TasksServiceTests
                     {
                       new()
                       {
-                        Payload = new BlobInfo("payload1",
-                                               "payloadId1",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payload1",
+                                    BlobId    = "payloadId1",
+                                    SessionId = "sessionId1",
+                                  },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new("output1",
-                                                "outputId1",
-                                                "sessionId1"),
+                                            new()
+                                            {
+                                              BlobName  = "output1",
+                                              BlobId    = "outputId1",
+                                              SessionId = "sessionId1",
+                                            },
                                           },
                       },
                       new()
                       {
-                        Payload = new BlobInfo("payload2",
-                                               "payloadId2",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payload2",
+                                    BlobId    = "payloadId2",
+                                    SessionId = "sessionId1",
+                                  },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new("output2",
-                                                "outputId2",
-                                                "sessionId1"),
+                                            new()
+                                            {
+                                              BlobName  = "output2",
+                                              BlobId    = "outputId2",
+                                              SessionId = "sessionId1",
+                                            },
                                           },
                       },
                     };
@@ -234,7 +244,7 @@ public class TasksServiceTests
 
 
   [Test]
-  public async Task SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
+  public void SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
   {
     // Arrange
     var mockChannelBase = new Mock<ChannelBase>("localhost")
@@ -257,9 +267,12 @@ public class TasksServiceTests
                     {
                       new()
                       {
-                        Payload = new BlobInfo("payload1",
-                                               "payloadId1",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payload1",
+                                    BlobId    = "payloadId1",
+                                    SessionId = "sessionId1",
+                                  },
                         ExpectedOutputs = new List<BlobInfo>(), // Empty expected outputs
                       },
                     };
@@ -318,9 +331,12 @@ public class TasksServiceTests
 
     var expectedBlobs = new List<BlobInfo>
                         {
-                          new("dependencyBlob",
-                              "dependencyBlobId",
-                              "sessionId1"),
+                          new()
+                          {
+                            BlobName  = "dependencyBlob",
+                            BlobId    = "dependencyBlobId",
+                            SessionId = "sessionId1",
+                          },
                         };
 
     mockBlobService.Setup(m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
@@ -348,14 +364,20 @@ public class TasksServiceTests
                     {
                       new()
                       {
-                        Payload = new BlobInfo("payloadId",
-                                               "blobId",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payloadId",
+                                    BlobId    = "blobId",
+                                    SessionId = "sessionId1",
+                                  },
                         ExpectedOutputs = new List<BlobInfo>
                                           {
-                                            new("output1",
-                                                "outputId1",
-                                                "sessionId1"),
+                                            new()
+                                            {
+                                              BlobName  = "output1",
+                                              BlobId    = "outputId1",
+                                              SessionId = "sessionId1",
+                                            },
                                           },
                         DataDependenciesContent = dataDependenciesContent,
                       },
@@ -426,9 +448,12 @@ public class TasksServiceTests
 
     var expectedBlobs = new List<BlobInfo>
                         {
-                          new("dependencyBlob",
-                              "dependencyBlobId",
-                              "sessionId1"),
+                          new()
+                          {
+                            BlobName  = "dependencyBlob",
+                            BlobId    = "dependencyBlobId",
+                            SessionId = "sessionId1",
+                          },
                         };
 
     var taskService = TasksServiceFactory.CreateTaskService(objectPool,
@@ -441,9 +466,12 @@ public class TasksServiceTests
                     {
                       new()
                       {
-                        Payload = new BlobInfo("payloadId",
-                                               "blobId",
-                                               "sessionId1"),
+                        Payload = new BlobInfo
+                                  {
+                                    BlobName  = "payloadId",
+                                    BlobId    = "blobId",
+                                    SessionId = "sessionId1",
+                                  },
                         ExpectedOutputs         = expectedBlobs,
                         DataDependenciesContent = dataDependenciesContent,
                       },

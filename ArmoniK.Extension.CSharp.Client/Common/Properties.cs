@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -31,22 +31,19 @@ namespace ArmoniK.Extension.CSharp.Client.Common;
 ///   2. The Option configuration AppSettings
 ///   The ssl mTLS certificate if needed to connect to the control plane
 /// </summary>
-[MarkDownDoc]
-// TODO: check all setter and mark the required as PublicApi
-// TODO: to be reworked to allow all options from API and add other elements.
-public class Properties
+public record Properties
 {
   /// <summary>
   ///   Returns the section key Grpc from appSettings.json
   /// </summary>
-  private const string SectionGrpc = "Grpc";
+  private const string Grpc = "Grpc";
 
-  private const string SectionEndPoint           = "EndPoint";
-  private const string SectionSSlValidation      = "SSLValidation";
-  private const string SectionCaCert             = "CaCert";
-  private const string SectionClientCert         = "ClientCert";
-  private const string SectionClientKey          = "ClientKey";
-  private const string SectionClientCertP12      = "ClientP12";
+  private const string EndPoint                  = "EndPoint";
+  private const string SSlValidation             = "SSLValidation";
+  private const string CaCert                    = "CaCert";
+  private const string ClientCert                = "ClientCert";
+  private const string ClientKey                 = "ClientKey";
+  private const string ClientCertP12             = "ClientP12";
   private const string SectionTargetNameOverride = "EndpointNameOverride";
 
   private const string SectionRetryInitialBackoff    = "RetryInitialBackoff";
@@ -66,8 +63,6 @@ public class Properties
   /// <param name="clientP12">The client certificate in a P12/Pkcs12/PFX format</param>
   /// <param name="caCertPem">The Server certificate file to validate mTLS</param>
   /// <param name="sslValidation">Disable the ssl strong validation of ssl certificate (default : enable => true)</param>
-  // TODO: define [PublicApi] ?
-  // ReSharper disable once UnusedMember.Global
   public Properties(TaskConfiguration   options,
                     string              connectionAddress,
                     IEnumerable<string> partitionIds,
@@ -130,13 +125,12 @@ public class Properties
     Configuration = configuration;
     PartitionIds  = partitionIds;
 
-    var sectionGrpc = configuration.GetSection(SectionGrpc);
+    var sectionGrpc = configuration.GetSection(Grpc);
 
     if (connectionAddress != null)
     {
       var uri = new Uri(connectionAddress);
       ConnectionAddress = uri.Host;
-
       if (!string.IsNullOrEmpty(uri.Scheme))
       {
         Protocol = uri.Scheme;
@@ -147,14 +141,12 @@ public class Properties
       ConnectionAddress = string.Empty; // to remove a compiler message for netstandard2.0
       try
       {
-        var connectionString = sectionGrpc.GetSection(SectionEndPoint)
+        var connectionString = sectionGrpc.GetSection(EndPoint)
                                           .Value;
         if (!string.IsNullOrEmpty(connectionString))
         {
           var uri = new Uri(connectionString);
-
-          Protocol = uri.Scheme;
-
+          Protocol          = uri.Scheme;
           ConnectionAddress = uri.Host;
           ConnectionPort    = uri.Port;
         }
@@ -169,12 +161,12 @@ public class Properties
 
     Protocol = protocol ?? Protocol;
 
-    ConfSslValidation  = sslValidation                          ?? sectionGrpc[SectionSSlValidation] != "disable";
+    ConfSslValidation  = sslValidation                          ?? sectionGrpc[SSlValidation] != "disable";
     TargetNameOverride = sectionGrpc[SectionTargetNameOverride] ?? string.Empty;
-    CaCertFilePem      = caCertPem                              ?? sectionGrpc[SectionCaCert]        ?? string.Empty;
-    ClientCertFilePem  = clientCertFilePem                      ?? sectionGrpc[SectionClientCert]    ?? string.Empty;
-    ClientKeyFilePem   = clientKeyFilePem                       ?? sectionGrpc[SectionClientKey]     ?? string.Empty;
-    ClientP12File      = clientP12                              ?? sectionGrpc[SectionClientCertP12] ?? string.Empty;
+    CaCertFilePem      = caCertPem                              ?? sectionGrpc[CaCert]        ?? string.Empty;
+    ClientCertFilePem  = clientCertFilePem                      ?? sectionGrpc[ClientCert]    ?? string.Empty;
+    ClientKeyFilePem   = clientKeyFilePem                       ?? sectionGrpc[ClientKey]     ?? string.Empty;
+    ClientP12File      = clientP12                              ?? sectionGrpc[ClientCertP12] ?? string.Empty;
 
     if (retryInitialBackoff != TimeSpan.Zero)
     {
@@ -194,7 +186,6 @@ public class Properties
       RetryBackoffMultiplier = double.Parse(sectionGrpc[SectionRetryBackoffMultiplier]);
     }
 
-
     if (retryMaxBackoff != TimeSpan.Zero)
     {
       RetryMaxBackoff = retryMaxBackoff;
@@ -203,7 +194,6 @@ public class Properties
     {
       RetryMaxBackoff = TimeSpan.Parse(sectionGrpc[SectionRetryMaxBackoff]);
     }
-
 
     if (connectionPort != 0)
     {
@@ -221,123 +211,94 @@ public class Properties
   /// <summary>
   ///   The control plane url to connect
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public Uri ControlPlaneUri { get; set; }
+  public Uri ControlPlaneUri { get; init; }
 
   /// <summary>
   ///   The path to the CA Root file name
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public string CaCertFilePem { get; set; }
+  public string CaCertFilePem { get; }
 
   /// <summary>
   ///   The property to get the path of the certificate file
   /// </summary>
-  public string ClientCertFilePem { get; }
+  public string ClientCertFilePem { get; init; }
 
   /// <summary>
   ///   the property to get the path of the key certificate
   /// </summary>
-  public string ClientKeyFilePem { get; }
+  public string ClientKeyFilePem { get; init; }
 
   /// <summary>
   ///   the property to get the path of the certificate in P12/Pkcs12/PFX format
   /// </summary>
-  public string ClientP12File { get; }
+  public string ClientP12File { get; init; }
 
   /// <summary>
   ///   The SSL validation property to disable SSL strong verification
   /// </summary>
   [PublicAPI]
   [Obsolete("Use ConfSslValidation instead")]
-  // ReSharper disable once InconsistentNaming
   public bool ConfSSLValidation
     => ConfSslValidation;
 
   /// <summary>
   ///   The SSL validation property to disable SSL strong verification
   /// </summary>
-  public bool ConfSslValidation { get; }
+  public bool ConfSslValidation { get; init; }
 
   /// <summary>
   ///   The configuration property to give to the ClientService connector
   /// </summary>
-  // TODO: mark as [PublicApi] ?
-  // ReSharper disable once UnusedAutoPropertyAccessor.Global
-  public IConfiguration Configuration { get; }
+  public IConfiguration Configuration { get; init; }
 
   /// <summary>
   ///   The connection string building the value Port Protocol and address
   /// </summary>
-  // TODO: mark as [PublicApi] ?
-  // ReSharper disable once MemberCanBePrivate.Global
   public string ConnectionString
     => $"{Protocol}://{ConnectionAddress}:{ConnectionPort}";
 
   /// <summary>
   ///   Secure or insecure protocol communication https or http (Default http)
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  public string Protocol { get; set; } = "http";
+  public string Protocol { get; init; } = "http";
 
   /// <summary>
   ///   The connection address property to connect to the control plane
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  public string ConnectionAddress { get; set; }
+  public string ConnectionAddress { get; init; }
 
   /// <summary>
   ///   The option connection port to connect to control plane (Default : 5001)
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public int ConnectionPort { get; set; } = 5001;
+  public int ConnectionPort { get; init; } = 5001;
 
   /// <summary>
   ///   The TaskOptions to pass to the session or the submission session
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public TaskConfiguration TaskOptions { get; set; }
+  public TaskConfiguration TaskOptions { get; init; }
 
   /// <summary>
   ///   The TaskOptions to pass to the session or the submission session
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public IEnumerable<string> PartitionIds { get; set; }
+  public IEnumerable<string> PartitionIds { get; init; }
 
   /// <summary>
   ///   The target name of the endpoint when ssl validation is disabled. Automatic if not set.
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public string TargetNameOverride { get; set; } = "";
+  public string TargetNameOverride { get; init; } = "";
 
   /// <summary>
   ///   Initial backoff from retries
   /// </summary>
-  public TimeSpan RetryInitialBackoff { get; } = TimeSpan.FromSeconds(1);
+  public TimeSpan RetryInitialBackoff { get; init; } = TimeSpan.FromSeconds(1);
 
   /// <summary>
   ///   Backoff multiplier for retries
   /// </summary>
-  public double RetryBackoffMultiplier { get; } = 2;
+  public double RetryBackoffMultiplier { get; init; } = 2;
 
   /// <summary>
   ///   Max backoff for retries
   /// </summary>
-  public TimeSpan RetryMaxBackoff { get; } = TimeSpan.FromSeconds(30);
-}
-
-public class MarkDownDocAttribute : Attribute
-{
+  public TimeSpan RetryMaxBackoff { get; init; } = TimeSpan.FromSeconds(30);
 }

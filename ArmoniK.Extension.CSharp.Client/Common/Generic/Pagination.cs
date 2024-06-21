@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -14,13 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ArmoniK.Extension.CSharp.Client.Common.Domain;
+using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
-public class ApplicationConfiguration
+namespace ArmoniK.Extension.CSharp.Client.Common.Generic;
+
+public class Pagination<T>
 {
-  public string ApplicationName      { get; set; }
-  public string ApplicationVersion   { get; set; }
-  public string ApplicationNamespace { get; set; }
-  public string ApplicationService   { get; set; }
-  public string EngineType           { get; set; }
+  public int           Page          { get; set; }
+  public int           PageSize      { get; set; }
+  public int           Total         { get; set; }
+  public SortDirection SortDirection { get; set; }
+  public T             Filter        { get; set; }
 }

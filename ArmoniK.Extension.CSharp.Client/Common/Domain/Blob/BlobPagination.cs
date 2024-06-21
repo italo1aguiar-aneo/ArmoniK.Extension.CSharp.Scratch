@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -15,15 +15,29 @@
 // limitations under the License.
 
 using ArmoniK.Api.gRPC.V1.Results;
-using ArmoniK.Api.gRPC.V1.SortDirection;
+using ArmoniK.Extension.CSharp.Client.Common.Generic;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 
-public class BlobPagination
+/// <summary>
+///   Provides pagination capabilities for listing blobs, including sorting and filtering functionalities.
+/// </summary>
+public class BlobPagination : Pagination<Filters>
 {
-  public int           Page          { get; set; }
-  public int           PageSize      { get; set; }
-  public int           Total         { get; set; }
-  public SortDirection SortDirection { get; set; }
-  public Filters       Filter        { get; set; }
+}
+
+/// <summary>
+///   Represents a page of blob information in a paginated list.
+/// </summary>
+public record BlobPage
+{
+  /// <summary>
+  ///   Total number of pages available.
+  /// </summary>
+  public int TotalPages { get; init; }
+
+  /// <summary>
+  ///   Details of the blob on this page.
+  /// </summary>
+  public BlobState BlobDetails { get; init; }
 }

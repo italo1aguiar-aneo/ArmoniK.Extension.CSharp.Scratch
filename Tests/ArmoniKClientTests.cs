@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -76,7 +76,7 @@ public class ArmoniKClientTests
 
     // Assert
     ClassicAssert.AreEqual("properties",
-                           exception.ParamName);
+                           exception?.ParamName);
   }
 
   [Test]

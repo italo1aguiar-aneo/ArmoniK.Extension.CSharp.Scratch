@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -25,21 +25,46 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
-public class TaskNode
+/// <summary>
+///   Contains details about data dependencies, payloads, and session-specific configurations for a task.
+/// </summary>
+public record TaskNode
 {
-  public IEnumerable<BlobInfo> ExpectedOutputs { get; set; }
+  /// <summary>
+  ///   Expected outputs as a list of <see cref="BlobInfo" />.
+  /// </summary>
+  public IEnumerable<BlobInfo> ExpectedOutputs { get; init; }
 
-  public ICollection<BlobInfo> DataDependencies { get; set; } = new List<BlobInfo>();
+  /// <summary>
+  ///   Collection of <see cref="BlobInfo" /> representing the data dependencies required by the task.
+  /// </summary>
+  public ICollection<BlobInfo> DataDependencies { get; init; } = new List<BlobInfo>();
 
-  public IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> DataDependenciesContent { get; set; } = ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
+  /// <summary>
+  ///   Dictionary of data dependencies with their content, where each key is a string identifier and the value is
+  ///   the binary content. This represents DataDependencies that were not yet sent to ArmoniK.
+  /// </summary>
+  public IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>> DataDependenciesContent { get; init; } = ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
+  /// <summary>
+  ///   <see cref="BlobInfo" /> for the task's payload.
+  /// </summary>
   public BlobInfo Payload { get; set; } = null;
 
-  public KeyValuePair<string, ReadOnlyMemory<byte>> PayloadContent { get; set; } = new(string.Empty,
-                                                                                       ReadOnlyMemory<byte>.Empty);
+  /// <summary>
+  ///   Content of the payload, where the key is a string identifier and the value is the binary content/>.
+  /// </summary>
+  public KeyValuePair<string, ReadOnlyMemory<byte>> PayloadContent { get; init; } = new(string.Empty,
+                                                                                        ReadOnlyMemory<byte>.Empty);
 
+  /// <summary>
+  ///   Gets the configuration options for the task, which may be null if no additional configurations are specified.
+  /// </summary>
   [CanBeNull]
-  public TaskConfiguration TaskOptions { get; set; }
+  public TaskConfiguration TaskOptions { get; init; }
 
-  public SessionInfo Session { get; set; }
+  /// <summary>
+  ///   Gets the session information associated with the task, encapsulated in a <see cref="SessionInfo" />.
+  /// </summary>
+  public SessionInfo Session { get; init; }
 }

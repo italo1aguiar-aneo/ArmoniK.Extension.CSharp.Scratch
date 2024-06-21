@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+using ArmoniK.Extension.CSharp.Client.Common.Enum;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -37,17 +38,17 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 public class TasksService : ITasksService
 {
-  private readonly IBlobService            _blobService;
-  private readonly ObjectPool<ChannelBase> _channelPool;
-  private readonly ILogger<TasksService>   _logger;
+  private readonly IBlobService            blobService_;
+  private readonly ObjectPool<ChannelBase> channelPool_;
+  private readonly ILogger<TasksService>   logger_;
 
   public TasksService(ObjectPool<ChannelBase> channel,
                       IBlobService            blobService,
                       ILoggerFactory          loggerFactory)
   {
-    _channelPool = channel;
-    _logger      = loggerFactory.CreateLogger<TasksService>();
-    _blobService = blobService;
+    channelPool_ = channel;
+    logger_      = loggerFactory.CreateLogger<TasksService>();
+    blobService_ = blobService;
   }
 
   public async Task<IEnumerable<TaskInfos>> SubmitTasksAsync(SessionInfo           session,
@@ -66,7 +67,7 @@ public class TasksService : ITasksService
                          enumerableTaskNodes,
                          cancellationToken);
 
-    await using var channel = await _channelPool.GetAsync(cancellationToken)
+    await using var channel = await channelPool_.GetAsync(cancellationToken)
                                                 .ConfigureAwait(false);
 
     var tasksClient = new TasksClient(channel);
@@ -105,7 +106,7 @@ public class TasksService : ITasksService
   public async Task<TaskState> GetTasksDetailedAsync(string            taskId,
                                                      CancellationToken cancellationToken = default)
   {
-    await using var channel = await _channelPool.GetAsync(cancellationToken)
+    await using var channel = await channelPool_.GetAsync(cancellationToken)
                                                 .ConfigureAwait(false);
 
     var tasksClient = new TasksClient(channel);
@@ -120,7 +121,7 @@ public class TasksService : ITasksService
              DataDependencies = tasks.Task.DataDependencies,
              ExpectedOutputs  = tasks.Task.ExpectedOutputIds,
              TaskId           = tasks.Task.Id,
-             Status           = tasks.Task.Status,
+             Status           = tasks.Task.Status.ToGrpcStatus(),
              CreateAt         = tasks.Task.CreatedAt.ToDateTime(),
              StartedAt        = tasks.Task.StartedAt.ToDateTime(),
              EndedAt          = tasks.Task.EndedAt.ToDateTime(),
@@ -132,7 +133,7 @@ public class TasksService : ITasksService
                                                                    TaskPagination    paginationOptions,
                                                                    CancellationToken cancellationToken = default)
   {
-    await using var channel = await _channelPool.GetAsync(cancellationToken)
+    await using var channel = await channelPool_.GetAsync(cancellationToken)
                                                 .ConfigureAwait(false);
 
     var tasksClient = new TasksClient(channel);
@@ -144,7 +145,7 @@ public class TasksService : ITasksService
                                                            PageSize = paginationOptions.PageSize,
                                                            Sort = new ListTasksRequest.Types.Sort
                                                                   {
-                                                                    Direction = paginationOptions.SortDirection,
+                                                                    Direction = paginationOptions.SortDirection.ToGrpcStatus(),
                                                                   },
                                                          });
 
@@ -153,7 +154,7 @@ public class TasksService : ITasksService
                                      DataDependencies = x.DataDependencies,
                                      ExpectedOutputs  = x.ExpectedOutputIds,
                                      TaskId           = x.Id,
-                                     Status           = x.Status,
+                                     Status           = x.Status.ToGrpcStatus(),
                                      CreateAt         = x.CreatedAt.ToDateTime(),
                                      StartedAt        = x.StartedAt.ToDateTime(),
                                      EndedAt          = x.EndedAt.ToDateTime(),
@@ -173,7 +174,7 @@ public class TasksService : ITasksService
     if (nodesWithNewBlobs.Any())
     {
       var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
-      var createdBlobs = await _blobService.CreateBlobsAsync(session,
+      var createdBlobs = await blobService_.CreateBlobsAsync(session,
                                                              blobKeyValues,
                                                              cancellationToken);
       var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
@@ -196,7 +197,7 @@ public class TasksService : ITasksService
     if (nodeWithNewPayloads.Any())
     {
       var blobKeyValues = nodesWithNewBlobs.SelectMany(x => x.DataDependenciesContent);
-      var createdBlobs = await _blobService.CreateBlobsAsync(session,
+      var createdBlobs = await blobService_.CreateBlobsAsync(session,
                                                              blobKeyValues,
                                                              cancellationToken);
       var createdBlobDictionary = createdBlobs.ToDictionary(b => b.BlobName);
