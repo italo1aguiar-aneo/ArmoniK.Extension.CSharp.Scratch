@@ -53,7 +53,7 @@ public record TaskState : TaskInfos
   /// <summary>
   ///   Time when the task was created.
   /// </summary>
-  public DateTime? CreateAt { get; init; }
+  public DateTime CreateAt { get; init; }
 
   /// <summary>
   ///   Time when the task ended.
@@ -63,12 +63,12 @@ public record TaskState : TaskInfos
   /// <summary>
   ///   Time when the task started.
   /// </summary>
-  public DateTime? StartedAt { get; init; }
+  public DateTime StartedAt { get; init; }
 
   /// <summary>
   ///   Current status of the task.
   /// </summary>
-  public TaskStatus? Status { get; init; }
+  public TaskStatus Status { get; init; }
 }
 
 /// <summary>

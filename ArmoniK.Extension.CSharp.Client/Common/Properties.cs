@@ -63,8 +63,6 @@ public record Properties
   /// <param name="clientP12">The client certificate in a P12/Pkcs12/PFX format</param>
   /// <param name="caCertPem">The Server certificate file to validate mTLS</param>
   /// <param name="sslValidation">Disable the ssl strong validation of ssl certificate (default : enable => true)</param>
-  // TODO: define [PublicApi] ?
-  // ReSharper disable once UnusedMember.Global
   public Properties(TaskConfiguration   options,
                     string              connectionAddress,
                     IEnumerable<string> partitionIds,
@@ -213,16 +211,12 @@ public record Properties
   /// <summary>
   ///   The control plane url to connect
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public Uri ControlPlaneUri { get; init; }
 
   /// <summary>
   ///   The path to the CA Root file name
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
-  public string CaCertFilePem { get; init; }
+  public string CaCertFilePem { get; }
 
   /// <summary>
   ///   The property to get the path of the certificate file
@@ -244,7 +238,6 @@ public record Properties
   /// </summary>
   [PublicAPI]
   [Obsolete("Use ConfSslValidation instead")]
-  // ReSharper disable once InconsistentNaming
   public bool ConfSSLValidation
     => ConfSslValidation;
 
@@ -256,62 +249,42 @@ public record Properties
   /// <summary>
   ///   The configuration property to give to the ClientService connector
   /// </summary>
-  // TODO: mark as [PublicApi] ?
-  // ReSharper disable once UnusedAutoPropertyAccessor.Global
   public IConfiguration Configuration { get; init; }
 
   /// <summary>
   ///   The connection string building the value Port Protocol and address
   /// </summary>
-  // TODO: mark as [PublicApi] ?
-  // ReSharper disable once MemberCanBePrivate.Global
   public string ConnectionString
     => $"{Protocol}://{ConnectionAddress}:{ConnectionPort}";
 
   /// <summary>
   ///   Secure or insecure protocol communication https or http (Default http)
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
   public string Protocol { get; init; } = "http";
 
   /// <summary>
   ///   The connection address property to connect to the control plane
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
   public string ConnectionAddress { get; init; }
 
   /// <summary>
   ///   The option connection port to connect to control plane (Default : 5001)
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public int ConnectionPort { get; init; } = 5001;
 
   /// <summary>
   ///   The TaskOptions to pass to the session or the submission session
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public TaskConfiguration TaskOptions { get; init; }
 
   /// <summary>
   ///   The TaskOptions to pass to the session or the submission session
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public IEnumerable<string> PartitionIds { get; init; }
 
   /// <summary>
   ///   The target name of the endpoint when ssl validation is disabled. Automatic if not set.
   /// </summary>
-  // TODO: mark as [PublicApi] for setter ?
-  // ReSharper disable once MemberCanBePrivate.Global
-  // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
   public string TargetNameOverride { get; init; } = "";
 
   /// <summary>
@@ -328,8 +301,4 @@ public record Properties
   ///   Max backoff for retries
   /// </summary>
   public TimeSpan RetryMaxBackoff { get; init; } = TimeSpan.FromSeconds(30);
-}
-
-internal class MarkDownDocAttribute : Attribute
-{
 }

@@ -32,8 +32,8 @@ namespace UsageExample;
 
 internal class Program
 {
-  private static IConfiguration?   _configuration;
-  private static ILogger<Program>? _logger;
+  private static IConfiguration   _configuration;
+  private static ILogger<Program> _logger;
 
   private static async Task Main(string[] args)
   {
