@@ -39,7 +39,7 @@ public record TaskPage
   /// <summary>
   ///   List of tuples of unique identifier of the task and its current status.
   /// </summary>
-  public Tuple<string, TaskStatus> TaskData { get; init; }
+  public IEnumerable<Tuple<string, TaskStatus>> TasksData { get; init; }
 }
 
 /// <summary>

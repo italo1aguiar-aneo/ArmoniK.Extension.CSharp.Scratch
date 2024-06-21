@@ -171,7 +171,7 @@ public static class TaskStatusExt
                                                     null),
        };
 
-  public static TaskStatus ToGrpcStatus(this Api.gRPC.V1.TaskStatus status)
+  public static TaskStatus ToInternalStatus(this Api.gRPC.V1.TaskStatus status)
     => status switch
        {
          Api.gRPC.V1.TaskStatus.Unspecified => TaskStatus.Unspecified,

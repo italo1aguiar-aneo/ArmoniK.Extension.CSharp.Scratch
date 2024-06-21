@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -32,36 +32,24 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
-public class EventsService : IEventsService
+internal class EventsService : IEventsService
 {
-  private readonly ObjectPool<ChannelBase> _channel;
+  private readonly ObjectPool<ChannelBase> channel_;
 
-  private readonly ILogger<EventsService> _logger;
+  private readonly ILogger<EventsService> logger_;
 
   public EventsService(ObjectPool<ChannelBase> channel,
                        ILoggerFactory          loggerFactory)
   {
-    _channel = channel;
-    _logger  = loggerFactory.CreateLogger<EventsService>();
-  }
-
-  public async Task WaitForBlobsAsync(SessionInfo         session,
-                                      ICollection<string> blobIds,
-                                      CancellationToken   cancellationToken = default)
-  {
-    await using var channel = await _channel.GetAsync(cancellationToken)
-                                            .ConfigureAwait(false);
-    var eventsClient = new Events.EventsClient(channel);
-    await eventsClient.WaitForResultsAsync(session.SessionId,
-                                           blobIds,
-                                           cancellationToken);
+    channel_ = channel;
+    logger_  = loggerFactory.CreateLogger<EventsService>();
   }
 
   public async Task WaitForBlobsAsync(SessionInfo           session,
                                       ICollection<BlobInfo> blobInfos,
                                       CancellationToken     cancellationToken = default)
   {
-    await using var channel = await _channel.GetAsync(cancellationToken)
+    await using var channel = await channel_.GetAsync(cancellationToken)
                                             .ConfigureAwait(false);
     var eventsClient = new Events.EventsClient(channel);
     await eventsClient.WaitForResultsAsync(session.SessionId,
