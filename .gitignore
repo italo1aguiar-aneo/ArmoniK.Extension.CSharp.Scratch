@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/ArmoniK.Extension.CSharp.DllWorker/Properties/launchSettings.json
+/ArmoniK.Extension.CSharp.DllWorker/appsettings.Development.json
