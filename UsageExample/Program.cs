@@ -75,7 +75,8 @@ internal class Program
 
     var props = new Properties(_configuration,
                                defaultTaskOptions,
-                               ["subtasking"]);
+
+      ["subtasking"]);
 
     var client = new ArmoniKClient(props,
                                    factory);
@@ -111,16 +112,14 @@ internal class Program
     Console.WriteLine($"resultId: {result.BlobId}");
 
     var task = await tasksService.SubmitTasksAsync(session,
-                                                   new List<TaskNode>([
-                                                     new TaskNode
-                                                     {
-                                                       Payload = payload,
-                                                       ExpectedOutputs = new[]
-                                                                         {
-                                                                           result,
-                                                                         },
-                                                     },
-                                                   ]));
+                                                   new List<TaskNode>([new TaskNode
+                                                                       {
+                                                                         Payload = payload,
+                                                                         ExpectedOutputs = new[]
+                                                                                           {
+                                                                                             result,
+                                                                                           },
+                                                                       },]));
 
     Console.WriteLine($"taskId: {task.Single().TaskId}");
 

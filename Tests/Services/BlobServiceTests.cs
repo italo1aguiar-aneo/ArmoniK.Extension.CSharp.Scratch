@@ -96,7 +96,8 @@ public class BlobServiceTests
 
     // Assert
     ClassicAssert.AreEqual("blobName",
-                           blobInfos[0].BlobName);
+                           blobInfos[0]
+                             .BlobName);
   }
 
   [Test]
@@ -160,9 +161,11 @@ public class BlobServiceTests
 
     // Assert
     ClassicAssert.AreEqual("sessionId",
-                           blobInfos[0].SessionId);
+                           blobInfos[0]
+                             .SessionId);
     ClassicAssert.AreEqual(name,
-                           blobInfos[0].BlobName);
+                           blobInfos[0]
+                             .BlobName);
   }
 
   [Test]
