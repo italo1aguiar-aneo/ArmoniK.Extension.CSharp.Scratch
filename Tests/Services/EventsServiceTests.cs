@@ -16,6 +16,7 @@
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
@@ -95,12 +96,15 @@ public class EventsServiceTests
                                                                  NullLoggerFactory.Instance);
     // Act
 
-    var blobId = new List<string>
-                 {
-                   "1234",
-                 };
+    var blobId = "1234";
 
     Assert.DoesNotThrowAsync(async () => await eventsService.WaitForBlobsAsync(new SessionInfo("sessionId"),
-                                                                               blobId));
+                                                                               new List<BlobInfo>
+                                                                               {
+                                                                                 new()
+                                                                                 {
+                                                                                   BlobId = blobId,
+                                                                                 },
+                                                                               }));
   }
 }

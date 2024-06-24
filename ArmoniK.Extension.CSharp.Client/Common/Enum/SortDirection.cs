@@ -46,7 +46,7 @@ public enum SortDirection
 
 public static class SortDirectionExt
 {
-  public static Api.gRPC.V1.SortDirection.SortDirection ToGrpcStatus(this SortDirection direction)
+  public static Api.gRPC.V1.SortDirection.SortDirection ToGrpc(this SortDirection direction)
     => direction switch
        {
          SortDirection.Unspecified => Api.gRPC.V1.SortDirection.SortDirection.Unspecified,
@@ -57,7 +57,7 @@ public static class SortDirectionExt
                                                     null),
        };
 
-  public static SortDirection ToGrpcStatus(this Api.gRPC.V1.SortDirection.SortDirection direction)
+  public static SortDirection ToIternal(this Api.gRPC.V1.SortDirection.SortDirection direction)
     => direction switch
        {
          Api.gRPC.V1.SortDirection.SortDirection.Unspecified => SortDirection.Unspecified,

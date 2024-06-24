@@ -342,7 +342,7 @@ public class TasksServiceTests
     mockBlobService.Setup(m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                                                   It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                                                   It.IsAny<CancellationToken>()))
-                   .ReturnsAsync(expectedBlobs);
+                   .Returns(expectedBlobs.ToAsyncEnumerable);
 
     var taskService = TasksServiceFactory.CreateTaskService(objectPool,
                                                             mockBlobService.Object,
