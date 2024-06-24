@@ -21,17 +21,15 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
-using ArmoniK.Extension.CSharp.Client.Factory;
-using ArmoniK.Utils;
 
 using Grpc.Core;
-
-using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
+
+using Tests.Helpers;
 
 namespace Tests.Services;
 
@@ -40,49 +38,31 @@ public class TasksServiceTests
   [Test]
   public async Task CreateTask_ReturnsNewTaskWithId()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
+    var submitTaskResponse = new SubmitTasksResponse
+                             {
+                               TaskInfos =
+                               {
+                                 new SubmitTasksResponse.Types.TaskInfo
+                                 {
+                                   TaskId = "taskId1",
+                                   ExpectedOutputIds =
+                                   {
+                                     new List<string>
+                                     {
+                                       "blobId1",
+                                     },
+                                   },
+                                   PayloadId = "payloadId1",
+                                 },
+                               },
+                             };
 
-    var mockCallInvoker = new Mock<CallInvoker>();
+    var mockInvoker = new Mock<CallInvoker>();
 
-    var submitTaskResponse = Task.FromResult(new SubmitTasksResponse
-                                             {
-                                               TaskInfos =
-                                               {
-                                                 new SubmitTasksResponse.Types.TaskInfo
-                                                 {
-                                                   TaskId = "taskId1",
-                                                   ExpectedOutputIds =
-                                                   {
-                                                     new List<string>
-                                                     {
-                                                       "blobId1",
-                                                     },
-                                                   },
-                                                   PayloadId = "payloadId1",
-                                                 },
-                                               },
-                                             });
+    var callInvoker = mockInvoker.SetupAsyncUnaryCallInvokerMock<SubmitTasksRequest, SubmitTasksResponse>(submitTaskResponse);
 
-    // Configure SubmitTask call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<SubmitTasksRequest>()))
-                   .Returns(new AsyncUnaryCall<SubmitTasksResponse>(submitTaskResponse,
-                                                                    Task.FromResult(new Metadata()),
-                                                                    () => Status.DefaultSuccess,
-                                                                    () => new Metadata(),
-                                                                    () =>
-                                                                    {
-                                                                    }));
-
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
-
+    var taskService = MockHelper.GetTasksServiceMock(callInvoker);
+    // Act
     var taskNodes = new List<TaskNode>
                     {
                       new()
@@ -91,52 +71,42 @@ public class TasksServiceTests
                                           {
                                             new()
                                             {
-                                              BlobName  = "blob1",
-                                              BlobId    = "blobId1",
+                                              BlobName = "blob1",
+                                              BlobId = submitTaskResponse.TaskInfos[0]
+                                                                         .ExpectedOutputIds[0],
                                               SessionId = "sessionId1",
                                             },
                                           },
                         Payload = new BlobInfo
                                   {
-                                    BlobName  = "payload1",
-                                    BlobId    = "payloadId1",
+                                    BlobName = "payload1",
+                                    BlobId = submitTaskResponse.TaskInfos[0]
+                                                               .PayloadId,
                                     SessionId = "sessionId1",
                                   },
                       },
                     };
 
-    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-
-    var mockBlobService = new Mock<IBlobService>().Object;
-
-    var taskService = TasksServiceFactory.CreateTaskService(objectPool,
-                                                            mockBlobService,
-                                                            NullLoggerFactory.Instance);
-    // Act
     var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"),
                                                     taskNodes);
 
     // Assert
+    var taskInfosEnumerable = result as TaskInfos[] ?? result.ToArray();
     ClassicAssert.AreEqual("taskId1",
-                           result.FirstOrDefault()
-                                 ?.TaskId);
+                           taskInfosEnumerable.FirstOrDefault()
+                                              ?.TaskId);
     ClassicAssert.AreEqual("payloadId1",
-                           result.FirstOrDefault()
-                                 ?.PayloadId);
+                           taskInfosEnumerable.FirstOrDefault()
+                                              ?.PayloadId);
     ClassicAssert.AreEqual("blobId1",
-                           result.FirstOrDefault()
-                                 .ExpectedOutputs.First());
+                           taskInfosEnumerable.FirstOrDefault()
+                                              ?.ExpectedOutputs.First());
   }
 
   [Test]
   public async Task SubmitTasksAsync_MultipleTasksWithOutputs_ReturnsCorrectResponses()
   {
     // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-    var mockCallInvoker = new Mock<CallInvoker>();
     var taskResponse = new SubmitTasksResponse
                        {
                          TaskInfos =
@@ -162,81 +132,61 @@ public class TasksServiceTests
                          },
                        };
 
-    // Configure SubmitTask call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<SubmitTasksRequest>()))
-                   .Returns(new AsyncUnaryCall<SubmitTasksResponse>(Task.FromResult(taskResponse),
-                                                                    Task.FromResult(new Metadata()),
-                                                                    () => Status.DefaultSuccess,
-                                                                    () => new Metadata(),
-                                                                    () =>
-                                                                    {
-                                                                    }));
+    var mockInvoker = new Mock<CallInvoker>();
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
+    var callInvoker = mockInvoker.SetupAsyncUnaryCallInvokerMock<SubmitTasksRequest, SubmitTasksResponse>(taskResponse);
 
-    var objectPool      = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-    var mockBlobService = new Mock<IBlobService>().Object;
-
-    var taskService = TasksServiceFactory.CreateTaskService(objectPool,
-                                                            mockBlobService,
-                                                            NullLoggerFactory.Instance);
+    var taskService = MockHelper.GetTasksServiceMock(callInvoker);
 
     var taskNodes = new List<TaskNode>
                     {
                       new()
                       {
+                        ExpectedOutputs = new List<BlobInfo>
+                                          {
+                                            new()
+                                            {
+                                              BlobName  = "blob1",
+                                              BlobId    = "blobId1",
+                                              SessionId = "sessionId1",
+                                            },
+                                          },
                         Payload = new BlobInfo
                                   {
                                     BlobName  = "payload1",
                                     BlobId    = "payloadId1",
                                     SessionId = "sessionId1",
                                   },
+                      },
+                      new()
+                      {
                         ExpectedOutputs = new List<BlobInfo>
                                           {
                                             new()
                                             {
-                                              BlobName  = "output1",
-                                              BlobId    = "outputId1",
+                                              BlobName  = "blob2",
+                                              BlobId    = "blobId2",
                                               SessionId = "sessionId1",
                                             },
                                           },
-                      },
-                      new()
-                      {
                         Payload = new BlobInfo
                                   {
                                     BlobName  = "payload2",
                                     BlobId    = "payloadId2",
                                     SessionId = "sessionId1",
                                   },
-                        ExpectedOutputs = new List<BlobInfo>
-                                          {
-                                            new()
-                                            {
-                                              BlobName  = "output2",
-                                              BlobId    = "outputId2",
-                                              SessionId = "sessionId1",
-                                            },
-                                          },
                       },
                     };
 
     // Act
     var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"),
                                                     taskNodes);
-
     // Assert
     ClassicAssert.AreEqual(2,
                            result.Count());
-
     Assert.That(result,
                 Has.Some.Matches<TaskInfos>(r => r.TaskId == "taskId1" && r.PayloadId == "payloadId1" && r.ExpectedOutputs.Contains("outputId1")),
                 "Result should contain an item with taskId1, payloadId1, and outputId1");
-
     Assert.That(result,
                 Has.Some.Matches<TaskInfos>(r => r.TaskId == "taskId2" && r.PayloadId == "payloadId2" && r.ExpectedOutputs.Contains("outputId2")),
                 "Result should contain an item with taskId2, payloadId2, and outputId2");
@@ -244,24 +194,11 @@ public class TasksServiceTests
 
 
   [Test]
-  public void SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
+  public Task SubmitTasksAsync_WithEmptyExpectedOutputs_ThrowsException()
   {
     // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-    var mockCallInvoker = new Mock<CallInvoker>();
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
-
-    var objectPool      = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-    var mockBlobService = new Mock<IBlobService>().Object;
-
-    var taskService = TasksServiceFactory.CreateTaskService(objectPool,
-                                                            mockBlobService,
-                                                            NullLoggerFactory.Instance);
+    var taskService = MockHelper.GetTasksServiceMock();
 
     var taskNodes = new List<TaskNode>
                     {
@@ -280,17 +217,12 @@ public class TasksServiceTests
     // Act & Assert
     Assert.ThrowsAsync<InvalidOperationException>(() => taskService.SubmitTasksAsync(new SessionInfo("sessionId1"),
                                                                                      taskNodes));
+    return Task.CompletedTask;
   }
 
   [Test]
   public async Task SubmitTasksAsync_WithDataDependencies_CreatesBlobsCorrectly()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-    var mockCallInvoker = new Mock<CallInvoker>();
     var taskResponse = new SubmitTasksResponse
                        {
                          TaskInfos =
@@ -310,24 +242,10 @@ public class TasksServiceTests
                            },
                          },
                        };
-    // Configure SubmitTask call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<SubmitTasksRequest>()))
-                   .Returns(new AsyncUnaryCall<SubmitTasksResponse>(Task.FromResult(taskResponse),
-                                                                    Task.FromResult(new Metadata()),
-                                                                    () => Status.DefaultSuccess,
-                                                                    () => new Metadata(),
-                                                                    () =>
-                                                                    {
-                                                                    }));
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
+    var mockInvoker = new Mock<CallInvoker>();
 
-    var objectPool      = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-    var mockBlobService = new Mock<IBlobService>();
+    var callInvoker = mockInvoker.SetupAsyncUnaryCallInvokerMock<SubmitTasksRequest, SubmitTasksResponse>(taskResponse);
 
     var expectedBlobs = new List<BlobInfo>
                         {
@@ -339,26 +257,12 @@ public class TasksServiceTests
                           },
                         };
 
-    mockBlobService.Setup(m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
-                                                  It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
-                                                  It.IsAny<CancellationToken>()))
-                   .Returns(expectedBlobs.ToAsyncEnumerable);
+    var mockBlobService = new Mock<IBlobService>();
 
-    var taskService = TasksServiceFactory.CreateTaskService(objectPool,
-                                                            mockBlobService.Object,
-                                                            NullLoggerFactory.Instance);
+    mockBlobService.SetupCreateBlobMock(expectedBlobs);
 
-    var dataDependenciesContent = new Dictionary<string, ReadOnlyMemory<byte>>
-                                  {
-                                    {
-                                      "dependencyBlob", new ReadOnlyMemory<byte>(new byte[]
-                                                                                 {
-                                                                                   1,
-                                                                                   2,
-                                                                                   3,
-                                                                                 })
-                                    },
-                                  };
+    var taskService = MockHelper.GetTasksServiceMock(callInvoker,
+                                                     mockBlobService);
 
     var taskNodes = new List<TaskNode>
                     {
@@ -379,20 +283,27 @@ public class TasksServiceTests
                                               SessionId = "sessionId1",
                                             },
                                           },
-                        DataDependenciesContent = dataDependenciesContent,
+                        DataDependenciesContent = new Dictionary<string, ReadOnlyMemory<byte>>
+                                                  {
+                                                    {
+                                                      "dependencyBlob", new ReadOnlyMemory<byte>(new byte[]
+                                                                                                 {
+                                                                                                   1,
+                                                                                                   2,
+                                                                                                   3,
+                                                                                                 })
+                                                    },
+                                                  },
                       },
                     };
 
-    // Act
     var result = await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"),
                                                     taskNodes);
 
-    // Assert
     mockBlobService.Verify(m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                                                    It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),
                                                    It.IsAny<CancellationToken>()),
                            Times.Once);
-
     ClassicAssert.AreEqual("dependencyBlobId",
                            taskNodes.First()
                                     .DataDependencies.First()
@@ -406,11 +317,7 @@ public class TasksServiceTests
   public async Task SubmitTasksAsync_EmptyDataDependencies_DoesNotCreateBlobs()
   {
     // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-    var mockCallInvoker = new Mock<CallInvoker>();
+
     var taskResponse = new SubmitTasksResponse
                        {
                          TaskInfos =
@@ -427,24 +334,9 @@ public class TasksServiceTests
                          },
                        };
 
-    // Configure SubmitTask call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<SubmitTasksRequest, SubmitTasksResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<SubmitTasksRequest>()))
-                   .Returns(new AsyncUnaryCall<SubmitTasksResponse>(Task.FromResult(taskResponse),
-                                                                    Task.FromResult(new Metadata()),
-                                                                    () => Status.DefaultSuccess,
-                                                                    () => new Metadata(),
-                                                                    () =>
-                                                                    {
-                                                                    }));
+    var mockInvoker = new Mock<CallInvoker>();
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
-
-    var objectPool      = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-    var mockBlobService = new Mock<IBlobService>();
+    var callInvoker = mockInvoker.SetupAsyncUnaryCallInvokerMock<SubmitTasksRequest, SubmitTasksResponse>(taskResponse);
 
     var expectedBlobs = new List<BlobInfo>
                         {
@@ -456,9 +348,13 @@ public class TasksServiceTests
                           },
                         };
 
-    var taskService = TasksServiceFactory.CreateTaskService(objectPool,
-                                                            mockBlobService.Object,
-                                                            NullLoggerFactory.Instance);
+
+    var mockBlobService = new Mock<IBlobService>();
+
+    mockBlobService.SetupCreateBlobMock(expectedBlobs);
+
+    var taskService = MockHelper.GetTasksServiceMock(callInvoker,
+                                                     mockBlobService);
 
     var dataDependenciesContent = ImmutableDictionary<string, ReadOnlyMemory<byte>>.Empty;
 
@@ -476,11 +372,9 @@ public class TasksServiceTests
                         DataDependenciesContent = dataDependenciesContent,
                       },
                     };
-
     // Act
     await taskService.SubmitTasksAsync(new SessionInfo("sessionId1"),
                                        taskNodes);
-
     // Assert
     mockBlobService.Verify(m => m.CreateBlobsAsync(It.IsAny<SessionInfo>(),
                                                    It.IsAny<IEnumerable<KeyValuePair<string, ReadOnlyMemory<byte>>>>(),

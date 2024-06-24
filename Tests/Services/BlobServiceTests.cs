@@ -17,19 +17,17 @@
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
-using ArmoniK.Extension.CSharp.Client.Factory;
-using ArmoniK.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
-using Microsoft.Extensions.Logging.Abstractions;
-
 using Moq;
 
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
+
+using Tests.Helpers;
 
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 
@@ -40,52 +38,27 @@ public class BlobServiceTests
   [Test]
   public async Task CreateBlob_ReturnsNewBlobInfo()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-
-    // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
     var mockCallInvoker = new Mock<CallInvoker>();
 
-    var responseAsync = Task.FromResult(new CreateResultsMetaDataResponse
-                                        {
-                                          Results =
-                                          {
-                                            new ResultRaw
-                                            {
-                                              CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                    .ToTimestamp(),
-                                              Status    = ResultStatus.Created,
-                                              Name      = "blobName",
-                                              ResultId  = "blodId",
-                                              SessionId = "sessionId",
-                                            },
-                                          },
-                                        });
+    var responseAsync = new CreateResultsMetaDataResponse
+                        {
+                          Results =
+                          {
+                            new ResultRaw
+                            {
+                              CompletedAt = DateTime.UtcNow.ToTimestamp(), // Use UtcNow for consistency
+                              Status      = ResultStatus.Created,
+                              Name        = "blobName",
+                              ResultId    = "blodId",
+                              SessionId   = "sessionId",
+                            },
+                          },
+                        };
 
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsMetaDataRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsMetaDataResponse>(responseAsync,
-                                                                              Task.FromResult(new Metadata()),
-                                                                              () => Status.DefaultSuccess,
-                                                                              () => new Metadata(),
-                                                                              () =>
-                                                                              {
-                                                                              }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>(responseAsync);
 
+    var blobService = MockHelper.GetBlobServiceMock(mockCallInvoker);
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
-
-    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-
-    var blobService = BlobServiceFactory.CreateBlobService(objectPool,
-                                                           NullLoggerFactory.Instance);
-    // Act
     var results = blobService.CreateBlobsMetadataAsync(new SessionInfo("sessionId"),
                                                        new[]
                                                        {
@@ -93,73 +66,47 @@ public class BlobServiceTests
                                                        });
 
     var blobInfos = await results.ToListAsync();
-
-    // Assert
     ClassicAssert.AreEqual("blobName",
                            blobInfos[0]
                              .BlobName);
   }
 
+
   [Test]
   public async Task CreateBlob_WithName_ReturnsNewBlobInfo()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-
-    // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
     var mockCallInvoker = new Mock<CallInvoker>();
 
     var name = "blobName";
 
-    var responseAsync = Task.FromResult(new CreateResultsMetaDataResponse
-                                        {
-                                          Results =
-                                          {
-                                            new ResultRaw
-                                            {
-                                              CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                    .ToTimestamp(),
-                                              Status    = ResultStatus.Created,
-                                              Name      = name,
-                                              ResultId  = "blodId",
-                                              SessionId = "sessionId",
-                                            },
-                                          },
-                                        });
+    var responseAsync = new CreateResultsMetaDataResponse
+                        {
+                          Results =
+                          {
+                            new ResultRaw
+                            {
+                              CompletedAt = DateTime.Now.ToUniversalTime()
+                                                    .ToTimestamp(),
+                              Status    = ResultStatus.Created,
+                              Name      = name,
+                              ResultId  = "blodId",
+                              SessionId = "sessionId",
+                            },
+                          },
+                        };
 
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsMetaDataRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsMetaDataResponse>(responseAsync,
-                                                                              Task.FromResult(new Metadata()),
-                                                                              () => Status.DefaultSuccess,
-                                                                              () => new Metadata(),
-                                                                              () =>
-                                                                              {
-                                                                              }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>(responseAsync);
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
+    var blobService = MockHelper.GetBlobServiceMock(mockCallInvoker);
 
-    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
+    var result = blobService.CreateBlobsMetadataAsync(new SessionInfo("sessionId"),
+                                                      new[]
+                                                      {
+                                                        name,
+                                                      });
 
-    var blobService = BlobServiceFactory.CreateBlobService(objectPool,
-                                                           NullLoggerFactory.Instance);
+    var blobInfos = await result.ToListAsync();
 
-    // Act
-    var results = blobService.CreateBlobsMetadataAsync(new SessionInfo("sessionId"),
-                                                       new[]
-                                                       {
-                                                         name,
-                                                       });
-
-    var blobInfos = await results.ToListAsync();
-
-    // Assert
     ClassicAssert.AreEqual("sessionId",
                            blobInfos[0]
                              .SessionId);
@@ -171,13 +118,6 @@ public class BlobServiceTests
   [Test]
   public async Task CreateBlobAsync_WithContent_CreatesBlobAndUploadsContent()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-
-    // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
     var mockCallInvoker = new Mock<CallInvoker>();
 
     var name = "blobName";
@@ -186,121 +126,69 @@ public class BlobServiceTests
                                                       .Select(x => (byte)x)
                                                       .ToArray());
 
-    var serviceConfigurationResponse = Task.FromResult(new ResultsServiceConfigurationResponse
-                                                       {
-                                                         DataChunkMaxSize = 500,
-                                                       });
+    var serviceConfigurationResponse = new ResultsServiceConfigurationResponse
+                                       {
+                                         DataChunkMaxSize = 500,
+                                       };
 
-    //Configure ResultsServiceConfiguration call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<Empty, ResultsServiceConfigurationResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<Empty>()))
-                   .Returns(new AsyncUnaryCall<ResultsServiceConfigurationResponse>(serviceConfigurationResponse,
-                                                                                    Task.FromResult(new Metadata()),
-                                                                                    () => Status.DefaultSuccess,
-                                                                                    () => new Metadata(),
-                                                                                    () =>
-                                                                                    {
-                                                                                    }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<Empty, ResultsServiceConfigurationResponse>(serviceConfigurationResponse);
 
-    var metadataCreationResponse = Task.FromResult(new CreateResultsMetaDataResponse
-                                                   {
-                                                     Results =
-                                                     {
-                                                       new ResultRaw
-                                                       {
-                                                         CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                               .ToTimestamp(),
-                                                         Status    = ResultStatus.Created,
-                                                         Name      = name,
-                                                         ResultId  = "blodId",
-                                                         SessionId = "sessionId",
-                                                       },
-                                                     },
-                                                   });
+    var metadataCreationResponse = new CreateResultsMetaDataResponse
+                                   {
+                                     Results =
+                                     {
+                                       new ResultRaw
+                                       {
+                                         CompletedAt = DateTime.Now.ToUniversalTime()
+                                                               .ToTimestamp(),
+                                         Status    = ResultStatus.Created,
+                                         Name      = name,
+                                         ResultId  = "blodId",
+                                         SessionId = "sessionId",
+                                       },
+                                     },
+                                   };
 
-    //Configure CreateResultsMetaData call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsMetaDataRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsMetaDataResponse>(metadataCreationResponse,
-                                                                              Task.FromResult(new Metadata()),
-                                                                              () => Status.DefaultSuccess,
-                                                                              () => new Metadata(),
-                                                                              () =>
-                                                                              {
-                                                                              }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>(metadataCreationResponse);
 
-    var createResultResponse = Task.FromResult(new CreateResultsResponse
-                                               {
-                                                 Results =
-                                                 {
-                                                   new ResultRaw
-                                                   {
-                                                     CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                           .ToTimestamp(),
-                                                     Status    = ResultStatus.Created,
-                                                     Name      = name,
-                                                     ResultId  = "blodId",
-                                                     SessionId = "sessionId",
-                                                   },
-                                                 },
-                                               });
+    var createResultResponse = new CreateResultsResponse
+                               {
+                                 Results =
+                                 {
+                                   new ResultRaw
+                                   {
+                                     CompletedAt = DateTime.Now.ToUniversalTime()
+                                                           .ToTimestamp(),
+                                     Status    = ResultStatus.Created,
+                                     Name      = name,
+                                     ResultId  = "blodId",
+                                     SessionId = "sessionId",
+                                   },
+                                 },
+                               };
 
-    //Configure CreateResults call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsRequest, CreateResultsResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsResponse>(createResultResponse,
-                                                                      Task.FromResult(new Metadata()),
-                                                                      () => Status.DefaultSuccess,
-                                                                      () => new Metadata(),
-                                                                      () =>
-                                                                      {
-                                                                      }));
-
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsRequest, CreateResultsResponse>(createResultResponse);
 
     var mockStream = new Mock<IClientStreamWriter<UploadResultDataRequest>>();
 
-    var responseTask = Task.FromResult(new UploadResultDataResponse
-                                       {
-                                         Result = new ResultRaw
-                                                  {
-                                                    Name     = "anyResult",
-                                                    ResultId = "anyResultId",
-                                                  },
-                                       });
+    var responseTask = new UploadResultDataResponse
+                       {
+                         Result = new ResultRaw
+                                  {
+                                    Name     = "anyResult",
+                                    ResultId = "anyResultId",
+                                  },
+                       };
 
-    //Configure UploadResultData call
-    mockCallInvoker.Setup(invoker => invoker.AsyncClientStreamingCall(It.IsAny<Method<UploadResultDataRequest, UploadResultDataResponse>>(),
-                                                                      It.IsAny<string>(),
-                                                                      It.IsAny<CallOptions>()))
-                   .Returns(new AsyncClientStreamingCall<UploadResultDataRequest, UploadResultDataResponse>(mockStream.Object,
-                                                                                                            responseTask,
-                                                                                                            Task.FromResult(new Metadata()),
-                                                                                                            () => Status.DefaultSuccess,
-                                                                                                            () => new Metadata(),
-                                                                                                            () =>
-                                                                                                            {
-                                                                                                            }));
+    mockCallInvoker.SetupAsyncClientStreamingCall(responseTask,
+                                                  mockStream.Object);
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
+    var blobService = MockHelper.GetBlobServiceMock(mockCallInvoker);
 
-    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-
-    var blobService = BlobServiceFactory.CreateBlobService(objectPool,
-                                                           NullLoggerFactory.Instance);
-
-    // Act
     var result = await blobService.CreateBlobAsync(new SessionInfo("sessionId"),
                                                    name,
                                                    contents);
 
-    // Assert
     ClassicAssert.AreEqual("sessionId",
                            result.SessionId);
     ClassicAssert.AreEqual(name,
@@ -310,135 +198,77 @@ public class BlobServiceTests
   [Test]
   public async Task CreateBlobAsync_WithBigContent_CreatesBlobAndUploadsContent()
   {
-    // Arrange
-    var mockChannelBase = new Mock<ChannelBase>("localhost")
-                          {
-                            CallBase = true,
-                          };
-
-    // Setup the abstract CreateCallInvoker method to return a mock CallInvoker
     var mockCallInvoker = new Mock<CallInvoker>();
 
     var name = "blobName";
     var contents = new ReadOnlyMemory<byte>(Enumerable.Range(1,
-                                                             100)
+                                                             500)
                                                       .Select(x => (byte)x)
                                                       .ToArray());
 
-    var resultsServiceConfiguration = Task.FromResult(new ResultsServiceConfigurationResponse
-                                                      {
-                                                        DataChunkMaxSize = 20,
-                                                      });
+    var serviceConfigurationResponse = new ResultsServiceConfigurationResponse
+                                       {
+                                         DataChunkMaxSize = 20,
+                                       };
 
-    //Configure ResultsServiceConfiguration call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<Empty, ResultsServiceConfigurationResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<Empty>()))
-                   .Returns(new AsyncUnaryCall<ResultsServiceConfigurationResponse>(resultsServiceConfiguration,
-                                                                                    Task.FromResult(new Metadata()),
-                                                                                    () => Status.DefaultSuccess,
-                                                                                    () => new Metadata(),
-                                                                                    () =>
-                                                                                    {
-                                                                                    }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<Empty, ResultsServiceConfigurationResponse>(serviceConfigurationResponse);
 
-    var createMetadataResponse = Task.FromResult(new CreateResultsMetaDataResponse
-                                                 {
-                                                   Results =
-                                                   {
-                                                     new ResultRaw
-                                                     {
-                                                       CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                             .ToTimestamp(),
-                                                       Status    = ResultStatus.Created,
-                                                       Name      = name,
-                                                       ResultId  = "blodId",
-                                                       SessionId = "sessionId",
-                                                     },
-                                                   },
-                                                 });
+    var metadataCreationResponse = new CreateResultsMetaDataResponse
+                                   {
+                                     Results =
+                                     {
+                                       new ResultRaw
+                                       {
+                                         CompletedAt = DateTime.Now.ToUniversalTime()
+                                                               .ToTimestamp(),
+                                         Status    = ResultStatus.Created,
+                                         Name      = name,
+                                         ResultId  = "blodId",
+                                         SessionId = "sessionId",
+                                       },
+                                     },
+                                   };
 
-    //Configure CreateResultsMetaData call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsMetaDataRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsMetaDataResponse>(createMetadataResponse,
-                                                                              Task.FromResult(new Metadata()),
-                                                                              () => Status.DefaultSuccess,
-                                                                              () => new Metadata(),
-                                                                              () =>
-                                                                              {
-                                                                              }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsMetaDataRequest, CreateResultsMetaDataResponse>(metadataCreationResponse);
 
-    var createResultsResponse = Task.FromResult(new CreateResultsResponse
-                                                {
-                                                  Results =
-                                                  {
-                                                    new ResultRaw
-                                                    {
-                                                      CompletedAt = DateTime.Now.ToUniversalTime()
-                                                                            .ToTimestamp(),
-                                                      Status    = ResultStatus.Created,
-                                                      Name      = name,
-                                                      ResultId  = "blodId",
-                                                      SessionId = "sessionId",
-                                                    },
-                                                  },
-                                                });
+    var createResultResponse = new CreateResultsResponse
+                               {
+                                 Results =
+                                 {
+                                   new ResultRaw
+                                   {
+                                     CompletedAt = DateTime.Now.ToUniversalTime()
+                                                           .ToTimestamp(),
+                                     Status    = ResultStatus.Created,
+                                     Name      = name,
+                                     ResultId  = "blodId",
+                                     SessionId = "sessionId",
+                                   },
+                                 },
+                               };
 
-    //Configure CreateResults call
-    mockCallInvoker.Setup(invoker => invoker.AsyncUnaryCall(It.IsAny<Method<CreateResultsRequest, CreateResultsResponse>>(),
-                                                            It.IsAny<string>(),
-                                                            It.IsAny<CallOptions>(),
-                                                            It.IsAny<CreateResultsRequest>()))
-                   .Returns(new AsyncUnaryCall<CreateResultsResponse>(createResultsResponse,
-                                                                      Task.FromResult(new Metadata()),
-                                                                      () => Status.DefaultSuccess,
-                                                                      () => new Metadata(),
-                                                                      () =>
-                                                                      {
-                                                                      }));
+    mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateResultsRequest, CreateResultsResponse>(createResultResponse);
 
     var mockStream = new Mock<IClientStreamWriter<UploadResultDataRequest>>();
 
-    var responseTask = Task.FromResult(new UploadResultDataResponse
-                                       {
-                                         Result = new ResultRaw
-                                                  {
-                                                    Name     = "anyResult",
-                                                    ResultId = "anyResultId",
-                                                  },
-                                       });
+    var responseTask = new UploadResultDataResponse
+                       {
+                         Result = new ResultRaw
+                                  {
+                                    Name     = "anyResult",
+                                    ResultId = "anyResultId",
+                                  },
+                       };
 
-    //Configure UploadResultData call
-    mockCallInvoker.Setup(invoker => invoker.AsyncClientStreamingCall(It.IsAny<Method<UploadResultDataRequest, UploadResultDataResponse>>(),
-                                                                      It.IsAny<string>(),
-                                                                      It.IsAny<CallOptions>()))
-                   .Returns(new AsyncClientStreamingCall<UploadResultDataRequest, UploadResultDataResponse>(mockStream.Object,
-                                                                                                            responseTask,
-                                                                                                            Task.FromResult(new Metadata()),
-                                                                                                            () => Status.DefaultSuccess,
-                                                                                                            () => new Metadata(),
-                                                                                                            () =>
-                                                                                                            {
-                                                                                                            }));
+    mockCallInvoker.SetupAsyncClientStreamingCall(responseTask,
+                                                  mockStream.Object);
 
-    mockChannelBase.Setup(m => m.CreateCallInvoker())
-                   .Returns(mockCallInvoker.Object);
+    var blobService = MockHelper.GetBlobServiceMock(mockCallInvoker);
 
-    var objectPool = new ObjectPool<ChannelBase>(() => mockChannelBase.Object);
-
-    var blobService = BlobServiceFactory.CreateBlobService(objectPool,
-                                                           NullLoggerFactory.Instance);
-
-    // Act
     var result = await blobService.CreateBlobAsync(new SessionInfo("sessionId"),
                                                    name,
                                                    contents);
 
-    // Assert
     ClassicAssert.AreEqual("sessionId",
                            result.SessionId);
     ClassicAssert.AreEqual(name,
