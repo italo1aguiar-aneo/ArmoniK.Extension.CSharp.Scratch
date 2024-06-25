@@ -33,20 +33,20 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 internal class PartitionsService : IPartitionsService
 {
-  private readonly ObjectPool<ChannelBase>    _channel;
-  private readonly ILogger<PartitionsService> _logger;
+  private readonly ObjectPool<ChannelBase>    channel_;
+  private readonly ILogger<PartitionsService> logger_;
 
   public PartitionsService(ObjectPool<ChannelBase> channel,
                            ILoggerFactory          loggerFactory)
   {
-    _logger  = loggerFactory.CreateLogger<PartitionsService>();
-    _channel = channel;
+    logger_  = loggerFactory.CreateLogger<PartitionsService>();
+    channel_ = channel;
   }
 
   public async Task<Partition> GetPartitionAsync(string            partitionId,
                                                  CancellationToken cancellationToken)
   {
-    await using var channel = await _channel.GetAsync(cancellationToken)
+    await using var channel = await channel_.GetAsync(cancellationToken)
                                             .ConfigureAwait(false);
     var partitionsClient = new Partitions.PartitionsClient(channel);
     var partition = await partitionsClient.GetPartitionAsync(new GetPartitionRequest
@@ -69,7 +69,7 @@ internal class PartitionsService : IPartitionsService
   public async IAsyncEnumerable<(int, Partition)> ListPartitionsAsync(PartitionPagination                        partitionPagination,
                                                                       [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    await using var channel = await _channel.GetAsync(cancellationToken)
+    await using var channel = await channel_.GetAsync(cancellationToken)
                                             .ConfigureAwait(false);
     var partitionsClient = new Partitions.PartitionsClient(channel);
     var partitions = await partitionsClient.ListPartitionsAsync(new ListPartitionsRequest

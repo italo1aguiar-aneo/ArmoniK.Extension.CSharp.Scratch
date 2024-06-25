@@ -34,6 +34,7 @@ public class ArmoniKClientTests
 {
   private readonly ArmoniKClient        client_;
   private readonly Properties           defaultProperties_;
+  private readonly TaskConfiguration    defaultTaskOptions_;
   private readonly Mock<ILoggerFactory> loggerFactoryMock_;
 
   public ArmoniKClientTests()
@@ -47,19 +48,19 @@ public class ArmoniKClientTests
                                         {
                                           "subtasking",
                                         };
-    var defaultTaskOptions = new TaskConfiguration(2,
-                                                   1,
-                                                   "subtasking",
-                                                   TimeSpan.FromHours(1));
+    defaultTaskOptions_ = new TaskConfiguration(2,
+                                                1,
+                                                "subtasking",
+                                                TimeSpan.FromHours(1));
 
     defaultProperties_ = new Properties(configuration,
-                                        defaultTaskOptions,
                                         defaultPartitionsIds);
 
     loggerFactoryMock_ = new Mock<ILoggerFactory>();
 
     client_ = new ArmoniKClient(defaultProperties_,
-                                loggerFactoryMock_.Object);
+                                loggerFactoryMock_.Object,
+                                defaultTaskOptions_);
   }
 
   [Test]
@@ -67,7 +68,8 @@ public class ArmoniKClientTests
   {
     // Act 
     var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(null,
-                                                                                 loggerFactoryMock_.Object));
+                                                                                 loggerFactoryMock_.Object,
+                                                                                 defaultTaskOptions_));
 
     // Assert
     ClassicAssert.AreEqual("properties",
@@ -79,7 +81,8 @@ public class ArmoniKClientTests
   {
     // Act  
     var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(defaultProperties_,
-                                                                                 null));
+                                                                                 null,
+                                                                                 defaultTaskOptions_));
     // Assert
     ClassicAssert.AreEqual("loggerFactory",
                            exception?.ParamName);
