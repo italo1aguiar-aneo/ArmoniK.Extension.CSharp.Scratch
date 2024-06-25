@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
+
 using Google.Protobuf.Reflection;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Health;
@@ -67,4 +69,31 @@ public enum HealthStatusEnum
   /// </summary>
   [OriginalName("HEALTH_STATUS_ENUM_UNHEALTHY")]
   Unhealthy,
+}
+
+public static class HealthStatusExt
+{
+  public static Api.gRPC.V1.HealthChecks.HealthStatusEnum ToGrpcStatus(this HealthStatusEnum status)
+    => status switch
+       {
+         HealthStatusEnum.Unspecified => Api.gRPC.V1.HealthChecks.HealthStatusEnum.Unspecified,
+         HealthStatusEnum.Healthy     => Api.gRPC.V1.HealthChecks.HealthStatusEnum.Healthy,
+         HealthStatusEnum.Degraded    => Api.gRPC.V1.HealthChecks.HealthStatusEnum.Degraded,
+         HealthStatusEnum.Unhealthy   => Api.gRPC.V1.HealthChecks.HealthStatusEnum.Unhealthy,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
+
+  public static HealthStatusEnum ToInternalStatus(this Api.gRPC.V1.HealthChecks.HealthStatusEnum status)
+    => status switch
+       {
+         Api.gRPC.V1.HealthChecks.HealthStatusEnum.Unspecified => HealthStatusEnum.Unspecified,
+         Api.gRPC.V1.HealthChecks.HealthStatusEnum.Healthy     => HealthStatusEnum.Healthy,
+         Api.gRPC.V1.HealthChecks.HealthStatusEnum.Degraded    => HealthStatusEnum.Degraded,
+         Api.gRPC.V1.HealthChecks.HealthStatusEnum.Unhealthy   => HealthStatusEnum.Unhealthy,
+         _ => throw new ArgumentOutOfRangeException(nameof(status),
+                                                    status,
+                                                    null),
+       };
 }

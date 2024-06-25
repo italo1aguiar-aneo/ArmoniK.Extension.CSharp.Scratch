@@ -15,6 +15,7 @@
 // limitations under the License.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,13 +74,13 @@ public static class PartitionsServiceExt
                                 SortDirection = SortDirection.Asc,
                               };
 
-    var total     = 0;
-    var firstPage = true;
-
-    while (true)
+    var                                total     = 0;
+    var                                firstPage = true;
+    IAsyncEnumerable<(int, Partition)> res;
+    while (await (res = partitionService.ListPartitionsAsync(partitionPagination,
+                                                             cancellationToken)).AnyAsync(cancellationToken))
     {
-      await foreach (var (count, partition) in partitionService.ListPartitionsAsync(partitionPagination,
-                                                                                    cancellationToken))
+      await foreach (var (count, partition) in res.WithCancellation(cancellationToken))
       {
         if (firstPage)
         {
@@ -91,10 +92,6 @@ public static class PartitionsServiceExt
       }
 
       partitionPagination.Page++;
-      if (partitionPagination.Page * pageSize >= total)
-      {
-        break;
-      }
     }
   }
 }

@@ -27,25 +27,23 @@ using Grpc.Core;
 
 using Microsoft.Extensions.Logging;
 
-using HealthStatusEnum = ArmoniK.Extension.CSharp.Client.Common.Domain.Health.HealthStatusEnum;
-
 namespace ArmoniK.Extension.CSharp.Client.Services;
 
 internal class HealthCheckService : IHealthCheckService
 {
-  private readonly ObjectPool<ChannelBase>     _channelPool;
-  private readonly ILogger<HealthCheckService> _logger;
+  private readonly ObjectPool<ChannelBase>     channelPool_;
+  private readonly ILogger<HealthCheckService> logger_;
 
   public HealthCheckService(ObjectPool<ChannelBase> channel,
                             ILoggerFactory          loggerFactory)
   {
-    _channelPool = channel;
-    _logger      = loggerFactory.CreateLogger<HealthCheckService>();
+    channelPool_ = channel;
+    logger_      = loggerFactory.CreateLogger<HealthCheckService>();
   }
 
   public async IAsyncEnumerable<Health> GetHealth([EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    await using var channel = await _channelPool.GetAsync(cancellationToken)
+    await using var channel = await channelPool_.GetAsync(cancellationToken)
                                                 .ConfigureAwait(false);
     var healthClient = new HealthChecksService.HealthChecksServiceClient(channel);
 
@@ -57,7 +55,7 @@ internal class HealthCheckService : IHealthCheckService
                    {
                      Name    = health.Name,
                      Message = health.Message,
-                     Status  = (HealthStatusEnum)health.Healthy,
+                     Status  = health.Healthy.ToInternalStatus(),
                    };
     }
   }

@@ -208,10 +208,12 @@ public static class BlobServiceExt
     var total     = 0;
     var firstPage = true;
 
-    while (true)
+    IAsyncEnumerable<BlobPage> res;
+
+    while (await (res = blobService.ListBlobsAsync(blobPagination,
+                                                   cancellationToken)).AnyAsync(cancellationToken))
     {
-      await foreach (var blobPage in blobService.ListBlobsAsync(blobPagination,
-                                                                cancellationToken))
+      await foreach (var blobPage in res.WithCancellation(cancellationToken))
       {
         if (firstPage)
         {
@@ -223,10 +225,6 @@ public static class BlobServiceExt
       }
 
       blobPagination.Page++;
-      if (blobPagination.Page * pageSize >= total)
-      {
-        break;
-      }
     }
   }
 }
