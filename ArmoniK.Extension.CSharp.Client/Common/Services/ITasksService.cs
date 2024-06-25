@@ -115,13 +115,13 @@ public static class TasksServiceExt
                            SortDirection = SortDirection.Asc,
                          };
 
-    var total     = 0;
-    var firstPage = true;
-
-    while (true)
+    var                        total     = 0;
+    var                        firstPage = true;
+    IAsyncEnumerable<TaskPage> res;
+    while (await (res = taskService.ListTasksAsync(taskPagination,
+                                                   cancellationToken)).AnyAsync(cancellationToken))
     {
-      await foreach (var taskPage in taskService.ListTasksAsync(taskPagination,
-                                                                cancellationToken))
+      await foreach (var taskPage in res.WithCancellation(cancellationToken))
       {
         if (firstPage)
         {
@@ -133,10 +133,6 @@ public static class TasksServiceExt
       }
 
       taskPagination.Page++;
-      if (taskPagination.Page * pageSize >= total)
-      {
-        break;
-      }
     }
   }
 

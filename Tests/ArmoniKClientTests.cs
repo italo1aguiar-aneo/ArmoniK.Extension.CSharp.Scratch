@@ -32,39 +32,34 @@ namespace Tests;
 
 public class ArmoniKClientTests
 {
-  private static   IConfiguration       _configuration;
-  private readonly ArmoniKClient        _client;
-  private readonly List<string>         _defaultPartitionsIds;
-  private readonly Properties           _defaultProperties;
-  private readonly TaskConfiguration    _defaultTaskOptions;
-  private readonly Mock<ILoggerFactory> _loggerFactoryMock;
+  private readonly ArmoniKClient        client_;
+  private readonly Properties           defaultProperties_;
+  private readonly Mock<ILoggerFactory> loggerFactoryMock_;
 
   public ArmoniKClientTests()
   {
-    _configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                                               .AddJsonFile("appsettings.tests.json",
-                                                            false)
-                                               .AddEnvironmentVariables()
-                                               .Build();
+    IConfiguration configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                                             .AddJsonFile("appsettings.tests.json",
+                                                                          false)
+                                                             .AddEnvironmentVariables()
+                                                             .Build();
+    List<string> defaultPartitionsIds = new()
+                                        {
+                                          "subtasking",
+                                        };
+    var defaultTaskOptions = new TaskConfiguration(2,
+                                                   1,
+                                                   "subtasking",
+                                                   TimeSpan.FromHours(1));
 
-    _defaultPartitionsIds = new List<string>
-                            {
-                              "subtasking",
-                            };
+    defaultProperties_ = new Properties(configuration,
+                                        defaultTaskOptions,
+                                        defaultPartitionsIds);
 
-    _defaultTaskOptions = new TaskConfiguration(2,
-                                                1,
-                                                "subtasking",
-                                                TimeSpan.FromHours(1));
+    loggerFactoryMock_ = new Mock<ILoggerFactory>();
 
-    _defaultProperties = new Properties(_configuration,
-                                        _defaultTaskOptions,
-                                        _defaultPartitionsIds);
-
-    _loggerFactoryMock = new Mock<ILoggerFactory>();
-
-    _client = new ArmoniKClient(_defaultProperties,
-                                _loggerFactoryMock.Object);
+    client_ = new ArmoniKClient(defaultProperties_,
+                                loggerFactoryMock_.Object);
   }
 
   [Test]
@@ -72,7 +67,7 @@ public class ArmoniKClientTests
   {
     // Act 
     var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(null,
-                                                                                 _loggerFactoryMock.Object));
+                                                                                 loggerFactoryMock_.Object));
 
     // Assert
     ClassicAssert.AreEqual("properties",
@@ -83,11 +78,11 @@ public class ArmoniKClientTests
   public void Constructor_ThrowsArgumentNullException_IfLoggerFactoryIsNull()
   {
     // Act  
-    var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(_defaultProperties,
+    var exception = Assert.Throws<ArgumentNullException>(() => new ArmoniKClient(defaultProperties_,
                                                                                  null));
     // Assert
     ClassicAssert.AreEqual("loggerFactory",
-                           exception.ParamName);
+                           exception?.ParamName);
   }
 
   [Test]
@@ -99,10 +94,8 @@ public class ArmoniKClientTests
                     Id = Guid.NewGuid()
                              .ToString(),
                   };
-
     // Act
-    var blobService = await _client.GetBlobService();
-
+    var blobService = await client_.GetBlobService();
     // Assert
     Assert.That(blobService,
                 Is.InstanceOf<IBlobService>(),
@@ -113,8 +106,7 @@ public class ArmoniKClientTests
   public async Task GetSessionService_ShouldReturnInstance()
   {
     // Act
-    var sessionService = await _client.GetSessionService();
-
+    var sessionService = await client_.GetSessionService();
     // Assert
     Assert.That(sessionService,
                 Is.InstanceOf<ISessionService>(),
@@ -130,10 +122,8 @@ public class ArmoniKClientTests
                     Id = Guid.NewGuid()
                              .ToString(),
                   };
-
     // Act
-    var taskService = await _client.GetTasksService();
-
+    var taskService = await client_.GetTasksService();
     // Assert
     Assert.That(taskService,
                 Is.InstanceOf<ITasksService>(),
@@ -149,10 +139,8 @@ public class ArmoniKClientTests
                     Id = Guid.NewGuid()
                              .ToString(),
                   };
-
     // Act
-    var eventsService = await _client.GetEventsService();
-
+    var eventsService = await client_.GetEventsService();
     // Assert
     Assert.That(eventsService,
                 Is.InstanceOf<IEventsService>(),
