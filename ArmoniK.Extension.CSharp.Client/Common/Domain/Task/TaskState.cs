@@ -149,7 +149,7 @@ public enum TaskStatus
   Retried,
 }
 
-public static class TaskStatusExt
+internal static class TaskStatusExt
 {
   public static Api.gRPC.V1.TaskStatus ToGrpcStatus(this TaskStatus status)
     => status switch
