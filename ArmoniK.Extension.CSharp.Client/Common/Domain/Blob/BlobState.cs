@@ -78,7 +78,7 @@ public enum BlobStatus
   Notfound = 127, // 0x0000007F
 }
 
-public static class BlobStatusExt
+internal static class BlobStatusExt
 {
   public static ResultStatus ToGrpcStatus(this BlobStatus status)
     => status switch

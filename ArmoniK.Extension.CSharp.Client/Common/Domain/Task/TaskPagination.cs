@@ -22,6 +22,9 @@ using ArmoniK.Extension.CSharp.Client.Common.Generic;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
+/// <summary>
+///   Represents pagination details for tasks, allowing for sorted and filtered lists of tasks.
+/// </summary>
 public class TaskPagination : Pagination<Filters>
 {
 }

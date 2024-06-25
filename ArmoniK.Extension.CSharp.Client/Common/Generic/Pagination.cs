@@ -18,11 +18,40 @@ using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Generic;
 
+/// <summary>
+///   Represents a generic pagination model to handle data pagination effectively.
+///   This class can be used to manage paging information and the data subset filtering.
+/// </summary>
+/// <typeparam name="T">The type of data being paginated.</typeparam>
 public class Pagination<T>
 {
-  public int           Page          { get; set; }
-  public int           PageSize      { get; set; }
-  public int           Total         { get; set; }
+  /// <summary>
+  ///   The current page number.
+  /// </summary>
+  /// <value>The page number of the current subset.</value>
+  public int Page { get; set; }
+
+  /// <summary>
+  ///   The number of items per page.
+  /// </summary>
+  /// <value>The maximum number of items to be displayed on a single page.</value>
+  public int PageSize { get; set; }
+
+  /// <summary>
+  ///   The total number of items across all pages.
+  /// </summary>
+  /// <value>The total count of items.</value>
+  public int Total { get; set; }
+
+  /// <summary>
+  ///   The sorting direction for pagination results.
+  /// </summary>
+  /// <value>The direction in which the sorted data should be ordered (e.g., ascending, descending).</value>
   public SortDirection SortDirection { get; set; }
-  public T             Filter        { get; set; }
+
+  /// <summary>
+  ///   The filter used for the pagination.
+  /// </summary>
+  /// <value>The filter criteria used to determine which items appear in the pagination.</value>
+  public T Filter { get; set; }
 }
