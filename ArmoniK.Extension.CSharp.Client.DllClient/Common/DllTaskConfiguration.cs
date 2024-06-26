@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
@@ -110,7 +109,7 @@ public record DllTasksConfiguration : TaskConfiguration
                                   },
                                   Values =
                                   {
-                                    JsonSerializer.Serialize(lib),
+                                    lib.PathToFile,
                                   },
                                 });
       }
