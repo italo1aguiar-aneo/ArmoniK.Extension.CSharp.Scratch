@@ -30,20 +30,20 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 
 internal class VersionsService : IVersionsService
 {
-  private readonly ObjectPool<ChannelBase> _channel;
+  private readonly ObjectPool<ChannelBase> channel_;
 
-  private readonly ILogger<VersionsService> _logger;
+  private readonly ILogger<VersionsService> logger_;
 
   public VersionsService(ObjectPool<ChannelBase> channel,
                          ILoggerFactory          loggerFactory)
   {
-    _channel = channel;
-    _logger  = loggerFactory.CreateLogger<VersionsService>();
+    channel_ = channel;
+    logger_  = loggerFactory.CreateLogger<VersionsService>();
   }
 
   public async Task<VersionsInfo> GetVersion(CancellationToken cancellationToken)
   {
-    await using var channel = await _channel.GetAsync(cancellationToken)
+    await using var channel = await channel_.GetAsync(cancellationToken)
                                             .ConfigureAwait(false);
     var versionClient = new Versions.VersionsClient(channel);
 

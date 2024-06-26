@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -32,17 +33,20 @@ namespace ArmoniK.Extension.CSharp.Client.Services;
 internal class SessionService : ISessionService
 {
   private readonly ObjectPool<ChannelBase> channel_;
+  private readonly TaskConfiguration       defaultTaskConfiguration_;
   private readonly ILogger<SessionService> logger_;
 
   private readonly Properties properties_;
 
   public SessionService(ObjectPool<ChannelBase> channel,
                         Properties              properties,
+                        TaskConfiguration       taskConfiguration,
                         ILoggerFactory          loggerFactory)
   {
-    properties_ = properties;
-    logger_     = loggerFactory.CreateLogger<SessionService>();
-    channel_    = channel;
+    properties_               = properties;
+    logger_                   = loggerFactory.CreateLogger<SessionService>();
+    channel_                  = channel;
+    defaultTaskConfiguration_ = taskConfiguration;
   }
 
   public async Task<SessionInfo> CreateSessionAsync(CancellationToken cancellationToken = default)
@@ -51,7 +55,7 @@ internal class SessionService : ISessionService
     var             sessionClient = new Sessions.SessionsClient(channel);
     var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
                                                                     {
-                                                                      DefaultTaskOption = properties_.TaskOptions.ToTaskOptions(),
+                                                                      DefaultTaskOption = defaultTaskConfiguration_.ToTaskOptions(),
                                                                       PartitionIds =
                                                                       {
                                                                         properties_.PartitionIds,

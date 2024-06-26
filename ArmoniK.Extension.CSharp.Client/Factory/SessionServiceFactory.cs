@@ -15,6 +15,7 @@
 // limitations under the License.
 
 using ArmoniK.Extension.CSharp.Client.Common;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Services;
 using ArmoniK.Utils;
@@ -39,6 +40,7 @@ public static class SessionServiceFactory
   ///   resources.
   /// </param>
   /// <param name="properties">A collection of configuration properties used to configure the session service.</param>
+  /// <param name="taskConfiguration">The default task configuration.</param>
   /// <param name="loggerFactory">
   ///   An optional factory for creating loggers, which can be used to enable logging within the
   ///   session service. If null, logging will be disabled.
@@ -46,8 +48,10 @@ public static class SessionServiceFactory
   /// <returns>An instance of <see cref="ISessionService" /> configured with the provided parameters.</returns>
   public static ISessionService CreateSessionService(ObjectPool<ChannelBase> channel,
                                                      Properties              properties,
+                                                     TaskConfiguration       taskConfiguration,
                                                      ILoggerFactory          loggerFactory)
     => new SessionService(channel,
                           properties,
+                          taskConfiguration,
                           loggerFactory);
 }
