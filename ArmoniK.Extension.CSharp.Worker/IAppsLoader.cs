@@ -14,8 +14,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extension.CSharp.DllWorker.Services;
+using System;
 
-WorkerServer.Create<ComputerService>()
-            .Run();
+using ArmoniK.Extension.CSharp.Common;
+
+namespace ArmoniK.Extension.CSharp.Worker;
+
+public interface IAppsLoader : IDisposable
+{
+  T GetServiceContainerInstance<T>(DynamicLibrary gridAppNamespace);
+}

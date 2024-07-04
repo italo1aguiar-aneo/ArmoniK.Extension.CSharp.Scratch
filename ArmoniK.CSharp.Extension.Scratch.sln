@@ -9,9 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UsageExample", "UsageExampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{E6CDD175-48B3-407D-A305-EA8BB5562DD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Extension.CSharp.DLLClient", "ArmoniK.Extension.CSharp.DLLClient\ArmoniK.Extension.CSharp.DLLClient.csproj", "{9C66351D-BC38-43CB-A4C5-4EAC8D0EFDA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.DLLClient", "ArmoniK.Extension.CSharp.DLLClient\ArmoniK.Extension.CSharp.DLLClient.csproj", "{9C66351D-BC38-43CB-A4C5-4EAC8D0EFDA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Extension.CSharp.DllWorker", "ArmoniK.Extension.CSharp.DllWorker\ArmoniK.Extension.CSharp.DllWorker.csproj", "{17C992B2-31A5-4BA5-8268-5875CB85252F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.DllWorker", "ArmoniK.Extension.CSharp.DllWorker\ArmoniK.Extension.CSharp.DllWorker.csproj", "{17C992B2-31A5-4BA5-8268-5875CB85252F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Extension.CSharp.Worker", "ArmoniK.Extension.CSharp.Worker\ArmoniK.Extension.CSharp.Worker.csproj", "{C35FB9D4-3BE2-4326-8483-C94F714FC73C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Extension.CSharp.Common", "ArmoniK.Extension.CSharp.Common\ArmoniK.Extension.CSharp.Common.csproj", "{66FDC8D9-B241-4B8D-BFED-DA38E9E4770F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{17C992B2-31A5-4BA5-8268-5875CB85252F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17C992B2-31A5-4BA5-8268-5875CB85252F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17C992B2-31A5-4BA5-8268-5875CB85252F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35FB9D4-3BE2-4326-8483-C94F714FC73C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35FB9D4-3BE2-4326-8483-C94F714FC73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35FB9D4-3BE2-4326-8483-C94F714FC73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35FB9D4-3BE2-4326-8483-C94F714FC73C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66FDC8D9-B241-4B8D-BFED-DA38E9E4770F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66FDC8D9-B241-4B8D-BFED-DA38E9E4770F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66FDC8D9-B241-4B8D-BFED-DA38E9E4770F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66FDC8D9-B241-4B8D-BFED-DA38E9E4770F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

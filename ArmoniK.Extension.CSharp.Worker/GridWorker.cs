@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extension.CSharp.DllWorker.Services;
+namespace ArmoniK.Extension.CSharp.Worker;
 
-WorkerServer.Create<ComputerService>()
-            .Run();
+public class GridWorker
+{
+}

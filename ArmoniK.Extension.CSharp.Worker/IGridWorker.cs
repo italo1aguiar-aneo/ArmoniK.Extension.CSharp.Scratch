@@ -14,8 +14,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extension.CSharp.DllWorker.Services;
+using System;
 
-WorkerServer.Create<ComputerService>()
-            .Run();
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Worker.Worker;
+
+using Microsoft.Extensions.Configuration;
+
+namespace ArmoniK.Extension.CSharp.Worker;
+
+internal interface IGridWorker : IDisposable
+{
+  public void Configure(IConfiguration configuration,
+                        TaskOptions    clientOptions,
+                        IAppsLoader    appsLoader);
+
+  public void InitializeSessionWorker(Session     sessionId,
+                                      TaskOptions requestTaskOptions);
+
+  public byte[] Execute(ITaskHandler taskHandler);
+
+  public void SessionFinalize();
+
+  public void DestroyService();
+}

@@ -16,6 +16,8 @@
 
 using ArmoniK.Api.Common.Channel.Utils;
 using ArmoniK.Api.Common.Options;
+using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.Worker.Worker;
 
 namespace ArmoniK.Extension.CSharp.DllWorker.Services;
@@ -37,4 +39,18 @@ public class ComputerService : WorkerStreamWrapper
   private ILogger<ComputerService> Logger { get; }
 
   public IConfiguration Configuration { get; }
+
+  public override async Task<Output> ProcessAsync(ITaskHandler      taskHandler,
+                                                  CancellationToken cancellationToken)
+  {
+    using var scopedLog = Logger.BeginNamedScope("Execute task",
+                                                 ("Session", taskHandler.SessionId),
+                                                 ("TaskId", taskHandler.TaskId));
+    Logger.LogTrace("DataDependencies {DataDependencies}",
+                    taskHandler.DataDependencies.Keys);
+    Logger.LogTrace("ExpectedResults {ExpectedResults}",
+                    taskHandler.ExpectedResults);
+
+
+  }
 }

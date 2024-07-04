@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace ArmoniK.Extension.CSharp.DLLClient.Common;
+namespace ArmoniK.Extension.CSharp.DllWorker;
 
 /// <summary>
 ///   Represents the configuration of an application, including its name, version, namespace, service, and engine type.
@@ -27,11 +27,6 @@ public record DynamicLibrary
   public string Name { get; init; }
 
   /// <summary>
-  ///   Version of the application.
-  /// </summary>
-  public string PathToFile { get; init; }
-
-  /// <summary>
   ///   FileName of the Dll.
   /// </summary>
   public string DllFileName { get; init; }
@@ -39,22 +34,12 @@ public record DynamicLibrary
   /// <summary>
   ///   Version of the application.
   /// </summary>
+  public string PathToFile { get; init; }
+
+  /// <summary>
+  ///   Version of the application.
+  /// </summary>
   public string Version { get; init; }
-
-  /// <summary>
-  ///   Namespace of the application.
-  /// </summary>
-  public string Namespace { get; init; }
-
-  /// <summary>
-  ///   Service name of the application.
-  /// </summary>
-  public string Service { get; init; }
-
-  /// <summary>
-  ///   Type of engine used by the application.
-  /// </summary>
-  public string EngineType { get; init; }
 
   public override string ToString()
     => $"{Name}:{Version}.dll";

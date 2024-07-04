@@ -14,8 +14,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using ArmoniK.Api.Worker.Utils;
-using ArmoniK.Extension.CSharp.DllWorker.Services;
+using System.Threading;
+using System.Threading.Tasks;
 
-WorkerServer.Create<ComputerService>()
-            .Run();
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.Worker.Worker;
+
+namespace ArmoniK.Extension.CSharp.Worker;
+
+public interface IService
+{
+  Task<Output> ExecuteTask(ITaskHandler      taskHandler,
+                           CancellationToken cancellationToken);
+}

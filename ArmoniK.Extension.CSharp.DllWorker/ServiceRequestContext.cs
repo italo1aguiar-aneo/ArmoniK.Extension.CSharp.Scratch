@@ -15,7 +15,6 @@
 // limitations under the License.
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Api.Worker.Worker;
 using ArmoniK.Extension.CSharp.DllWorker.Exceptions;
 
 using JetBrains.Annotations;
@@ -24,37 +23,13 @@ namespace ArmoniK.Extension.CSharp.DllWorker;
 
 public class ArmonikServiceWorker : IDisposable
 {
-  public ArmonikServiceWorker()
-    => Initialized = false;
+  public List<DynamicLibrary> DynamicLibraries = new();
 
-  public ServiceId ServiceId { get; set; }
-
-  public AppsLoader  AppsLoader { get; set; }
-  public IGridWorker GridWorker { get; set; }
-
-  public bool Initialized { get; set; }
-
-  /// <summary>Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</summary>
   public void Dispose()
   {
-    using (AppsLoader.UserAssemblyLoadContext.EnterContextualReflection())
-    {
-      GridWorker?.Dispose();
-    }
-
-    GridWorker = null;
-    AppsLoader.Dispose();
-    AppsLoader  = null;
-    Initialized = false;
   }
 
-  public void CloseSession()
-  {
-    using (AppsLoader.UserAssemblyLoadContext.EnterContextualReflection())
-    {
-      GridWorker?.SessionFinalize();
-    }
-  }
+  public bool Initialized { get; set; }
 
   public void Configure(IConfiguration configuration,
                         TaskOptions    requestTaskOptions)
@@ -72,36 +47,6 @@ public class ArmonikServiceWorker : IDisposable
     }
 
     Initialized = true;
-  }
-
-  public void InitializeSessionWorker(Session     sessionId,
-                                      TaskOptions taskHandlerTaskOptions)
-  {
-    using (AppsLoader.UserAssemblyLoadContext.EnterContextualReflection())
-    {
-      GridWorker.InitializeSessionWorker(sessionId,
-                                         taskHandlerTaskOptions);
-    }
-  }
-
-  public byte[] Execute(ITaskHandler taskHandler)
-  {
-    using (AppsLoader.UserAssemblyLoadContext.EnterContextualReflection())
-    {
-      return GridWorker.Execute(taskHandler);
-    }
-  }
-
-
-  /// <summary>
-  ///   Call the GridWorker callback to let the user know when the service will be unloaded
-  /// </summary>
-  public void DestroyService()
-  {
-    using (AppsLoader.UserAssemblyLoadContext.EnterContextualReflection())
-    {
-      GridWorker.DestroyService();
-    }
   }
 }
 
