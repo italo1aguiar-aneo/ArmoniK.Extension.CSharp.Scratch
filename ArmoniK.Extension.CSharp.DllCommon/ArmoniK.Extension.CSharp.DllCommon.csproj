@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ArmoniK.Api.Common" Version="3.18.1" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.18.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArmoniK.Extension.CSharp.Client\ArmoniK.Extension.CSharp.Client.csproj" />
+  </ItemGroup>
+
+</Project>

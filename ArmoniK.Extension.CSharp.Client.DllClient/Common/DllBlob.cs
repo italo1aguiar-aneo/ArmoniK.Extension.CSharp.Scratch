@@ -15,8 +15,9 @@
 // limitations under the License.
 
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
+using ArmoniK.Extension.CSharp.DllCommon;
 
-namespace ArmoniK.Extension.CSharp.Client.DllClient.Common;
+namespace ArmoniK.Extension.CSharp.Client.DllHelper.Common;
 
 /// <summary>
 ///   Represents a specialized blob that includes metadata for a dynamic library. This record extends the

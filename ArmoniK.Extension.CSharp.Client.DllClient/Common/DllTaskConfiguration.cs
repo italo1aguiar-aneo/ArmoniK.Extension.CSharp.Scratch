@@ -20,11 +20,12 @@ using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+using ArmoniK.Extension.CSharp.DllCommon;
 
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 
-namespace ArmoniK.Extension.CSharp.Client.DllClient.Common;
+namespace ArmoniK.Extension.CSharp.Client.DllHelper.Common;
 
 /// <summary>
 ///   Provides a specialized configuration for tasks that use dynamic libraries. This configuration extends the basic
@@ -105,11 +106,17 @@ public record DllTasksConfiguration : TaskConfiguration
                                 {
                                   Keys =
                                   {
-                                    lib.ToString(),
+                                    $"{lib}.PathToFile",
+                                    $"{lib}.DllFileName",
+                                    $"{lib}.Namespace",
+                                    $"{lib}.Version",
                                   },
                                   Values =
                                   {
                                     lib.PathToFile,
+                                    lib.DllFileName,
+                                    lib.Namespace,
+                                    lib.Version,
                                   },
                                 });
       }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 
@@ -35,6 +36,13 @@ public record TaskConfiguration
   ///   Initializes a new instance of the <see cref="TaskConfiguration" /> class with specified task configuration
   ///   settings.
   /// </summary>
+  public TaskConfiguration()
+    => Options = new Dictionary<string, string>();
+
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskConfiguration" /> class with specified task configuration
+  ///   settings.
+  /// </summary>
   /// <param name="maxRetries">The maximum number of retries for the task.</param>
   /// <param name="priority">The priority level of the task.</param>
   /// <param name="partitionId">The partition identifier for task segregation.</param>
@@ -49,7 +57,7 @@ public record TaskConfiguration
     MaxRetries  = maxRetries;
     Priority    = priority;
     PartitionId = partitionId;
-    Options     = options ?? new Dictionary<string, string>(); // Ensure options is never null
+    Options     = options ?? new Dictionary<string, string>();
     MaxDuration = maxDuration;
   }
 
@@ -86,15 +94,19 @@ public record TaskConfiguration
   /// <returns>A new <see cref="TaskOptions" /> instance populated with the settings from this configuration.</returns>
   public TaskOptions ToTaskOptions()
   {
-    var taskOptions = new TaskOptions
-                      {
-                        MaxRetries  = MaxRetries,
-                        Priority    = Priority,
-                        PartitionId = PartitionId,
-                        MaxDuration = Duration.FromTimeSpan(MaxDuration),
-                      };
+    var taskOptions = new TaskOptions();
 
-    if (Options != null)
+    taskOptions.MaxRetries = MaxRetries != null
+                               ? MaxRetries
+                               : default;
+    taskOptions.Priority = Priority != null
+                             ? Priority
+                             : default;
+    taskOptions.MaxDuration = Duration.FromTimeSpan(MaxDuration);
+
+    taskOptions.PartitionId = PartitionId;
+
+    if (Options != null && Options.Any())
     {
       taskOptions.Options.Add(Options);
     }

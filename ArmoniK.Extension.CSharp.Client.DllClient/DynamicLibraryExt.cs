@@ -23,9 +23,10 @@ using System.Threading.Tasks;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
-using ArmoniK.Extension.CSharp.Client.DllClient.Common;
+using ArmoniK.Extension.CSharp.Client.DllHelper.Common;
+using ArmoniK.Extension.CSharp.DllCommon;
 
-namespace ArmoniK.Extension.CSharp.Client.DllClient;
+namespace ArmoniK.Extension.CSharp.Client.DllHelper;
 
 /// <summary>
 ///   Provides extension methods for handling dynamic library usage on ArmoniK's environment.
@@ -83,25 +84,36 @@ public static class DynamicLibraryExt
   /// <param name="taskNodes">The collection of tasks to submit.</param>
   /// <param name="dllBlob">The dynamic library blob dependency for the tasks.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests during the task submission process.</param>
-  public static async Task SubmitTasksWithDll(this ITasksService    taskService,
-                                              SessionInfo           session,
-                                              IEnumerable<TaskNode> taskNodes,
-                                              DllBlob               dllBlob,
-                                              CancellationToken     cancellationToken)
+  public static async Task<IEnumerable<TaskInfos>> SubmitTasksWithDll(this ITasksService       taskService,
+                                                                      SessionInfo              session,
+                                                                      IEnumerable<TaskNodeExt> taskNodes,
+                                                                      DllBlob                  dllBlob,
+                                                                      CancellationToken        cancellationToken)
   {
     taskNodes = taskNodes.Select(x =>
                                  {
                                    x.DataDependencies.Add(dllBlob);
+
+                                   //avoid injection of dlls which were already defined in the session taskOptions
                                    if (x.TaskOptions?.Options is not null && x.TaskOptions.Options.ContainsKey(dllBlob.BlobName))
                                    {
                                      x.TaskOptions.Options.Remove(dllBlob.BlobName);
                                    }
 
+                                   x.TaskOptions.AddToTaskConfigurationOptions(x.DynamicLibrary);
+                                   x.TaskOptions.Options.Add("ServiceLibrary",
+                                                             x.DynamicLibrary.ToString());
                                    return x;
                                  });
 
-    await taskService.SubmitTasksAsync(session,
-                                       taskNodes,
-                                       cancellationToken);
+    var result = await taskService.SubmitTasksAsync(session,
+                                                    taskNodes,
+                                                    cancellationToken);
+    return result;
   }
+}
+
+public record TaskNodeExt : TaskNode
+{
+  public DynamicLibrary DynamicLibrary { get; set; }
 }

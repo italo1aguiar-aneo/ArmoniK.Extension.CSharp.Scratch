@@ -20,6 +20,8 @@ using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+using ArmoniK.Extension.CSharp.Client.DllHelper;
+using ArmoniK.Extension.CSharp.DllCommon;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -37,9 +39,6 @@ internal class Program
 
   private static async Task Main(string[] args)
   {
-    Console.WriteLine("Hello Armonik New Extension !");
-
-
     Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
                                                                  LogEventLevel.Information)
                                           .Enrich.FromLogContext()
@@ -64,24 +63,29 @@ internal class Program
 
     var defaultTaskOptions = new TaskConfiguration(2,
                                                    1,
-                                                   "subtasking",
-                                                   TimeSpan.FromHours(1),
-                                                   new Dictionary<string, string>
-                                                   {
-                                                     {
-                                                       "UseCase", "Launch"
-                                                     },
-                                                   });
+                                                   "dll",
+                                                   TimeSpan.FromHours(1));
 
     var props = new Properties(_configuration,
-
-      ["subtasking"]);
+                               ["dll"]);
 
     var client = new ArmoniKClient(props,
                                    factory,
                                    defaultTaskOptions);
 
-    var sessionService = await client.GetSessionService();
+    var dynamicLib = new DynamicLibrary
+                     {
+                       DllFileName = "MyLibExample.dll",
+                       Namespace   = "MyLibExample",
+                       Version     = "1:1",
+                       PathToFile  = "publish",
+                       Service     = "Worker",
+                     };
+
+    var sessionService = await client.GetSessionService(new List<DynamicLibrary>
+                                                        {
+                                                          dynamicLib,
+                                                        });
 
     var session = await sessionService.CreateSessionAsync();
 
@@ -109,17 +113,34 @@ internal class Program
 
     var result = blobInfos[0];
 
-    Console.WriteLine($"resultId: {result.BlobId}");
+    var content = File.ReadAllBytes(@"C:\\Users\\iaguiar\\Desenvolvimento\\MyProjects\\OnSSH\\ArmoniK.Extension.CSharp.Scratch\\UsageExample\\publish.zip");
 
-    var task = await tasksService.SubmitTasksAsync(session,
-                                                   new List<TaskNode>([new TaskNode
-                                                                       {
-                                                                         Payload = payload,
-                                                                         ExpectedOutputs = new[]
-                                                                                           {
-                                                                                             result,
-                                                                                           },
-                                                                       },]));
+    var dllBlob = await blobService.SendDllBlob(session,
+                                                dynamicLib,
+                                                content,
+                                                default);
+
+    Console.WriteLine($"resultId: {result.BlobId}");
+    Console.WriteLine($"libraryId: {dllBlob.BlobId}");
+
+    dynamicLib.LibraryBlobId = dllBlob.BlobId;
+
+    var task = await tasksService.SubmitTasksWithDll(session,
+                                                     new List<TaskNodeExt>
+                                                     {
+                                                       new()
+                                                       {
+                                                         Payload = payload,
+                                                         ExpectedOutputs = new[]
+                                                                           {
+                                                                             result,
+                                                                           },
+                                                         TaskOptions    = defaultTaskOptions,
+                                                         DynamicLibrary = dynamicLib,
+                                                       },
+                                                     },
+                                                     dllBlob,
+                                                     default);
 
     Console.WriteLine($"taskId: {task.Single().TaskId}");
 

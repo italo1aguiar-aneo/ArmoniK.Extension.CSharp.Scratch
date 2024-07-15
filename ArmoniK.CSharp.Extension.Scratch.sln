@@ -11,6 +11,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.Client.DllHelper", "ArmoniK.Extension.CSharp.Client.DllClient\ArmoniK.Extension.CSharp.Client.DllHelper.csproj", "{EF318D74-FCE4-4413-8BB1-3CE0F289883D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.DllCommon", "ArmoniK.Extension.CSharp.DllCommon\ArmoniK.Extension.CSharp.DllCommon.csproj", "{79968352-1300-4789-81DF-6B2F5EA57540}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.Worker", "ArmoniK.Extension.CSharp.Worker\ArmoniK.Extension.CSharp.Worker.csproj", "{4F5FA06D-34BA-4ECA-ABCF-73EF0B297FB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Extension.CSharp.DllWorker", "ArmoniK.Extension.CSharp.DllWorker\ArmoniK.Extension.CSharp.DllWorker.csproj", "{88EE171E-7187-49F3-9A4F-00DECCAB7825}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLibExample", "MyLibExample\MyLibExample.csproj", "{33894FF0-5A3D-4E5F-97BC-C547F0D85F32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +41,22 @@ Global
 		{EF318D74-FCE4-4413-8BB1-3CE0F289883D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF318D74-FCE4-4413-8BB1-3CE0F289883D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF318D74-FCE4-4413-8BB1-3CE0F289883D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79968352-1300-4789-81DF-6B2F5EA57540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79968352-1300-4789-81DF-6B2F5EA57540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79968352-1300-4789-81DF-6B2F5EA57540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79968352-1300-4789-81DF-6B2F5EA57540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F5FA06D-34BA-4ECA-ABCF-73EF0B297FB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F5FA06D-34BA-4ECA-ABCF-73EF0B297FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F5FA06D-34BA-4ECA-ABCF-73EF0B297FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F5FA06D-34BA-4ECA-ABCF-73EF0B297FB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88EE171E-7187-49F3-9A4F-00DECCAB7825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88EE171E-7187-49F3-9A4F-00DECCAB7825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88EE171E-7187-49F3-9A4F-00DECCAB7825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88EE171E-7187-49F3-9A4F-00DECCAB7825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33894FF0-5A3D-4E5F-97BC-C547F0D85F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33894FF0-5A3D-4E5F-97BC-C547F0D85F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33894FF0-5A3D-4E5F-97BC-C547F0D85F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33894FF0-5A3D-4E5F-97BC-C547F0D85F32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
