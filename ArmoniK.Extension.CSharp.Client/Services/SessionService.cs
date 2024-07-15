@@ -14,12 +14,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Utils;
 
@@ -45,16 +47,18 @@ internal class SessionService : ISessionService
     channel_    = channel;
   }
 
-  public async Task<SessionInfo> CreateSessionAsync(CancellationToken cancellationToken = default)
+  public async Task<SessionInfo> CreateSessionAsync(TaskConfiguration   taskOptions,
+                                                    IEnumerable<string> partitionIds,
+                                                    CancellationToken   cancellationToken = default)
   {
     await using var channel       = await channel_.GetAsync(cancellationToken);
     var             sessionClient = new Sessions.SessionsClient(channel);
     var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
                                                                     {
-                                                                      DefaultTaskOption = properties_.TaskOptions.ToTaskOptions(),
+                                                                      DefaultTaskOption = taskOptions.ToTaskOptions(),
                                                                       PartitionIds =
                                                                       {
-                                                                        properties_.PartitionIds,
+                                                                        partitionIds,
                                                                       },
                                                                     });
 

@@ -38,17 +38,19 @@ namespace ArmoniK.Extension.CSharp.Client;
 /// </summary>
 public class ArmoniKClient
 {
-  private readonly ILogger                 _logger;
-  private readonly ILoggerFactory          _loggerFactory;
-  private readonly Properties              _properties;
-  private          IBlobService            _blobService;
-  private          ObjectPool<ChannelBase> _channelPool;
-  private          IEventsService          _eventsService;
-  private          IHealthCheckService     _healthCheckService;
-  private          IPartitionsService      _partitionsService;
-  private          ISessionService         _sessionService;
-  private          ITasksService           _tasksService;
-  private          IVersionsService        _versionsService;
+  private readonly ILogger        logger_;
+  private readonly ILoggerFactory loggerFactory_;
+  private readonly Properties     properties_;
+
+
+  private IBlobService            blobService_;
+  private ObjectPool<ChannelBase> channelPool_;
+  private IEventsService          eventsService_;
+  private IHealthCheckService     healthCheckService_;
+  private IPartitionsService      partitionsService_;
+  private ISessionService         sessionService_;
+  private ITasksService           tasksService_;
+  private IVersionsService        versionsService_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="ArmoniKClient" /> class with the specified properties and logger
@@ -56,21 +58,23 @@ public class ArmoniKClient
   /// </summary>
   /// <param name="properties">The properties for configuring the client.</param>
   /// <param name="loggerFactory">The factory for creating loggers.</param>
+  /// <param name="taskConfiguration">The default task configuration</param>
   /// <exception cref="ArgumentNullException">Thrown when properties or loggerFactory is null.</exception>
-  public ArmoniKClient(Properties     properties,
-                       ILoggerFactory loggerFactory)
+  public ArmoniKClient(Properties        properties,
+                       ILoggerFactory    loggerFactory,
+                       TaskConfiguration taskConfiguration)
   {
-    _properties    = properties    ?? throw new ArgumentNullException(nameof(properties));
-    _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
-    _logger        = loggerFactory.CreateLogger<ArmoniKClient>();
+    properties_    = properties    ?? throw new ArgumentNullException(nameof(properties));
+    loggerFactory_ = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+    logger_        = loggerFactory.CreateLogger<ArmoniKClient>();
   }
 
   /// <summary>
   ///   Gets the channel pool used for managing GRPC channels.
   /// </summary>
   public ObjectPool<ChannelBase> ChannelPool
-    => _channelPool ??= ClientServiceConnector.ControlPlaneConnectionPool(_properties,
-                                                                          _loggerFactory);
+    => channelPool_ ??= ClientServiceConnector.ControlPlaneConnectionPool(properties_,
+                                                                          loggerFactory_);
 
   /// <summary>
   ///   Gets the blob service.
@@ -78,14 +82,14 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the blob service instance.</returns>
   public Task<IBlobService> GetBlobService()
   {
-    if (_blobService is not null)
+    if (blobService_ is not null)
     {
-      return Task.FromResult(_blobService);
+      return Task.FromResult(blobService_);
     }
 
-    _blobService = BlobServiceFactory.CreateBlobService(ChannelPool,
-                                                        _loggerFactory);
-    return Task.FromResult(_blobService);
+    blobService_ = BlobServiceFactory.CreateBlobService(ChannelPool,
+                                                        loggerFactory_);
+    return Task.FromResult(blobService_);
   }
 
   /// <summary>
@@ -94,15 +98,15 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the session service instance.</returns>
   public Task<ISessionService> GetSessionService()
   {
-    if (_sessionService is not null)
+    if (sessionService_ is not null)
     {
-      return Task.FromResult(_sessionService);
+      return Task.FromResult(sessionService_);
     }
 
-    _sessionService = SessionServiceFactory.CreateSessionService(ChannelPool,
-                                                                 _properties,
-                                                                 _loggerFactory);
-    return Task.FromResult(_sessionService);
+    sessionService_ = SessionServiceFactory.CreateSessionService(ChannelPool,
+                                                                 properties_,
+                                                                 loggerFactory_);
+    return Task.FromResult(sessionService_);
   }
 
   /// <summary>
@@ -111,15 +115,15 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the tasks service instance.</returns>
   public async Task<ITasksService> GetTasksService()
   {
-    if (_tasksService is not null)
+    if (tasksService_ is not null)
     {
-      return _tasksService;
+      return tasksService_;
     }
 
-    _tasksService = TasksServiceFactory.CreateTaskService(ChannelPool,
+    tasksService_ = TasksServiceFactory.CreateTaskService(ChannelPool,
                                                           await GetBlobService(),
-                                                          _loggerFactory);
-    return _tasksService;
+                                                          loggerFactory_);
+    return tasksService_;
   }
 
   /// <summary>
@@ -128,14 +132,14 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the events service instance.</returns>
   public Task<IEventsService> GetEventsService()
   {
-    if (_eventsService is not null)
+    if (eventsService_ is not null)
     {
-      return Task.FromResult(_eventsService);
+      return Task.FromResult(eventsService_);
     }
 
-    _eventsService = EventsServiceFactory.CreateEventsService(ChannelPool,
-                                                              _loggerFactory);
-    return Task.FromResult(_eventsService);
+    eventsService_ = EventsServiceFactory.CreateEventsService(ChannelPool,
+                                                              loggerFactory_);
+    return Task.FromResult(eventsService_);
   }
 
   /// <summary>
@@ -144,14 +148,14 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the version service instance.</returns>
   public Task<IVersionsService> GetVersionService()
   {
-    if (_versionsService is not null)
+    if (versionsService_ is not null)
     {
-      return Task.FromResult(_versionsService);
+      return Task.FromResult(versionsService_);
     }
 
-    _versionsService = VersionsServiceFactory.CreateVersionsService(ChannelPool,
-                                                                    _loggerFactory);
-    return Task.FromResult(_versionsService);
+    versionsService_ = VersionsServiceFactory.CreateVersionsService(ChannelPool,
+                                                                    loggerFactory_);
+    return Task.FromResult(versionsService_);
   }
 
   /// <summary>
@@ -160,14 +164,14 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the partitions service instance.</returns>
   public Task<IPartitionsService> GetPartitionsService()
   {
-    if (_partitionsService is not null)
+    if (partitionsService_ is not null)
     {
-      return Task.FromResult(_partitionsService);
+      return Task.FromResult(partitionsService_);
     }
 
-    _partitionsService = PartitionsServiceFactory.CreatePartitionsService(ChannelPool,
-                                                                          _loggerFactory);
-    return Task.FromResult(_partitionsService);
+    partitionsService_ = PartitionsServiceFactory.CreatePartitionsService(ChannelPool,
+                                                                          loggerFactory_);
+    return Task.FromResult(partitionsService_);
   }
 
   /// <summary>
@@ -176,14 +180,14 @@ public class ArmoniKClient
   /// <returns>A task representing the asynchronous operation. The task result contains the health check service instance.</returns>
   public Task<IHealthCheckService> GetHealthCheckService()
   {
-    if (_healthCheckService is not null)
+    if (healthCheckService_ is not null)
     {
-      return Task.FromResult(_healthCheckService);
+      return Task.FromResult(healthCheckService_);
     }
 
-    _healthCheckService = HealthCheckServiceFactory.CreateHealthCheckService(ChannelPool,
-                                                                             _loggerFactory);
-    return Task.FromResult(_healthCheckService);
+    healthCheckService_ = HealthCheckServiceFactory.CreateHealthCheckService(ChannelPool,
+                                                                             loggerFactory_);
+    return Task.FromResult(healthCheckService_);
   }
 
   /// <summary>
