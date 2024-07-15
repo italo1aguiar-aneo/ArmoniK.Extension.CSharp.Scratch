@@ -52,8 +52,7 @@ public class LibraryWorker : ILibraryWorker
 
     var serviceLibrary = taskHandler.TaskOptions.GetServiceLibrary();
 
-    var dynamicLibrary = DynamicLibraryExt.GetDynamicLibraryFromTaskOptions(taskHandler.TaskOptions,
-                                                                            serviceLibrary);
+    var dynamicLibrary = taskHandler.TaskOptions.GetDynamicLibrary(serviceLibrary);
 
     Logger.LogInformation($"ServiceLibrary: {serviceLibrary}");
     Logger.LogInformation($"DynamicLibrary.Service: {dynamicLibrary.Service}");

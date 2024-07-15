@@ -103,9 +103,8 @@ public class LibraryLoader : ILibraryLoader
       var taskLibrary = taskHandler.TaskOptions.GetServiceLibrary();
 
       //Get the data about the dynamic library
-      var dynamicLibrary = DynamicLibraryExt.GetDynamicLibraryFromTaskOptions(taskHandler.TaskOptions,
-                                                                              taskLibrary);
-      var filename = $"{dynamicLibrary}.zip";
+      var dynamicLibrary = taskHandler.TaskOptions.GetDynamicLibrary(taskLibrary);
+      var filename       = $"{dynamicLibrary}.zip";
 
       var filePath = @"/tmp/zip";
 

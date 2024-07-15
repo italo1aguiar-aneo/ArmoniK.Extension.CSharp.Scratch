@@ -26,6 +26,8 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 /// <summary>
@@ -130,6 +132,7 @@ public static class BlobServiceExt
   /// <param name="quantity">The number of blobs to create metadata for.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>An asynchronous enumerable of blob information objects.</returns>
+  [PublicAPI]
   public static IAsyncEnumerable<BlobInfo> CreateBlobsMetadataAsync(this IBlobService blobService,
                                                                     SessionInfo       session,
                                                                     int               quantity,
@@ -150,6 +153,7 @@ public static class BlobServiceExt
   /// <param name="pageSize">The number of blobs to retrieve per page.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>An asynchronous enumerable of blob pages.</returns>
+  [PublicAPI]
   public static async IAsyncEnumerable<BlobPage> ListAllBlobsAsync(this IBlobService                          blobService,
                                                                    SessionInfo                                session,
                                                                    int                                        pageSize          = 50,

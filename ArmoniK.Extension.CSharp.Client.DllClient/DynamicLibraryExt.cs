@@ -100,7 +100,7 @@ public static class DynamicLibraryExt
                                      x.TaskOptions.Options.Remove(dllBlob.BlobName);
                                    }
 
-                                   x.TaskOptions.AddToTaskConfigurationOptions(x.DynamicLibrary);
+                                   x.TaskOptions.AddDynamicLibrary(x.DynamicLibrary);
                                    x.TaskOptions.Options.Add("ServiceLibrary",
                                                              x.DynamicLibrary.ToString());
                                    return x;

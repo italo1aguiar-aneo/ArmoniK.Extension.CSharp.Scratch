@@ -29,6 +29,11 @@ public record DynamicLibrary
   /// <summary>
   ///   FileName of the Dll.
   /// </summary>
+  public string Name { get; init; }
+
+  /// <summary>
+  ///   FileName of the Dll.
+  /// </summary>
   public string DllFileName { get; init; }
 
   /// <summary>
@@ -57,14 +62,16 @@ public record DynamicLibrary
   public string LibraryBlobId { get; set; }
 
   public override string ToString()
-    => $"{Namespace}-{Version}";
+    => $"{Name}-{Namespace}-{Version}";
 }
 
 public static class DynamicLibraryExt
 {
-  public static TaskConfiguration AddToTaskConfigurationOptions(this TaskConfiguration taskConfiguration,
-                                                                DynamicLibrary         dynamicLibrary)
+  public static TaskConfiguration AddDynamicLibrary(this TaskConfiguration taskConfiguration,
+                                                    DynamicLibrary         dynamicLibrary)
   {
+    taskConfiguration.Options.Add($"{dynamicLibrary}.Name",
+                                  dynamicLibrary.Name);
     taskConfiguration.Options.Add($"{dynamicLibrary}.PathToFile",
                                   dynamicLibrary.PathToFile);
     taskConfiguration.Options.Add($"{dynamicLibrary}.DllFileName",
@@ -84,9 +91,11 @@ public static class DynamicLibraryExt
     => taskOptions.Options.FirstOrDefault(x => x.Key.Equals("ServiceLibrary"))
                   .Value;
 
-  public static DynamicLibrary GetDynamicLibraryFromTaskOptions(TaskOptions taskOptions,
-                                                                string      libraryName)
+  public static DynamicLibrary GetDynamicLibrary(this TaskOptions taskOptions,
+                                                 string           libraryName)
   {
+    taskOptions.Options.TryGetValue($"{libraryName}.Name",
+                                    out var name);
     taskOptions.Options.TryGetValue($"{libraryName}.PathToFile",
                                     out var pathToFile);
     taskOptions.Options.TryGetValue($"{libraryName}.DllFileName",
@@ -102,6 +111,7 @@ public static class DynamicLibraryExt
 
     return new DynamicLibrary
            {
+             Name          = name,
              DllFileName   = dllFileName,
              PathToFile    = pathToFile,
              Namespace     = serviceNamespace,
