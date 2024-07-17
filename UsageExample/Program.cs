@@ -73,17 +73,17 @@ internal class Program
                                                      },
                                                    });
 
-    var props = new Properties(_configuration,
-                               defaultTaskOptions,
-
-      ["subtasking"]);
+    var props = new Properties(_configuration);
 
     var client = new ArmoniKClient(props,
-                                   factory);
+                                   factory,
+                                   defaultTaskOptions);
 
     var sessionService = await client.GetSessionService();
 
-    var session = await sessionService.CreateSessionAsync();
+    var session = await sessionService.CreateSessionAsync(defaultTaskOptions,
+
+                    ["subtasking"]);
 
     Console.WriteLine($"sessionId: {session.SessionId}");
 

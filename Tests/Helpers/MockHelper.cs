@@ -17,6 +17,7 @@
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
+using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 using ArmoniK.Extension.CSharp.Client.Common.Services;
 using ArmoniK.Extension.CSharp.Client.Factory;
 using ArmoniK.Utils;
@@ -147,6 +148,7 @@ internal static class MockHelper
   }
 
   public static ISessionService GetSessionServiceMock(Properties         properties,
+                                                      TaskConfiguration  taskConfiguration,
                                                       Mock<CallInvoker>? mockInvoker = null)
   {
     mockInvoker ??= new Mock<CallInvoker>();

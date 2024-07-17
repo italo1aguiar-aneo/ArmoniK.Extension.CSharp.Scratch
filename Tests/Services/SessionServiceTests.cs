@@ -33,7 +33,13 @@ namespace Tests.Services;
 
 public class SessionServiceTests
 {
-  private readonly Properties defaultProperties_;
+  private readonly List<string> defaultPartitionsIds = new()
+                                                       {
+                                                         "subtasking",
+                                                       };
+
+  private readonly Properties        defaultProperties_;
+  private readonly TaskConfiguration defaultTaskConfiguration_;
 
   public SessionServiceTests()
   {
@@ -42,17 +48,12 @@ public class SessionServiceTests
                                                                false)
                                                   .AddEnvironmentVariables()
                                                   .Build();
-    List<string> defaultPartitionsIds = new()
-                                        {
-                                          "subtasking",
-                                        };
-    var defaultTaskOptions = new TaskConfiguration(2,
-                                                   1,
-                                                   defaultPartitionsIds[0],
-                                                   TimeSpan.FromHours(1));
-    defaultProperties_ = new Properties(configuration,
-                                        defaultTaskOptions,
-                                        defaultPartitionsIds);
+
+    defaultTaskConfiguration_ = new TaskConfiguration(2,
+                                                      1,
+                                                      defaultPartitionsIds[0],
+                                                      TimeSpan.FromHours(1));
+    defaultProperties_ = new Properties(configuration);
   }
 
   [Test]
@@ -68,9 +69,11 @@ public class SessionServiceTests
     mockCallInvoker.SetupAsyncUnaryCallInvokerMock<CreateSessionRequest, CreateSessionReply>(createSessionReply);
 
     var sessionService = MockHelper.GetSessionServiceMock(defaultProperties_,
+                                                          defaultTaskConfiguration_,
                                                           mockCallInvoker);
     // Act
-    var result = await sessionService.CreateSessionAsync();
+    var result = await sessionService.CreateSessionAsync(defaultTaskConfiguration_,
+                                                         defaultPartitionsIds);
     // Assert
     ClassicAssert.AreEqual("12345",
                            result.SessionId);

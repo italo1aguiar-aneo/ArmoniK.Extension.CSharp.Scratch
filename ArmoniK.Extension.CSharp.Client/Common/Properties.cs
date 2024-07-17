@@ -15,9 +15,6 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
-
-using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 using JetBrains.Annotations;
 
@@ -53,9 +50,7 @@ public record Properties
   /// <summary>
   ///   The constructor to instantiate Properties object
   /// </summary>
-  /// <param name="options">The taskOptions to set to a session</param>
   /// <param name="connectionAddress">The control plane address to connect</param>
-  /// <param name="partitionIds"></param>
   /// <param name="connectionPort">The optional port to connect to the control plane</param>
   /// <param name="protocol">the protocol https or http</param>
   /// <param name="clientCertPem">The client certificate fil in a pem format</param>
@@ -63,20 +58,16 @@ public record Properties
   /// <param name="clientP12">The client certificate in a P12/Pkcs12/PFX format</param>
   /// <param name="caCertPem">The Server certificate file to validate mTLS</param>
   /// <param name="sslValidation">Disable the ssl strong validation of ssl certificate (default : enable => true)</param>
-  public Properties(TaskConfiguration   options,
-                    string              connectionAddress,
-                    IEnumerable<string> partitionIds,
-                    int                 connectionPort = 0,
-                    string              protocol       = null,
-                    string              clientCertPem  = null,
-                    string              clientKeyPem   = null,
-                    string              clientP12      = null,
-                    string              caCertPem      = null,
-                    bool?               sslValidation  = null)
+  public Properties(string connectionAddress,
+                    int    connectionPort = 0,
+                    string protocol       = null,
+                    string clientCertPem  = null,
+                    string clientKeyPem   = null,
+                    string clientP12      = null,
+                    string caCertPem      = null,
+                    bool?  sslValidation  = null)
     : this(new ConfigurationBuilder().AddEnvironmentVariables()
                                      .Build(),
-           options,
-           partitionIds,
            connectionAddress,
            connectionPort,
            protocol,
@@ -92,8 +83,6 @@ public record Properties
   ///   The constructor to instantiate Properties object
   /// </summary>
   /// <param name="configuration">The configuration to read information from AppSettings file</param>
-  /// <param name="options">The taskOptions to set to a session</param>
-  /// <param name="partitionIds"></param>
   /// <param name="connectionAddress">The control plane address to connect</param>
   /// <param name="connectionPort">The optional port to connect to the control plane</param>
   /// <param name="protocol">the protocol https or http</param>
@@ -106,24 +95,20 @@ public record Properties
   /// <param name="retryBackoffMultiplier">Retry backoff multiplier</param>
   /// <param name="retryMaxBackoff">Max retry backoff</param>
   /// <exception cref="ArgumentException"></exception>
-  public Properties(IConfiguration      configuration,
-                    TaskConfiguration   options,
-                    IEnumerable<string> partitionIds,
-                    string              connectionAddress      = null,
-                    int                 connectionPort         = 0,
-                    string              protocol               = null,
-                    string              clientCertFilePem      = null,
-                    string              clientKeyFilePem       = null,
-                    string              clientP12              = null,
-                    string              caCertPem              = null,
-                    bool?               sslValidation          = null,
-                    TimeSpan            retryInitialBackoff    = new(),
-                    double              retryBackoffMultiplier = 0,
-                    TimeSpan            retryMaxBackoff        = new())
+  public Properties(IConfiguration configuration,
+                    string         connectionAddress      = null,
+                    int            connectionPort         = 0,
+                    string         protocol               = null,
+                    string         clientCertFilePem      = null,
+                    string         clientKeyFilePem       = null,
+                    string         clientP12              = null,
+                    string         caCertPem              = null,
+                    bool?          sslValidation          = null,
+                    TimeSpan       retryInitialBackoff    = new(),
+                    double         retryBackoffMultiplier = 0,
+                    TimeSpan       retryMaxBackoff        = new())
   {
-    TaskOptions   = options;
     Configuration = configuration;
-    PartitionIds  = partitionIds;
 
     var sectionGrpc = configuration.GetSection(Grpc);
 
@@ -271,16 +256,6 @@ public record Properties
   ///   The option connection port to connect to control plane (Default : 5001)
   /// </summary>
   public int ConnectionPort { get; init; } = 5001;
-
-  /// <summary>
-  ///   The TaskOptions to pass to the session or the submission session
-  /// </summary>
-  public TaskConfiguration TaskOptions { get; init; }
-
-  /// <summary>
-  ///   The TaskOptions to pass to the session or the submission session
-  /// </summary>
-  public IEnumerable<string> PartitionIds { get; init; }
 
   /// <summary>
   ///   The target name of the endpoint when ssl validation is disabled. Automatic if not set.
