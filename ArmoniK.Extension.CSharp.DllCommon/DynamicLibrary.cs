@@ -49,12 +49,25 @@ public record DynamicLibrary
   /// </summary>
   public string LibraryBlobId { get; set; }
 
+  /// <summary>
+  ///   Returns a string representation of the DynamicLibrary instance.
+  /// </summary>
+  /// <returns>A string that represents the current DynamicLibrary.</returns>
   public override string ToString()
     => $"{Name}-{Version}";
 }
 
+/// <summary>
+///   Provides extension methods for handling DynamicLibrary instances within TaskConfiguration and TaskOptions.
+/// </summary>
 public static class DynamicLibraryExt
 {
+  /// <summary>
+  ///   Adds a DynamicLibrary to the TaskConfiguration.
+  /// </summary>
+  /// <param name="taskConfiguration">The task configuration to add to.</param>
+  /// <param name="dynamicLibrary">The DynamicLibrary to add.</param>
+  /// <returns>The updated TaskConfiguration.</returns>
   public static TaskConfiguration AddDynamicLibrary(this TaskConfiguration taskConfiguration,
                                                     DynamicLibrary         dynamicLibrary)
   {
@@ -71,10 +84,21 @@ public static class DynamicLibraryExt
     return taskConfiguration;
   }
 
+  /// <summary>
+  ///   Retrieves the service library from the TaskOptions.
+  /// </summary>
+  /// <param name="taskOptions">The task options to retrieve from.</param>
+  /// <returns>The value of the service library option.</returns>
   public static string GetServiceLibrary(this TaskOptions taskOptions)
     => taskOptions.Options.FirstOrDefault(x => x.Key.Equals("ServiceLibrary"))
                   .Value;
 
+  /// <summary>
+  ///   Retrieves a DynamicLibrary from the TaskOptions.
+  /// </summary>
+  /// <param name="taskOptions">The task options to retrieve from.</param>
+  /// <param name="libraryName">The name of the library.</param>
+  /// <returns>The DynamicLibrary associated with the specified library name.</returns>
   public static DynamicLibrary GetDynamicLibrary(this TaskOptions taskOptions,
                                                  string           libraryName)
   {

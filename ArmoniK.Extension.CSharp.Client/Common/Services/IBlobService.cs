@@ -58,19 +58,6 @@ public interface IBlobService
                                  CancellationToken    cancellationToken = default);
 
   /// <summary>
-  ///   Asynchronously creates a blob with the specified content chunks in a given session.
-  /// </summary>
-  /// <param name="session">The session information in which the blob is created.</param>
-  /// <param name="name">The name of the blob to create.</param>
-  /// <param name="contents">The content chunks of the blob to create.</param>
-  /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-  /// <returns>A task representing the asynchronous operation. The task result contains the created blob information.</returns>
-  Task<BlobInfo> CreateBlobAsync(SessionInfo                       session,
-                                 string                            name,
-                                 IEnumerable<ReadOnlyMemory<byte>> contents,
-                                 CancellationToken                 cancellationToken = default);
-
-  /// <summary>
   ///   Asynchronously creates multiple blobs with the specified names and contents in a given session.
   /// </summary>
   /// <param name="session">The session information in which the blobs are created.</param>
@@ -106,18 +93,10 @@ public interface IBlobService
   /// <param name="blobContent">The content chunks to upload.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>A task representing the asynchronous operation.</returns>
-  Task UploadBlobChunkAsync(BlobInfo                          blobInfo,
-                            IEnumerable<ReadOnlyMemory<byte>> blobContent,
-                            CancellationToken                 cancellationToken = default);
+  Task UploadBlobAsync(BlobInfo             blobInfo,
+                       ReadOnlyMemory<byte> blobContent,
+                       CancellationToken    cancellationToken = default);
 
-  /// <summary>
-  ///   Asynchronously uploads multiple blobs.
-  /// </summary>
-  /// <param name="blobs">The tuples representing blob information and their contents.</param>
-  /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-  /// <returns>A task representing the asynchronous operation.</returns>
-  Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
-                        CancellationToken                                  cancellationToken = default);
 
   /// <summary>
   ///   Asynchronously retrieves the state of a blob.

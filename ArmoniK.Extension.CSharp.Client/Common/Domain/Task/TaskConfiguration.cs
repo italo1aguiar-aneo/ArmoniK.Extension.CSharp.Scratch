@@ -16,12 +16,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Api.gRPC.V1;
 
 using Google.Protobuf.WellKnownTypes;
-
-using JetBrains.Annotations;
 
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
@@ -31,6 +30,13 @@ namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 /// </summary>
 public record TaskConfiguration
 {
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskConfiguration" /> class with specified task configuration
+  ///   settings.
+  /// </summary>
+  public TaskConfiguration()
+    => Options = new Dictionary<string, string>();
+
   /// <summary>
   ///   Initializes a new instance of the <see cref="TaskConfiguration" /> class with specified task configuration
   ///   settings.
@@ -49,7 +55,7 @@ public record TaskConfiguration
     MaxRetries  = maxRetries;
     Priority    = priority;
     PartitionId = partitionId;
-    Options     = options ?? new Dictionary<string, string>(); // Ensure options is never null
+    Options     = options ?? new Dictionary<string, string>();
     MaxDuration = maxDuration;
   }
 
@@ -71,7 +77,6 @@ public record TaskConfiguration
   /// <summary>
   ///   Key-value pair options for task configuration.
   /// </summary>
-  [CanBeNull]
   public Dictionary<string, string> Options { get; init; }
 
   /// <summary>
@@ -90,14 +95,16 @@ public record TaskConfiguration
                       {
                         MaxRetries  = MaxRetries,
                         Priority    = Priority,
-                        PartitionId = PartitionId,
                         MaxDuration = Duration.FromTimeSpan(MaxDuration),
+                        PartitionId = PartitionId,
                       };
 
-    if (Options != null)
+    if (Options == null || !Options.Any())
     {
-      taskOptions.Options.Add(Options);
+      return taskOptions;
     }
+
+    taskOptions.Options.Add(Options);
 
     return taskOptions;
   }

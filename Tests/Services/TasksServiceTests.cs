@@ -84,6 +84,11 @@ public class TasksServiceTests
                                                                .PayloadId,
                                     SessionId = "sessionId1",
                                   },
+                        Session = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                       },
                     };
 
@@ -157,6 +162,11 @@ public class TasksServiceTests
                                     BlobId    = "payloadId1",
                                     SessionId = "sessionId1",
                                   },
+                        Session = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                       },
                       new()
                       {
@@ -175,6 +185,11 @@ public class TasksServiceTests
                                     BlobId    = "payloadId2",
                                     SessionId = "sessionId1",
                                   },
+                        Session = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                       },
                     };
 
@@ -211,6 +226,11 @@ public class TasksServiceTests
                                     SessionId = "sessionId1",
                                   },
                         ExpectedOutputs = new List<BlobInfo>(), // Empty expected outputs
+                        Session         = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                       },
                     };
 
@@ -283,6 +303,11 @@ public class TasksServiceTests
                                               SessionId = "sessionId1",
                                             },
                                           },
+                        Session = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                         DataDependenciesContent = new Dictionary<string, ReadOnlyMemory<byte>>
                                                   {
                                                     {
@@ -370,6 +395,11 @@ public class TasksServiceTests
                                   },
                         ExpectedOutputs         = expectedBlobs,
                         DataDependenciesContent = dataDependenciesContent,
+                        Session                 = new SessionInfo("sessionId1"),
+                        TaskOptions = new TaskConfiguration
+                                      {
+                                        PartitionId = "subtasking",
+                                      },
                       },
                     };
     // Act

@@ -105,22 +105,6 @@ public class BlobHandler
   }
 
   /// <summary>
-  ///   Asynchronously uploads the specified content chunks to the blob.
-  /// </summary>
-  /// <param name="blobContent">The content chunks to upload to the blob.</param>
-  /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-  /// <returns>A task representing the asynchronous operation.</returns>
-  public async Task UploadBlobData(IEnumerable<ReadOnlyMemory<byte>> blobContent,
-                                   CancellationToken                 cancellationToken)
-  {
-    var blobClient = await ArmoniKClient.GetBlobService();
-
-    await blobClient.UploadBlobChunkAsync(BlobInfo,
-                                          blobContent,
-                                          cancellationToken);
-  }
-
-  /// <summary>
   ///   Asynchronously uploads the specified content to the blob.
   /// </summary>
   /// <param name="blobContent">The content to upload to the blob.</param>
@@ -132,11 +116,8 @@ public class BlobHandler
     var blobClient = await ArmoniKClient.GetBlobService();
 
     // Upload the blob chunk
-    await blobClient.UploadBlobChunkAsync(BlobInfo,
-                                          new[]
-                                          {
-                                            blobContent,
-                                          },
-                                          cancellationToken);
+    await blobClient.UploadBlobAsync(BlobInfo,
+                                     blobContent,
+                                     cancellationToken);
   }
 }
