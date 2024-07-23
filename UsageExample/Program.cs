@@ -14,12 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.CommandLine;
 using System.Text;
 
 using ArmoniK.Extension.CSharp.Client;
 using ArmoniK.Extension.CSharp.Client.Common;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
+using ArmoniK.Extension.CSharp.Client.DllHelper;
+using ArmoniK.Extension.CSharp.DllCommon;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -35,11 +38,8 @@ internal class Program
   private static IConfiguration   _configuration;
   private static ILogger<Program> _logger;
 
-  private static async Task Main(string[] args)
+  internal static async Task Run(string filePath)
   {
-    Console.WriteLine("Hello Armonik New Extension !");
-
-
     Log.Logger = new LoggerConfiguration().MinimumLevel.Override("Microsoft",
                                                                  LogEventLevel.Information)
                                           .Enrich.FromLogContext()
@@ -64,14 +64,9 @@ internal class Program
 
     var defaultTaskOptions = new TaskConfiguration(2,
                                                    1,
-                                                   "subtasking",
-                                                   TimeSpan.FromHours(1),
-                                                   new Dictionary<string, string>
-                                                   {
-                                                     {
-                                                       "UseCase", "Launch"
-                                                     },
-                                                   });
+                                                   "dll",
+                                                   TimeSpan.FromHours(1));
+
 
     var props = new Properties(_configuration);
 
@@ -79,11 +74,25 @@ internal class Program
                                    factory,
                                    defaultTaskOptions);
 
+    var dynamicLib = new DynamicLibrary
+                     {
+                       Name        = "MyDll",
+                       DllFileName = "LibraryExample.dll",
+                       Version     = "1:1",
+                       PathToFile  = "publish",
+                     };
+
     var sessionService = await client.GetSessionService();
 
-    var session = await sessionService.CreateSessionAsync(defaultTaskOptions,
+    var session = await sessionService.CreateSessionWithDllAsync(defaultTaskOptions,
 
-                    ["subtasking"]);
+                    ["dll"],
+
+
+    new[]
+    {
+      dynamicLib,
+    });
 
     Console.WriteLine($"sessionId: {session.SessionId}");
 
@@ -109,17 +118,38 @@ internal class Program
 
     var result = blobInfos[0];
 
-    Console.WriteLine($"resultId: {result.BlobId}");
+    var content = File.ReadAllBytes(filePath);
 
-    var task = await tasksService.SubmitTasksAsync(session,
-                                                   new List<TaskNode>([new TaskNode
-                                                                       {
-                                                                         Payload = payload,
-                                                                         ExpectedOutputs = new[]
-                                                                                           {
-                                                                                             result,
-                                                                                           },
-                                                                       },]));
+    var dllBlob = await blobService.SendDllBlob(session,
+                                                dynamicLib,
+                                                content,
+                                                default);
+
+    Console.WriteLine($"resultId: {result.BlobId}");
+    Console.WriteLine($"libraryId: {dllBlob.BlobId}");
+
+    dynamicLib.LibraryBlobId = dllBlob.BlobId;
+
+    var taskLibraryDefinition = new TaskLibraryDefinition(dynamicLib,
+                                                          "LibraryExample",
+                                                          "Worker");
+
+    var task = await tasksService.SubmitTasksWithDll(session,
+                                                     new List<TaskNodeExt>
+                                                     {
+                                                       new()
+                                                       {
+                                                         Payload = payload,
+                                                         ExpectedOutputs = new[]
+                                                                           {
+                                                                             result,
+                                                                           },
+                                                         TaskOptions    = defaultTaskOptions,
+                                                         DynamicLibrary = taskLibraryDefinition,
+                                                       },
+                                                     },
+                                                     dllBlob,
+                                                     default);
 
     Console.WriteLine($"taskId: {task.Single().TaskId}");
 
@@ -139,5 +169,26 @@ internal class Program
     {
       Console.WriteLine($"{returnString}");
     }
+  }
+
+  public static async Task<int> Main(string[] args)
+  {
+    // Define the options for the application with their description and default value
+    var filePath = new Option<string>("--filepath",
+                                      description: "FilePath to the zip file.",
+                                      getDefaultValue: () => "library.zip");
+
+    // Describe the application and its purpose
+    var rootCommand = new RootCommand("Hello World demo for ArmoniK Extension.\n");
+
+    // Add the options to the parser
+    rootCommand.AddOption(filePath);
+
+    // Configure the handler to call the function that will do the work
+    rootCommand.SetHandler(Run,
+                           filePath);
+
+    // Parse the command line parameters and call the function that represents the application
+    return await rootCommand.InvokeAsync(args);
   }
 }

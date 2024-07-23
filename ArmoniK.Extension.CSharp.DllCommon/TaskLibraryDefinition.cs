@@ -21,10 +21,6 @@ namespace ArmoniK.Extension.CSharp.DllCommon;
 
 public record TaskLibraryDefinition : DynamicLibrary
 {
-  public TaskLibraryDefinition()
-  {
-  }
-
   public TaskLibraryDefinition(DynamicLibrary dll,
                                string         space,
                                string         service)
@@ -43,6 +39,9 @@ public record TaskLibraryDefinition : DynamicLibrary
   ///   Service name of the application.
   /// </summary>
   public string Service { get; init; }
+
+  public override string ToString()
+    => $"{Name}-{Version}";
 }
 
 public static class TaskLibraryDefinitionExt

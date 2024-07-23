@@ -7,12 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Common" Version="3.18.1" />
     <PackageReference Include="ArmoniK.Api.Worker" Version="3.18.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ArmoniK.Extension.CSharp.Client\ArmoniK.Extension.CSharp.Client.csproj" />
+    <ProjectReference Include="..\ArmoniK.Extension.CSharp.DllCommon\ArmoniK.Extension.CSharp.DllCommon.csproj" />
   </ItemGroup>
 
 </Project>
