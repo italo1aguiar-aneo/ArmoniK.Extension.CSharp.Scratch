@@ -26,6 +26,8 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 using ArmoniK.Extension.CSharp.Client.Common.Enum;
 
+using JetBrains.Annotations;
+
 namespace ArmoniK.Extension.CSharp.Client.Common.Services;
 
 /// <summary>
@@ -56,19 +58,6 @@ public interface IBlobService
                                  string               name,
                                  ReadOnlyMemory<byte> content,
                                  CancellationToken    cancellationToken = default);
-
-  /// <summary>
-  ///   Asynchronously creates a blob with the specified content chunks in a given session.
-  /// </summary>
-  /// <param name="session">The session information in which the blob is created.</param>
-  /// <param name="name">The name of the blob to create.</param>
-  /// <param name="contents">The content chunks of the blob to create.</param>
-  /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-  /// <returns>A task representing the asynchronous operation. The task result contains the created blob information.</returns>
-  Task<BlobInfo> CreateBlobAsync(SessionInfo                       session,
-                                 string                            name,
-                                 IEnumerable<ReadOnlyMemory<byte>> contents,
-                                 CancellationToken                 cancellationToken = default);
 
   /// <summary>
   ///   Asynchronously creates multiple blobs with the specified names and contents in a given session.
@@ -106,18 +95,10 @@ public interface IBlobService
   /// <param name="blobContent">The content chunks to upload.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>A task representing the asynchronous operation.</returns>
-  Task UploadBlobChunkAsync(BlobInfo                          blobInfo,
-                            IEnumerable<ReadOnlyMemory<byte>> blobContent,
-                            CancellationToken                 cancellationToken = default);
+  Task UploadBlobAsync(BlobInfo             blobInfo,
+                       ReadOnlyMemory<byte> blobContent,
+                       CancellationToken    cancellationToken = default);
 
-  /// <summary>
-  ///   Asynchronously uploads multiple blobs.
-  /// </summary>
-  /// <param name="blobs">The tuples representing blob information and their contents.</param>
-  /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-  /// <returns>A task representing the asynchronous operation.</returns>
-  Task UploadBlobsAsync(IEnumerable<Tuple<BlobInfo, ReadOnlyMemory<byte>>> blobs,
-                        CancellationToken                                  cancellationToken = default);
 
   /// <summary>
   ///   Asynchronously retrieves the state of a blob.
@@ -151,6 +132,7 @@ public static class BlobServiceExt
   /// <param name="quantity">The number of blobs to create metadata for.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>An asynchronous enumerable of blob information objects.</returns>
+  [PublicAPI]
   public static IAsyncEnumerable<BlobInfo> CreateBlobsMetadataAsync(this IBlobService blobService,
                                                                     SessionInfo       session,
                                                                     int               quantity,
@@ -171,6 +153,7 @@ public static class BlobServiceExt
   /// <param name="pageSize">The number of blobs to retrieve per page.</param>
   /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
   /// <returns>An asynchronous enumerable of blob pages.</returns>
+  [PublicAPI]
   public static async IAsyncEnumerable<BlobPage> ListAllBlobsAsync(this IBlobService                          blobService,
                                                                    SessionInfo                                session,
                                                                    int                                        pageSize          = 50,

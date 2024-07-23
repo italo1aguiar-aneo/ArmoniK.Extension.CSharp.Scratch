@@ -21,8 +21,6 @@ using System.Collections.Immutable;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Blob;
 using ArmoniK.Extension.CSharp.Client.Common.Domain.Session;
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 /// <summary>
@@ -60,8 +58,7 @@ public record TaskNode
   /// <summary>
   ///   Gets the configuration options for the task, which may be null if no additional configurations are specified.
   /// </summary>
-  [CanBeNull]
-  public TaskConfiguration TaskOptions { get; init; }
+  public TaskConfiguration TaskOptions { get; set; } = new();
 
   /// <summary>
   ///   Gets the session information associated with the task, encapsulated in a <see cref="SessionInfo" />.
