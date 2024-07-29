@@ -25,23 +25,25 @@ using Microsoft.Extensions.Logging;
 
 namespace LibraryExample;
 
-public class Worker : IDllWorker
+public class Joiner : IDllWorker
 {
   public async Task<Output> Execute(ITaskHandler      taskHandler,
                                     ILogger           logger,
                                     CancellationToken cancellationToken)
   {
-    logger.LogWarning("Starting HelloWorker");
-    var input = Encoding.ASCII.GetString(taskHandler.Payload);
-
+    logger.LogDebug("Starting Joiner useCase");
     var resultId = taskHandler.ExpectedResults.First();
 
     logger.LogDebug($"number of expectedOutputs:{taskHandler.ExpectedResults}");
-    // We add the SubTaskId to the result 
+
+    var resultsArray = taskHandler.DataDependencies.Values.Select(dependency => Encoding.ASCII.GetString(dependency))
+                                  .Select(result => $"{result}_Joined")
+                                  .ToList();
+
     await taskHandler.SendBlob(resultId,
-                               Encoding.ASCII.GetBytes($"{input}_SonId_{taskHandler.TaskId}"),
-                               cancellationToken)
-                     .ConfigureAwait(false);
+                               resultsArray.SelectMany(s => Encoding.ASCII.GetBytes(s + "\n"))
+                                           .ToArray(),
+                               cancellationToken);
     return new Output
            {
              Ok = new Empty(),

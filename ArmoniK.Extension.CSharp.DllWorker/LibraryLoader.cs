@@ -68,7 +68,16 @@ public class LibraryLoader : ILibraryLoader
 
       //Get the data about the dynamic library
       var dynamicLibrary = taskHandler.TaskOptions.GetTaskLibraryDefinition(taskLibrary);
-      var filename       = $"{dynamicLibrary}.zip";
+
+      Logger.LogInformation($"Loading Library: {dynamicLibrary}");
+      //if the context is already loaded
+      if (assemblyLoadContexts_.ContainsKey(dynamicLibrary.ToString()))
+      {
+        Logger.LogInformation($"Library already loaded: {dynamicLibrary}");
+        return dynamicLibrary.ToString();
+      }
+
+      var filename = $"{dynamicLibrary}.zip";
 
       var filePath = @"/tmp/zip";
 
@@ -79,12 +88,6 @@ public class LibraryLoader : ILibraryLoader
       var dllFileName = dynamicLibrary.DllFileName;
 
       Logger.LogInformation($"Starting Dynamic loading - TaskLibrary: {taskLibrary}, FileName: {filename}, FilePath: {filePath}, DestinationToUnZip:{destinationPath}, PathToDllFile:{pathToDllFile}, DllFileName: {dllFileName}, Namespace: {dynamicLibrary.Namespace}, Service: {dynamicLibrary.Service}");
-
-      //if the context is already loaded
-      if (assemblyLoadContexts_.ContainsKey(dynamicLibrary.ToString()))
-      {
-        return dynamicLibrary.ToString();
-      }
 
       var loadContext = new AssemblyLoadContext(dynamicLibrary.ToString());
 
@@ -124,7 +127,6 @@ public class LibraryLoader : ILibraryLoader
       }
       catch (Exception ex)
       {
-        Logger.LogError("W");
         throw new WorkerApiException(ex);
       }
 

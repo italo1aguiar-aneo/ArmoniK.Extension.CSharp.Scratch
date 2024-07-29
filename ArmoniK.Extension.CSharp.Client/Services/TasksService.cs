@@ -268,5 +268,31 @@ internal class TasksService : ITasksService
         }
       }
     }
+
+    var nodeWithNewExpectedOutputs = enumerableNodes.Where(x => x.ExpectedOutputsName.Any())
+                                             .ToList();
+    if (nodeWithNewExpectedOutputs.Any())
+    {
+      var blobKeyValues = nodeWithNewExpectedOutputs.SelectMany(x => x.ExpectedOutputsName);
+
+      var createdBlobDictionary = new Dictionary<string, BlobInfo>();
+
+      await foreach (var blob in blobService_.CreateBlobsMetadataAsync(session,
+                                                               blobKeyValues,
+                                                               cancellationToken))
+      {
+        createdBlobDictionary[blob.BlobName] = blob;
+      }
+
+      foreach (var taskNode in enumerableNodes)
+      foreach (var dependency in taskNode.DataDependenciesContent)
+      {
+        if (createdBlobDictionary.TryGetValue(dependency.Key,
+                                              out var createdBlob))
+        {
+          taskNode.ExpectedOutputs. Add(createdBlob);
+        }
+      }
+    }
   }
 }

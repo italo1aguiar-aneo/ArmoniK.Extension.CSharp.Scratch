@@ -77,20 +77,18 @@ internal class Program
                      {
                        Name        = "MyDll",
                        DllFileName = "LibraryExample.dll",
-                       Version     = "1:1",
+                       Version     = "1:3",
                        PathToFile  = "publish",
                      };
 
     var sessionService = await client.GetSessionService();
 
     var session = await sessionService.CreateSessionWithDllAsync(defaultTaskOptions,
-
-                    ["dll"],
-
-    new[]
-    {
-      dynamicLib,
-    });
+                                                                 ["dll"],
+                                                                 new[]
+                                                                 {
+                                                                   dynamicLib,
+                                                                 });
 
     Console.WriteLine($"sessionId: {session.SessionId}");
 
@@ -130,7 +128,7 @@ internal class Program
 
     var taskLibraryDefinition = new TaskLibraryDefinition(dynamicLib,
                                                           "LibraryExample",
-                                                          "Worker");
+                                                          "Submitter");
 
     var task = await tasksService.SubmitTasksWithDll(session,
                                                      new List<TaskNodeExt>

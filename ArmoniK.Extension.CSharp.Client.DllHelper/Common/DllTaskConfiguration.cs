@@ -90,12 +90,14 @@ public record DllTasksConfiguration : TaskConfiguration
                                 {
                                   Keys =
                                   {
+                                    $"{lib}.Name",
                                     $"{lib}.PathToFile",
                                     $"{lib}.DllFileName",
                                     $"{lib}.Version",
                                   },
                                   Values =
                                   {
+                                    lib.Name,
                                     lib.PathToFile,
                                     lib.DllFileName,
                                     lib.Version,

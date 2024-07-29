@@ -31,7 +31,12 @@ public record TaskNode
   /// <summary>
   ///   Expected outputs as a list of <see cref="BlobInfo" />.
   /// </summary>
-  public IEnumerable<BlobInfo> ExpectedOutputs { get; init; }
+  public ICollection<BlobInfo> ExpectedOutputs { get; init; }
+
+  /// <summary>
+  ///   Expected outputs as a list of <see cref="BlobInfo" />.
+  /// </summary>
+  public IEnumerable<string> ExpectedOutputsName { get; init; } = new List<string>();
 
   /// <summary>
   ///   Collection of <see cref="BlobInfo" /> representing the data dependencies required by the task.
