@@ -90,7 +90,7 @@ public class LibraryLoader : ILibraryLoader
 
       var dllExists = taskHandler.DataDependencies.TryGetValue(dynamicLibrary.LibraryBlobId,
                                                                out var libraryBytes);
-      if (!dllExists || libraryBytes == null)
+      if (!dllExists || libraryBytes is null)
       {
         throw new WorkerApiException("No library found on data dependencies.");
       }
@@ -166,7 +166,7 @@ public class LibraryLoader : ILibraryLoader
         var classType = assembly.assembly.GetType($"{dynamicLibrary.Namespace}.{dynamicLibrary.Service}");
         Logger.LogInformation($"Types inside the assembly: {string.Join(",", assembly.assembly.GetTypes().Select(x => x.ToString()))}");
         Logger.LogInformation($"Getting type {dynamicLibrary.Namespace}.{dynamicLibrary.Service}: {classType}");
-        if (classType == null)
+        if (classType is null)
         {
           Logger.LogError($"Error finding class {dynamicLibrary.Namespace}.{dynamicLibrary.Service}");
           throw new WorkerApiException($"Error finding class {dynamicLibrary.Namespace}.{dynamicLibrary.Service}");
@@ -174,7 +174,7 @@ public class LibraryLoader : ILibraryLoader
 
         var serviceContainer = (T)Activator.CreateInstance(classType);
 
-        if (serviceContainer == null)
+        if (serviceContainer is null)
         {
           Logger.LogError("Couldn't load class instance");
           throw new WorkerApiException("Couldn't load class instance");
@@ -272,7 +272,7 @@ public class LibraryLoader : ILibraryLoader
 
     //Check now if the assembly is present
 
-    Logger.LogInformation("EXTRACTED ZIP FILE");
+    Logger.LogInformation("Extracted Zip File");
 
     if (!File.Exists(dllFile))
     {
@@ -295,91 +295,6 @@ public class LibraryLoader : ILibraryLoader
     catch (InvalidDataException)
     {
       return false;
-    }
-  }
-
-  /// <summary>
-  ///   Spin lock on a file
-  /// </summary>
-  [PublicAPI]
-  public sealed class FileSpinLock : IDisposable
-  {
-    private static readonly byte[] LockBytes = Encoding.ASCII.GetBytes("locked");
-
-    [CanBeNull]
-    private readonly FileStream fileStream_;
-
-    /// <summary>
-    ///   Creates a spinlock on the file. Sets <see cref="HasLock" /> to true if it successfully locked the file, false
-    ///   otherwise
-    /// </summary>
-    /// <param name="lockFile">File to lock</param>
-    /// <param name="deleteOnUnlock">Delete the lockfile when this object is disposed</param>
-    /// <param name="timeoutMs">Maximum time to wait for the lock to be acquired</param>
-    /// <param name="spinIntervalMs">Interval between lock tries</param>
-    public FileSpinLock(string lockFile,
-                        bool   deleteOnUnlock = true,
-                        int    timeoutMs      = 30000,
-                        int    spinIntervalMs = 250)
-    {
-      HasLock = false;
-      var currentSpinTime = 0;
-      spinIntervalMs = Math.Min(spinIntervalMs,
-                                timeoutMs);
-      do
-      {
-        try
-        {
-          fileStream_ ??= new FileStream(lockFile,
-                                         FileMode.OpenOrCreate,
-                                         FileAccess.ReadWrite,
-                                         FileShare.None,
-                                         1,
-                                         FileOptions.WriteThrough | (deleteOnUnlock
-                                                                       ? FileOptions.DeleteOnClose
-                                                                       : FileOptions.None));
-          if (fileStream_.Seek(0,
-                               SeekOrigin.End) == 0)
-          {
-            fileStream_.Write(LockBytes,
-                              0,
-                              LockBytes.Length);
-            fileStream_.Flush();
-          }
-
-          fileStream_.Lock(0,
-                           LockBytes.Length);
-
-          HasLock = true;
-        }
-        catch (IOException)
-        {
-          Thread.Sleep(spinIntervalMs);
-          currentSpinTime += spinIntervalMs;
-        }
-        catch (UnauthorizedAccessException)
-        {
-          Thread.Sleep(spinIntervalMs);
-          currentSpinTime += spinIntervalMs;
-        }
-      } while (!HasLock && currentSpinTime < timeoutMs + spinIntervalMs);
-    }
-
-    /// <summary>
-    ///   True if the file is locked by the current class, false otherwise
-    /// </summary>
-    public bool HasLock { get; }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-      if (HasLock)
-      {
-        fileStream_?.Unlock(0,
-                            LockBytes.Length);
-      }
-
-      fileStream_?.Dispose();
     }
   }
 }
