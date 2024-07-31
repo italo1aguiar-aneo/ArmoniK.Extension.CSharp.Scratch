@@ -18,13 +18,10 @@ using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text;
 
 using ArmoniK.Api.Worker.Worker;
 using ArmoniK.Extension.CSharp.DllCommon;
 using ArmoniK.Extension.CSharp.Worker;
-
-using JetBrains.Annotations;
 
 namespace ArmoniK.Extension.CSharp.DllWorker;
 
