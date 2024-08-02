@@ -19,12 +19,18 @@ using ArmoniK.Extension.CSharp.Client.Common.Domain.Task;
 
 namespace ArmoniK.Extension.CSharp.DllCommon;
 
+/// <summary>
+///   Represents a task library definition which extends the DynamicLibrary class.
+///   It is used for defining which namespace and service the tasks will consume from the dll
+/// </summary>
 public record TaskLibraryDefinition : DynamicLibrary
 {
-  public TaskLibraryDefinition()
-  {
-  }
-
+  /// <summary>
+  ///   Initializes a new instance of the TaskLibraryDefinition class.
+  /// </summary>
+  /// <param name="dll">The dynamic library instance.</param>
+  /// <param name="space">Namespace of the application.</param>
+  /// <param name="service">Service name of the application (class name).</param>
   public TaskLibraryDefinition(DynamicLibrary dll,
                                string         space,
                                string         service)
@@ -43,10 +49,26 @@ public record TaskLibraryDefinition : DynamicLibrary
   ///   Service name of the application.
   /// </summary>
   public string Service { get; init; }
+
+  /// <summary>
+  ///   Returns a string representation of the TaskLibraryDefinition instance.
+  /// </summary>
+  /// <returns>A string that represents the current TaskLibraryDefinition.</returns>
+  public override string ToString()
+    => $"{Name}-{Version}";
 }
 
+/// <summary>
+///   Provides extension methods for TaskLibraryDefinition.
+/// </summary>
 public static class TaskLibraryDefinitionExt
 {
+  /// <summary>
+  ///   Adds a TaskLibraryDefinition to the TaskConfiguration.
+  /// </summary>
+  /// <param name="taskConfiguration">The task configuration to add to.</param>
+  /// <param name="dynamicLibrary">The TaskLibraryDefinition to add.</param>
+  /// <returns>The updated TaskConfiguration.</returns>
   public static TaskConfiguration AddTaskLibraryDefinition(this TaskConfiguration taskConfiguration,
                                                            TaskLibraryDefinition  dynamicLibrary)
   {
@@ -58,6 +80,12 @@ public static class TaskLibraryDefinitionExt
     return taskConfiguration;
   }
 
+  /// <summary>
+  ///   Retrieves a TaskLibraryDefinition from the TaskOptions.
+  /// </summary>
+  /// <param name="taskOptions">The task options to retrieve from.</param>
+  /// <param name="libraryName">The name of the library.</param>
+  /// <returns>The TaskLibraryDefinition associated with the specified library name.</returns>
   public static TaskLibraryDefinition GetTaskLibraryDefinition(this TaskOptions taskOptions,
                                                                string           libraryName)
   {
