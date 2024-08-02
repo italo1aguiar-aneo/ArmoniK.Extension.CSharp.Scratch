@@ -32,14 +32,14 @@ public class LibraryLoader : ILibraryLoader
 {
   private ConcurrentDictionary<string, (Assembly assembly, AssemblyLoadContext loadContext)> assemblyLoadContexts_ = new();
 
-  public ILogger Logger;
+  private readonly ILogger logger_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="LibraryLoader" /> class.
   /// </summary>
   /// <param name="loggerFactory">The logger factory to create logger instances.</param>
   public LibraryLoader(ILoggerFactory loggerFactory)
-    => Logger = loggerFactory.CreateLogger<LibraryLoader>();
+    => logger_ = loggerFactory.CreateLogger<LibraryLoader>();
 
   /// <summary>
   ///   Disposes the current instance and resets the assembly load contexts.
@@ -59,7 +59,7 @@ public class LibraryLoader : ILibraryLoader
                                                    out var value);
     if (!exists)
     {
-      Logger.LogError($"AssemblyLoadContexts does not have key {libraryContextKey}");
+      logger_.LogError($"AssemblyLoadContexts does not have key {libraryContextKey}");
       throw new WorkerApiException("No key found on AssemblyLoadContexts dictionary");
     }
 
@@ -84,9 +84,9 @@ public class LibraryLoader : ILibraryLoader
   {
     try
     {
-      Logger.LogInformation("Starting to LoadLibrary");
-      Logger.LogInformation("Nb of current loaded assemblies: {nbAssemblyLoadContexts}",
-                            assemblyLoadContexts_.Count);
+      logger_.LogInformation("Starting to LoadLibrary");
+      logger_.LogInformation("Nb of current loaded assemblies: {nbAssemblyLoadContexts}",
+                             assemblyLoadContexts_.Count);
 
       var taskLibrary = taskHandler.TaskOptions.GetServiceLibrary();
 
@@ -102,15 +102,15 @@ public class LibraryLoader : ILibraryLoader
 
       var dllFileName = dynamicLibrary.DllFileName;
 
-      Logger.LogInformation("Starting Dynamic loading - TaskLibrary: {taskLibrary}, FileName: {filename}, FilePath: {filePath}, DestinationToUnZip:{destinationPath}, PathToDllFile:{pathToDllFile}, DllFileName: {dllFileName}, Namespace: {dynamicLibrary.Namespace}, Service: {dynamicLibrary.Service}",
-                            taskLibrary,
-                            filename,
-                            filePath,
-                            destinationPath,
-                            pathToDllFile,
-                            dllFileName,
-                            dynamicLibrary.Namespace,
-                            dynamicLibrary.Service);
+      logger_.LogInformation("Starting Dynamic loading - TaskLibrary: {taskLibrary}, FileName: {filename}, FilePath: {filePath}, DestinationToUnZip:{destinationPath}, PathToDllFile:{pathToDllFile}, DllFileName: {dllFileName}, Namespace: {dynamicLibrary.Namespace}, Service: {dynamicLibrary.Service}",
+                             taskLibrary,
+                             filename,
+                             filePath,
+                             destinationPath,
+                             pathToDllFile,
+                             dllFileName,
+                             dynamicLibrary.Namespace,
+                             dynamicLibrary.Service);
 
       // if the context is already loaded
       if (assemblyLoadContexts_.ContainsKey(dynamicLibrary.ToString()))
@@ -144,9 +144,9 @@ public class LibraryLoader : ILibraryLoader
         throw new WorkerApiException(ex);
       }
 
-      Logger.LogInformation("Extracting from archive {localZip}",
-                            Path.Join(filePath,
-                                      filename));
+      logger_.LogInformation("Extracting from archive {localZip}",
+                             Path.Join(filePath,
+                                       filename));
 
       var extractedPath = ExtractArchive(filename,
                                          filePath,
@@ -159,13 +159,13 @@ public class LibraryLoader : ILibraryLoader
 
       File.Delete(zipFile);
 
-      Logger.LogInformation("Package {dynamicLibrary} successfully extracted from {localAssembly}",
-                            dynamicLibrary,
-                            extractedPath);
+      logger_.LogInformation("Package {dynamicLibrary} successfully extracted from {localAssembly}",
+                             dynamicLibrary,
+                             extractedPath);
 
-      Logger.LogInformation("Trying to load: {dllPath}",
-                            Path.Join(extractedPath,
-                                      dllFileName));
+      logger_.LogInformation("Trying to load: {dllPath}",
+                             Path.Join(extractedPath,
+                                       dllFileName));
 
       var assembly = loadContext.LoadFromAssemblyPath(Path.Join(extractedPath,
                                                                 dllFileName));
@@ -176,14 +176,14 @@ public class LibraryLoader : ILibraryLoader
         throw new WorkerApiException($"Unable to add load context {dynamicLibrary}");
       }
 
-      Logger.LogInformation("Nb of current loaded assemblies: {nbAssemblyLoadContexts}",
-                            assemblyLoadContexts_.Count);
+      logger_.LogInformation("Nb of current loaded assemblies: {nbAssemblyLoadContexts}",
+                             assemblyLoadContexts_.Count);
 
       return dynamicLibrary.ToString();
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex.Message);
+      logger_.LogError(ex.Message);
       throw new WorkerApiException(ex);
     }
   }
@@ -205,19 +205,19 @@ public class LibraryLoader : ILibraryLoader
       {
         // Create an instance of a class from the assembly.
         var classType = assembly.assembly.GetType($"{dynamicLibrary.Namespace}.{dynamicLibrary.Service}");
-        Logger.LogInformation("Types inside the assembly: {assemblyTypes}",
-                              string.Join(",",
-                                          assembly.assembly.GetTypes()
-                                                  .Select(x => x.ToString())));
-        Logger.LogInformation("Getting type {Namespace}.{Service}: {classType}",
-                              dynamicLibrary.Namespace,
-                              dynamicLibrary.Service,
-                              classType);
+        logger_.LogInformation("Types inside the assembly: {assemblyTypes}",
+                               string.Join(",",
+                                           assembly.assembly.GetTypes()
+                                                   .Select(x => x.ToString())));
+        logger_.LogInformation("Getting type {Namespace}.{Service}: {classType}",
+                               dynamicLibrary.Namespace,
+                               dynamicLibrary.Service,
+                               classType);
         if (classType is null)
         {
-          Logger.LogError("Error finding class {Namespace}.{Service}",
-                          dynamicLibrary.Namespace,
-                          dynamicLibrary.Service);
+          logger_.LogError("Error finding class {Namespace}.{Service}",
+                           dynamicLibrary.Namespace,
+                           dynamicLibrary.Service);
           throw new WorkerApiException($"Error finding class {dynamicLibrary.Namespace}.{dynamicLibrary.Service}");
         }
 
@@ -225,7 +225,7 @@ public class LibraryLoader : ILibraryLoader
 
         if (serviceContainer is null)
         {
-          Logger.LogError("Couldn't load class instance");
+          logger_.LogError("Couldn't load class instance");
           throw new WorkerApiException("Couldn't load class instance");
         }
 
@@ -234,8 +234,8 @@ public class LibraryLoader : ILibraryLoader
     }
     catch (Exception e)
     {
-      Logger.LogError("Error loading class instance: {errorMessage}",
-                      e.Message);
+      logger_.LogError("Error loading class instance: {errorMessage}",
+                       e.Message);
       throw new WorkerApiException(e);
     }
   }
@@ -291,8 +291,8 @@ public class LibraryLoader : ILibraryLoader
 
     Directory.CreateDirectory(temporaryDirectory);
 
-    Logger.LogInformation("Dll should be in the following folder {dllFile}",
-                          dllFile);
+    logger_.LogInformation("Dll should be in the following folder {dllFile}",
+                           dllFile);
 
     if (overwrite || !File.Exists(dllFile))
     {
@@ -301,9 +301,9 @@ public class LibraryLoader : ILibraryLoader
         ZipFile.ExtractToDirectory(originFile,
                                    temporaryDirectory);
 
-        Logger.LogInformation("Extracted zip file");
+        logger_.LogInformation("Extracted zip file");
 
-        Logger.LogInformation("Moving unzipped file");
+        logger_.LogInformation("Moving unzipped file");
         MoveDirectoryContent(temporaryDirectory,
                              destinationPath);
       }
@@ -314,13 +314,13 @@ public class LibraryLoader : ILibraryLoader
     }
     else
     {
-      Logger.LogInformation("Could not extract zip, file exists already");
+      logger_.LogInformation("Could not extract zip, file exists already");
     }
 
     if (!File.Exists(dllFile))
     {
-      Logger.LogError("Dll should in the following folder {dllFile}",
-                      dllFile);
+      logger_.LogError("Dll should in the following folder {dllFile}",
+                       dllFile);
       throw new WorkerApiException($"Fail to find assembly {dllFile}");
     }
 
@@ -362,12 +362,12 @@ public class LibraryLoader : ILibraryLoader
       Directory.Delete(sourceDirectory,
                        true);
 
-      Logger.LogInformation("All files and folders have been moved successfully.");
+      logger_.LogInformation("All files and folders have been moved successfully.");
     }
     catch (Exception ex)
     {
-      Logger.LogError(ex,
-                      "Could not move file");
+      logger_.LogError(ex,
+                       "Could not move file");
       throw;
     }
   }
