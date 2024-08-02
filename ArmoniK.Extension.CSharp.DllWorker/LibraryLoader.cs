@@ -30,9 +30,8 @@ namespace ArmoniK.Extension.CSharp.DllWorker;
 /// </summary>
 public class LibraryLoader : ILibraryLoader
 {
-  private ConcurrentDictionary<string, (Assembly assembly, AssemblyLoadContext loadContext)> assemblyLoadContexts_ = new();
-
-  private readonly ILogger logger_;
+  private readonly ILogger                                                                            logger_;
+  private          ConcurrentDictionary<string, (Assembly assembly, AssemblyLoadContext loadContext)> assemblyLoadContexts_ = new();
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="LibraryLoader" /> class.
